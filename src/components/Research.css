@@ -1,0 +1,68 @@
+.rsh__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem; /* 64px */
+}
+
+.rsh__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.rsh .rsh__eyebrow {
+  color: var(--brand);
+}
+
+.rsh__title {
+  margin-top: var(--sp-3);
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: var(--fs-h2);
+  letter-spacing: -0.02em;
+  color: var(--brand);
+}
+
+.rsh__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+.rsh__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.rsh__tile {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  margin-bottom: var(--sp-2);
+  background: var(--surface-chip);
+  border: 1px solid var(--line);
+  color: var(--brand);
+  transition: background var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rsh__card:hover .rsh__tile {
+    background: #e6e3e3;
+  }
+}
+
+.rsh__card-title {
+  font-weight: 700;
+  font-size: var(--fs-md);
+  color: var(--brand);
+}
+
+.rsh__card-body {
+  color: var(--ink);
+}

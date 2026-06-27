@@ -1,0 +1,95 @@
+.about__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8rem; /* 128px */
+}
+
+.about__intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  align-items: start;
+}
+
+.about__lead-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.about__title {
+  font-size: var(--fs-h2-sm); /* 42px */
+  max-width: 20ch; /* fits "Architecting the Global" on line 1 like Figma (2 lines) */
+}
+
+.about__statements {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.about__statement {
+  padding-left: 2.25rem;
+  border-left: 4px solid var(--brand);
+}
+
+.about__statement--soft {
+  border-left-color: var(--brand-soft);
+}
+
+.about__label {
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--sp-2);
+}
+
+.about__statement p:last-child {
+  font-size: var(--fs-lg);
+  line-height: 1.62;
+}
+
+/* ---- Value cards ---- */
+.about__values {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+.about__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1); /* tighter words/icon spacing */
+  padding: 1.5rem; /* 24px — more compact than before (was 33px) */
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about__card:hover {
+    transform: translateY(-4px);
+    border-color: var(--brand-soft);
+  }
+}
+
+.about__icon {
+  color: var(--brand);
+  margin-bottom: 0.25rem;
+}
+
+.about__card-title {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--brand);
+}
+
+.about__card-body {
+  color: var(--ink);
+}

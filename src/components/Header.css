@@ -1,0 +1,127 @@
+/* =====================================================================
+   REIFGO — Shared site header
+   One treatment used across every page so navigation feels continuous:
+   - marketing pages (Home, Services) use `.hdr`
+   - the AI-advisor app shell uses `.hdr hdr--app` (same look, static, +icons)
+   Spec extracted from Figma TopNavBar (nodes 37:2219 and 61:479):
+   80px tall · wordmark · 16px Inter nav · teal active underline · brand CTA
+   ===================================================================== */
+.hdr {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-inline: var(--page-pad);
+  background: rgba(250, 249, 249, 0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* App-shell variant: header is a fixed flex item, not a scroll-sticky bar */
+.hdr--app {
+  position: static;
+  flex-shrink: 0;
+}
+
+.hdr__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: 5rem; /* 80px — Figma */
+}
+
+/* ---- Logo (wordmark vector) ---- */
+.hdr__logo {
+  display: inline-flex;
+  align-items: center;
+  color: var(--brand);
+}
+
+.hdr__wordmark {
+  display: block;
+  height: 1.018rem; /* 16.288px — Figma */
+  width: auto;
+}
+
+/* ---- Nav ---- */
+.hdr__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4); /* 32px */
+}
+
+.hdr__link {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-md); /* 16px */
+  line-height: 1.5; /* 24px */
+  color: var(--ink); /* #40484c */
+  padding-bottom: 0.375rem; /* 6px */
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.hdr__link.is-active {
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hdr__link:hover {
+    color: var(--brand);
+  }
+}
+
+/* ---- Right cluster (CTA, plus icons on the app shell) ---- */
+.hdr__right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2); /* 16px */
+}
+
+.hdr__icons {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1); /* 8px */
+}
+
+.hdr__icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: transparent;
+  border: 0;
+  color: var(--brand);
+  transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.hdr__icon svg {
+  display: block;
+  height: 1.25rem; /* 20px */
+  width: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hdr__icon:hover {
+    color: var(--brand-700);
+  }
+}
+
+.hdr__icon:active {
+  transform: scale(0.94);
+}
+
+/* ---- CTA button ----
+   Figma: bg brand, px24 py8, 16px Inter, uppercase, 0.05em tracking, white.
+   Scoped to beat the base .btn padding regardless of CSS order. */
+.hdr .hdr__cta {
+  padding: 0.5rem 1.5rem; /* 8 / 24 */
+  font-size: var(--fs-md); /* 16px */
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}

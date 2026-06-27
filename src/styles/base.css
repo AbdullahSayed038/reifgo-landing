@@ -1,0 +1,208 @@
+/* =====================================================================
+   REIFGO — Base + shared primitives
+   Reset, typography defaults, and the handful of building blocks reused
+   across sections (container, section, eyebrow, button, link, card,
+   reveal animation). Keeping them here keeps each component file small.
+   ===================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ---- Layout primitives ---------------------------------------------- */
+.section {
+  padding-block: var(--section-y);
+  padding-inline: var(--page-pad);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+}
+
+/* ---- Typography primitives ------------------------------------------ */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.heading {
+  font-family: var(--font-head);
+  color: var(--brand);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+.h2 {
+  font-size: var(--fs-h2);
+}
+
+.lead {
+  font-size: var(--fs-lg);
+  color: var(--ink);
+  line-height: var(--lh-body);
+  max-width: 40ch;
+}
+
+/* ---- Buttons -------------------------------------------------------- */
+.btn {
+  --btn-bg: var(--brand);
+  --btn-fg: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  padding: 1.375rem 2.5rem; /* 22px 40px -> 60px tall like Figma */
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1.3333; /* 16px on 12px -> Figma button heights (36 / 60) */
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--btn-bg);
+  transition: background var(--dur) var(--ease),
+    transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--brand);
+  border-color: var(--brand);
+}
+
+.btn--ghost-light {
+  --btn-bg: var(--surface);
+  --btn-fg: var(--brand);
+  border-color: var(--line-solid);
+}
+
+/* Larger button used across the Services page (16px label, 58px tall) */
+.btn--lg {
+  font-size: var(--fs-md); /* 16px */
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  padding: 1.0625rem 2.5rem; /* 17px 40px */
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:not(.btn--ghost):not(.btn--ghost-light):hover {
+    background: var(--brand-700);
+    border-color: var(--brand-700);
+  }
+  .btn--ghost:hover,
+  .btn--ghost-light:hover {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+  }
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* ---- Arrow link ("VIEW ALL …  ->") ---------------------------------- */
+.arrow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--brand);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.arrow-link svg {
+  transition: transform var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .arrow-link:hover svg {
+    transform: translateX(4px);
+  }
+}
+
+/* ---- Reveal-on-scroll ----------------------------------------------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity var(--dur-reveal) var(--ease-out),
+    transform var(--dur-reveal) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}

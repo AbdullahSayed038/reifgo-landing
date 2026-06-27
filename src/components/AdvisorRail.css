@@ -1,0 +1,158 @@
+.arail {
+  background: rgba(249, 249, 249, 0.8);
+  border-left: 1px solid var(--line-solid);
+  padding: 2rem 2rem 2rem 2.0625rem; /* 32 / 32 / 32 / 33 */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  overflow-y: auto;
+}
+
+/* ---- Market pulse ---- */
+.arail__heading {
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: var(--sp-3);
+}
+
+.arail__stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.arail__stat {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1.0625rem; /* 17px */
+  border-bottom: 1px solid var(--line-solid);
+}
+
+.arail__stat > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.arail__stat-label {
+  font-family: var(--font-head);
+  font-size: 0.625rem; /* 10px */
+  text-transform: uppercase;
+  color: #656667;
+  line-height: 1.5;
+}
+
+.arail__stat-value {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.55;
+  color: #1b1c1c;
+}
+
+.arail__trend--up {
+  color: #1f9d6b;
+}
+
+.arail__trend--flat {
+  color: var(--brand);
+}
+
+/* ---- Advisor recommendation ---- */
+.arail__rec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: 1.5rem;
+  background: var(--brand);
+  border-radius: 8px;
+  box-shadow: 0 1.25rem 1.5rem -0.3rem rgba(0, 85, 108, 0.1),
+    0 0.5rem 0.6rem -0.4rem rgba(0, 85, 108, 0.1);
+}
+
+.arail__rec-kicker {
+  font-family: var(--font-head);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.8;
+}
+
+.arail__rec-text {
+  color: #fff;
+  line-height: 1.375;
+  padding-bottom: var(--sp-1);
+}
+
+.arail__rec-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: #fff;
+  border: 0;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--brand);
+  transition: opacity var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .arail__rec-btn:hover {
+    opacity: 0.9;
+  }
+}
+
+/* ---- Global market report ---- */
+.arail__report-wrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  min-height: 13.28rem; /* 212px */
+}
+
+.arail__report {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-chip);
+}
+
+.arail__report img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.arail__report-caption {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0, 85, 108, 0.6), rgba(0, 85, 108, 0));
+}
+
+.arail__report-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.arail__report-sub {
+  font-family: var(--font-head);
+  font-size: 0.625rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}

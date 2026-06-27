@@ -1,0 +1,42 @@
+.adf {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 1.0625rem 5rem 1rem; /* 17 / 80 / 16 */
+  background: var(--surface-soft);
+  border-top: 1px solid var(--line-solid);
+}
+
+.adf__left {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.adf__copy,
+.adf__link,
+.adf__hq {
+  font-family: var(--font-head);
+  font-size: 0.625rem; /* 10px */
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.adf__link {
+  transition: color var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .adf__link:hover {
+    color: var(--brand);
+  }
+}
+
+.adf__hq {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

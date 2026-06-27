@@ -1,0 +1,104 @@
+.eng {
+  position: relative;
+  background: var(--brand);
+  color: #fff;
+  padding-block: var(--section-y);
+  padding-inline: var(--page-pad);
+  overflow: hidden;
+}
+
+.eng__bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  opacity: 0.1;
+  background: url("/engagements-bg.png") center / cover no-repeat;
+  pointer-events: none;
+}
+
+.eng__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5rem; /* 80px */
+}
+
+.eng__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+.eng__intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-width: 42rem;
+}
+
+.eng__eyebrow {
+  font-size: var(--fs-md);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-soft);
+}
+
+.eng__title {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: var(--fs-h2); /* 48px */
+  line-height: 1.167;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.eng__note {
+  max-width: 24rem; /* 384px */
+  color: var(--brand-soft);
+  text-align: left;
+}
+
+/* ---- Cards ---- */
+.eng__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+.eng__card {
+  display: flex;
+  flex-direction: column;
+  padding: 2.5625rem; /* 41px */
+  border: 1px solid var(--line-on-dark);
+  transition: background var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .eng__card:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.eng__icon {
+  color: var(--brand-soft);
+  margin-bottom: var(--sp-4); /* 32px */
+}
+
+.eng__card-title {
+  font-family: var(--font-head);
+  font-weight: 400;
+  font-size: 1.5rem; /* 24px */
+  line-height: 1.333;
+  color: var(--surface-soft);
+  margin-bottom: var(--sp-2); /* 16px */
+}
+
+.eng__card-body {
+  color: rgba(255, 255, 255, 0.6);
+}

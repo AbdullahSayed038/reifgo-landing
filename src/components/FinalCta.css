@@ -1,0 +1,45 @@
+.cta {
+  position: relative;
+  background: var(--surface-soft-2);
+  overflow: hidden;
+}
+
+.cta__deco {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  height: 100%;
+  color: var(--brand);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.cta__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
+  text-align: center;
+}
+
+.cta .cta__title {
+  font-size: var(--fs-hero);
+  line-height: 1.125; /* 90px on 80px */
+  letter-spacing: -0.03em;
+}
+
+.cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+}
+
+.cta .cta__primary {
+  padding-inline: 3rem;
+  box-shadow: 0 1.25rem 1.5rem -0.3rem rgba(0, 85, 108, 0.1),
+    0 0.5rem 0.6rem -0.4rem rgba(0, 85, 108, 0.1);
+}

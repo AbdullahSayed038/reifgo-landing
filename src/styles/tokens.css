@@ -1,0 +1,76 @@
+/* =====================================================================
+   REIFGO — Design tokens
+   UNIFORM SCALING MODEL: the root font-size is the only viewport-driven
+   value. It is 16px at the 1280px Figma width and scales linearly down
+   with the viewport (floored so phones stay legible). Every other token
+   below is in rem, so the entire page zooms proportionally — the layout
+   stays pixel-identical to Figma, just smaller, at every width.
+       1280px viewport -> 1rem = 16px  (exact Figma sizing)
+        640px viewport -> 1rem = 8px   (everything half-size, same layout)
+        <480px         -> held at 6px  (readable floor)
+   ===================================================================== */
+
+:root {
+  font-size: clamp(6px, 1.25vw, 16px);
+
+  /* ---- Brand palette (from Figma) ---- */
+  --brand: #00556c; /* deep petrol — headings, buttons, accents */
+  --brand-700: #004257; /* hover/darker */
+  --brand-soft: #b4cbcc; /* muted sage — labels on dark, placeholders */
+  --ink: #40484c; /* body text + eyebrows */
+  --muted: #70787d; /* secondary gray */
+
+  /* ---- Surfaces ---- */
+  --bg: #faf9f9; /* page / header / footer */
+  --surface: #ffffff; /* white cards + about section */
+  --surface-soft: #f9f9f9; /* alternating sections */
+  --surface-soft-2: #f4f3f3; /* CTA + image frame */
+  --surface-chip: #efeded; /* research icon tiles */
+
+  /* ---- Lines ---- */
+  --line: rgba(191, 200, 205, 0.3);
+  --line-2: rgba(191, 200, 205, 0.2);
+  --line-3: rgba(191, 200, 205, 0.5);
+  --line-solid: #bfc8cd;
+  --line-on-dark: rgba(255, 255, 255, 0.1);
+
+  /* ---- Fonts ---- */
+  --font-head: "Manrope", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* ---- Type scale (rem = Figma px ÷ 16) ---- */
+  --fs-hero: 5rem; /* 80 */
+  --fs-h2: 3rem; /* 48 */
+  --fs-h2-sm: 2.625rem; /* 42 — About heading */
+  --fs-h3: 2rem; /* 32 */
+  --fs-h4: 1.25rem; /* 20 */
+  --fs-lg: 1.125rem; /* 18 */
+  --fs-md: 1rem; /* 16 */
+  --fs-sm: 0.875rem; /* 14 */
+  --fs-eyebrow: 0.75rem; /* 12 */
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.16;
+  --lh-body: 1.6;
+
+  /* ---- Spacing scale (rem = Figma px ÷ 16) ---- */
+  --sp-1: 0.5rem;
+  --sp-2: 1rem;
+  --sp-3: 1.5rem;
+  --sp-4: 2rem;
+  --sp-5: 2.5rem;
+  --sp-6: 3rem;
+  --sp-8: 4rem;
+  --gap: 2rem; /* 32 — grid gutter */
+
+  /* ---- Layout rhythm ---- */
+  --page-pad: 5rem; /* 80 — section side padding */
+  --section-y: 10rem; /* 160 — section top/bottom padding */
+  --container: 70rem; /* 1120 — Figma content width */
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 0.22s;
+  --dur-reveal: 0.6s;
+}

@@ -1,0 +1,32 @@
+/* AI Chat dashboard — fixed app shell: header / 3-column body / footer.
+   Widths are in rem so the whole shell scales uniformly with the viewport
+   (pixel-exact to Figma at 1280px). The body fills the remaining height and
+   each column scrolls independently. */
+.adp {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.adp__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.adp__body > .ads {
+  width: 16rem; /* 256px left nav */
+  flex-shrink: 0;
+}
+
+.adp__body > .arail {
+  width: 17.3125rem; /* 277px right rail */
+  flex-shrink: 0;
+}
+
+.adp__body > .achat {
+  flex: 1;
+  min-width: 0;
+}

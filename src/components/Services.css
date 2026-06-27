@@ -1,0 +1,61 @@
+.svc__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem; /* 80px */
+}
+
+.svc__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.svc__title {
+  margin-top: var(--sp-3);
+}
+
+.svc__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+}
+
+.svc__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 2.5625rem 2.5625rem 3.25rem; /* 41px, extra bottom (52px) for breathing room */
+  background: var(--surface);
+  border: 1px solid var(--line-3);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .svc__card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1.5rem 3rem -1.75rem rgba(0, 85, 108, 0.25);
+  }
+}
+
+.svc__icon {
+  color: var(--brand);
+  margin-bottom: var(--sp-1);
+}
+
+.svc__card-title {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: var(--fs-h3);
+  line-height: 1.2;
+  color: var(--brand);
+  max-width: 12ch;
+}
+
+.svc__card-body {
+  color: var(--ink);
+  max-width: 34ch;
+}
