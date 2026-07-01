@@ -325,6 +325,15 @@
   .arail__rec-text {
     padding-bottom: 0.5rem;
   }
+  /* Desktop's flex:1 makes the report grow to fill the tall 3-column rail —
+     inside the mobile sheet's constrained height, that plus the report's
+     own aspect-ratio:1/1 (square) sizing overflowed its allocated flex
+     space and visually overlapped the recommendation card above it. Let it
+     size to its own content instead, stacking normally with the rest. */
+  .arail__report-wrap {
+    flex: none;
+    min-height: 0;
+  }
   .adp__body > .arail.is-open {
     transform: translateY(0);
   }
