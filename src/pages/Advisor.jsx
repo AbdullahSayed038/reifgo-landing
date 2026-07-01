@@ -25,6 +25,14 @@ function ChevronIcon({ up }) {
 // Tap-vs-drag threshold, in px of pointer travel, before a press on the
 // handle counts as a drag rather than a simple tap-to-toggle.
 const DRAG_THRESHOLD = 6;
+// Drag far enough (as a fraction of the sheet's own height) away from the
+// state you started in, and it commits to the opposite state — otherwise it
+// snaps back. Kept small since the sheet is tall; "cross the halfway mark"
+// would need an unreasonably long swipe to close.
+const COMMIT_RATIO = 0.2;
+// A quick flick past this speed (px/ms) commits immediately, regardless of
+// how far it traveled — matches how native bottom sheets feel.
+const FLICK_VELOCITY = 0.5;
 
 export default function Advisor() {
   useEffect(() => initReveal(), []);
@@ -40,7 +48,7 @@ export default function Advisor() {
   // handle also supports a real drag (pull up/down), not just a tap.
   const [railOpen, setRailOpen] = useState(false);
   const railRef = useRef(null);
-  const drag = useRef({ active: false, startY: 0, startTranslate: 0, sheetHeight: 0, moved: 0 });
+  const drag = useRef({ active: false, startY: 0, startTime: 0, startTranslate: 0, sheetHeight: 0, moved: 0 });
 
   function handlePointerDown(e) {
     const rail = railRef.current;
@@ -49,6 +57,7 @@ export default function Advisor() {
     drag.current = {
       active: true,
       startY: e.clientY,
+      startTime: performance.now(),
       startTranslate: railOpen ? 0 : sheetHeight,
       sheetHeight,
       moved: 0,
@@ -76,14 +85,24 @@ export default function Advisor() {
     window.removeEventListener("pointerup", handlePointerUp);
 
     const rail = railRef.current;
+    const delta = e.clientY - d.startY;
+    const elapsedMs = Math.max(1, performance.now() - d.startTime);
+    const velocity = delta / elapsedMs; // px/ms — negative = flicked upward
+
     let nextOpen;
     if (d.moved < DRAG_THRESHOLD) {
       // Barely moved — treat as a plain tap.
       nextOpen = !railOpen;
+    } else if (Math.abs(velocity) > FLICK_VELOCITY) {
+      // Fast flick commits in that direction regardless of distance covered.
+      nextOpen = velocity < 0;
+    } else if (d.moved / d.sheetHeight > COMMIT_RATIO) {
+      // Dragged far enough away from the starting state to commit to the
+      // opposite of whatever it was.
+      nextOpen = !railOpen;
     } else {
-      const delta = e.clientY - d.startY;
-      const finalTranslate = Math.max(0, Math.min(d.sheetHeight, d.startTranslate + delta));
-      nextOpen = finalTranslate < d.sheetHeight * 0.5;
+      // Didn't drag far or fast enough — snap back to where it started.
+      nextOpen = railOpen;
     }
 
     if (rail) {
@@ -121,8 +140,10 @@ export default function Advisor() {
           onPointerDown={handlePointerDown}
         >
           <span className="arail__toggle-grip" aria-hidden="true" />
-          <ChevronIcon up={!railOpen} />
-          <span>Market Pulse</span>
+          <span className="arail__toggle-label">
+            <ChevronIcon up={!railOpen} />
+            <span>Market Pulse</span>
+          </span>
         </button>
       </div>
       <AdvisorFooter />

@@ -278,11 +278,12 @@
     z-index: 96;
     flex-shrink: 0;
     width: 100%;
-    height: 2.75rem;
+    height: 2.9rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.3rem;
     background: var(--surface);
     border: 0;
     border-top: 1px solid var(--line-solid);
@@ -296,15 +297,19 @@
     user-select: none;
     -webkit-user-select: none;
   }
+  /* Grip sits directly above the chevron+label as one cohesive handle,
+     rather than floating separately — a normal in-flow flex item now, not
+     absolutely positioned. */
   .arail__toggle-grip {
-    position: absolute;
-    top: 0.4rem;
-    left: 50%;
-    transform: translateX(-50%);
     width: 2.25rem;
     height: 0.25rem;
     border-radius: 999px;
     background: var(--line-solid);
+  }
+  .arail__toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
   .adp__body > .arail {
     position: absolute;
