@@ -48,14 +48,27 @@ export default function Advisor() {
   // handle also supports a real drag (pull up/down), not just a tap.
   const [railOpen, setRailOpen] = useState(false);
   const railRef = useRef(null);
-  const drag = useRef({ active: false, startY: 0, startTime: 0, startTranslate: 0, sheetHeight: 0, moved: 0 });
+  const drag = useRef({ active: false, pointerId: null, startY: 0, startTime: 0, startTranslate: 0, sheetHeight: 0, moved: 0 });
 
+  // Window-level listeners are the reliable backbone here — they keep
+  // receiving move/up events regardless of where the pointer travels, with
+  // no dependency on hit-testing. Pointer capture is layered on top as a
+  // best-effort enhancement (guards against the pointer leaving the
+  // document entirely mid-drag) but is wrapped so it can never break the
+  // gesture if it fails for any reason.
   function handlePointerDown(e) {
     const rail = railRef.current;
     if (!rail) return;
+    e.preventDefault();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Ignore — window listeners below still track the gesture regardless.
+    }
     const sheetHeight = rail.getBoundingClientRect().height;
     drag.current = {
       active: true,
+      pointerId: e.pointerId,
       startY: e.clientY,
       startTime: performance.now(),
       startTranslate: railOpen ? 0 : sheetHeight,
@@ -65,11 +78,12 @@ export default function Advisor() {
     rail.style.transition = "none";
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   }
 
   function handlePointerMove(e) {
     const d = drag.current;
-    if (!d.active) return;
+    if (!d.active || e.pointerId !== d.pointerId) return;
     const rail = railRef.current;
     const delta = e.clientY - d.startY;
     d.moved = Math.abs(delta);
@@ -79,10 +93,11 @@ export default function Advisor() {
 
   function handlePointerUp(e) {
     const d = drag.current;
-    if (!d.active) return;
-    d.active = false;
+    if (!d.active || e.pointerId !== d.pointerId) return;
     window.removeEventListener("pointermove", handlePointerMove);
     window.removeEventListener("pointerup", handlePointerUp);
+    window.removeEventListener("pointercancel", handlePointerUp);
+    d.active = false;
 
     const rail = railRef.current;
     const delta = e.clientY - d.startY;
@@ -139,11 +154,8 @@ export default function Advisor() {
           aria-expanded={railOpen}
           onPointerDown={handlePointerDown}
         >
-          <span className="arail__toggle-grip" aria-hidden="true" />
-          <span className="arail__toggle-label">
-            <ChevronIcon up={!railOpen} />
-            <span>Market Pulse</span>
-          </span>
+          <ChevronIcon up={!railOpen} />
+          <span>Market Pulse</span>
         </button>
       </div>
       <AdvisorFooter />
