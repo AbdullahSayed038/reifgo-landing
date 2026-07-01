@@ -1,4 +1,5 @@
 import Icon from "./Icon.jsx";
+import AdvisorFooter from "./AdvisorFooter.jsx";
 import "./AdvisorRail.css";
 
 const PULSE = [
@@ -44,6 +45,11 @@ export default function AdvisorRail({ className = "" }) {
           </div>
         </div>
       </div>
+
+      {/* Mobile-only: folded into the same scrollable sheet so the legal
+          bar doesn't sit permanently on screen — see mobile.css. Hidden on
+          desktop, where the page-level <AdvisorFooter /> already covers it. */}
+      <AdvisorFooter />
     </aside>
   );
 }

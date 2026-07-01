@@ -14,6 +14,12 @@
   display: none;
 }
 
+/* Mobile-only footer copy folded into the sheet — hidden on desktop, where
+   the page-level <AdvisorFooter /> below the 3-column shell covers it. */
+.arail > .adf {
+  display: none;
+}
+
 /* ---- Market pulse ---- */
 .arail__heading {
   font-size: var(--fs-eyebrow);

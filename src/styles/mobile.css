@@ -239,6 +239,10 @@
      (header, scrollable thread, fixed composer) — the sidebar and market
      rail become overlays (a side drawer and a bottom sheet) instead of
      stacking inline and forcing one long page scroll. */
+  .adp {
+    overscroll-behavior: contain; /* stop iOS Safari's rubber-band bounce from
+      making the fixed chat shell feel like a second, independent scroll area */
+  }
   .adp__body {
     flex-direction: column;
   }
@@ -294,7 +298,11 @@
     bottom: 2.75rem; /* sits directly above the docked handle bar */
     z-index: 90;
     width: 100%;
-    max-height: calc(80% - 2.75rem);
+    /* Fixed height (not max-height) — mixing `bottom` with `max-height` on an
+       absolutely-positioned box makes browsers mis-resolve the anchor once
+       content exceeds the cap, effectively ignoring `bottom`. A hard height
+       keeps the anchor correct; overflow-y below still scrolls the excess. */
+    height: calc(80% - 2.75rem);
     padding: 1.5rem;
     gap: 1.75rem;
     border: 0;
@@ -304,6 +312,7 @@
     background: var(--bg);
     transform: translateY(100%);
     transition: transform var(--dur) var(--ease);
+    overscroll-behavior: contain;
   }
   .arail__rec {
     padding: 1.5rem 1.5rem 1.75rem;
@@ -364,6 +373,7 @@
      the composer to the bottom of the screen like a normal chat input. ---- */
   .achat__space {
     padding: 1.25rem;
+    overscroll-behavior: contain;
   }
   .achat__thread {
     max-width: none;
@@ -429,5 +439,19 @@
   .adf__link,
   .adf__hq span {
     white-space: normal;
+  }
+
+  /* The persistent page-level footer competed with the chat's own scroll
+     (felt like two different scrollable areas at once). It's now folded
+     into the Market Pulse sheet instead — only visible when expanded. */
+  .adp > .adf {
+    display: none;
+  }
+  .arail > .adf {
+    display: flex;
+    padding: 1rem 0 0;
+    margin-top: 0.25rem;
+    background: transparent;
+    border-top: 1px solid var(--line);
   }
 }
