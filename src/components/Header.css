@@ -125,3 +125,105 @@
   letter-spacing: 0.05em;
   white-space: nowrap;
 }
+
+/* ---- Hamburger (mobile only — shown via mobile.css) ---- */
+.hdr__burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--brand);
+}
+
+.hdr__burger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+/* ---- Slide-in drawer (mobile only — shown via mobile.css) ----
+   Rendered as a sibling of <header> (see MobileNavDrawer.jsx): the header's
+   backdrop-filter creates a containing block for position:fixed descendants,
+   which would otherwise trap this drawer inside the 64px header box instead
+   of covering the full viewport. */
+.hdr__drawer {
+  display: none;
+}
+
+.hdr__scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 28, 28, 0.45);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.hdr__panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(20rem, 84vw);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: 1.25rem var(--sp-4) var(--sp-5);
+  background: var(--bg);
+  border-right: 1px solid var(--line-solid);
+  transform: translateX(-100%);
+  transition: transform var(--dur) var(--ease);
+}
+
+.hdr__panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--brand);
+}
+
+.hdr__close {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+}
+
+.hdr__drawer-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.hdr__drawer-link {
+  padding: 0.9rem 0;
+  font-size: 1.125rem;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  transition: color var(--dur) var(--ease);
+}
+
+.hdr__drawer-link.is-active {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.hdr__drawer-cta {
+  margin-top: auto;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hdr__scrim,
+  .hdr__panel {
+    transition: none;
+  }
+}

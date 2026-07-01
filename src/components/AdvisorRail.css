@@ -8,6 +8,12 @@
   overflow-y: auto;
 }
 
+/* Mobile-only bottom-sheet toggle handle — hidden on desktop where the
+   rail sits inline as the third column. */
+.arail__toggle {
+  display: none;
+}
+
 /* ---- Market pulse ---- */
 .arail__heading {
   font-size: var(--fs-eyebrow);

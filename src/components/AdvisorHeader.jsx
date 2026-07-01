@@ -1,11 +1,18 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "./Logo.jsx";
+import { MobileBurger, MobileDrawer } from "./MobileNavDrawer.jsx";
 import "./Header.css";
 
 // Chat/app header — same shell as the marketing header so moving between the
 // site and the advisor feels continuous. Only the nav labels + the icon
 // cluster differ. Bell/user icons are vectors extracted from Figma (61:498/500).
-const NAV = ["Portfolio", "Market Insights", "Advisors", "Resources"];
+const NAV = [
+  { label: "Portfolio", to: "/advisor" },
+  { label: "Market Insights", to: "/advisor" },
+  { label: "Advisors", to: "/advisor" },
+  { label: "Resources", to: "/advisor" },
+];
 
 function BellIcon() {
   return (
@@ -23,34 +30,42 @@ function UserIcon() {
   );
 }
 
-export default function AdvisorHeader() {
+export default function AdvisorHeader({ onAccountClick }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <header className="hdr hdr--app">
-      <div className="hdr__inner container">
-        <Link to="/" className="hdr__logo" aria-label="REIFGO home">
-          <Logo className="hdr__wordmark" />
-        </Link>
+    <>
+      <header className="hdr hdr--app">
+        <div className="hdr__inner container">
+          <MobileBurger onOpen={() => setOpen(true)} />
 
-        <nav className="hdr__nav" aria-label="Dashboard">
-          {NAV.map((l) => (
-            <a key={l} href="#" className="hdr__link">
-              {l}
-            </a>
-          ))}
-        </nav>
+          <Link to="/" className="hdr__logo" aria-label="REIFGO home">
+            <Logo className="hdr__wordmark" />
+          </Link>
 
-        <div className="hdr__right">
-          <button className="btn hdr__cta">Invest Now</button>
-          <div className="hdr__icons">
-            <button className="hdr__icon" aria-label="Notifications">
-              <BellIcon />
-            </button>
-            <button className="hdr__icon" aria-label="Account">
-              <UserIcon />
-            </button>
+          <nav className="hdr__nav" aria-label="Dashboard">
+            {NAV.map((l) => (
+              <a key={l.label} href="#" className="hdr__link">
+                {l.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="hdr__right">
+            <button className="btn hdr__cta">Invest Now</button>
+            <div className="hdr__icons">
+              <button className="hdr__icon" aria-label="Notifications">
+                <BellIcon />
+              </button>
+              <button className="hdr__icon" aria-label="Account" onClick={onAccountClick}>
+                <UserIcon />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <MobileDrawer open={open} onClose={() => setOpen(false)} links={NAV} cta="Invest Now" />
+    </>
   );
 }

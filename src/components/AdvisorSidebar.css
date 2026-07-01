@@ -8,6 +8,11 @@
   overflow-y: auto;
 }
 
+/* Mobile-only close button — hidden on desktop where the sidebar is inline */
+.ads__close {
+  display: none;
+}
+
 /* ---- Profile ---- */
 .ads__profile {
   display: flex;

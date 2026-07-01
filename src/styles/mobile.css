@@ -1,0 +1,433 @@
+/* =====================================================================
+   REIFGO — Mobile / responsive layer
+   The base design uses a uniform "shrink everything" rem model
+   (:root font-size: clamp(6px, 1.25vw, 16px)) that keeps the desktop layout
+   pixel-proportional at every width — but on a phone that means 6px text.
+   Below 768px we switch to a fixed readable base, tighter spacing, a
+   scaled-down type scale, and single-column reflows of every multi-column
+   grid, so the same desktop content and design language works cleanly on
+   a phone. Loaded last so these rules win over component styles.
+   ===================================================================== */
+@media (max-width: 768px) {
+  :root {
+    font-size: 16px; /* stop the vw shrink — readable base */
+    --page-pad: 1.5rem; /* 24px side padding */
+    --section-y: 4rem; /* 64px — tighter mobile sections */
+    --gap: 1.25rem;
+    /* Scaled-down type scale for phones */
+    --fs-hero: 2.5rem; /* 40 */
+    --fs-h2: 1.875rem; /* 30 */
+    --fs-h2-sm: 1.75rem; /* 28 */
+    --fs-h3: 1.5rem; /* 24 */
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  /* ---- Header ---- */
+  .hdr__inner {
+    position: relative;
+    justify-content: flex-start;
+    min-height: 4rem; /* 64px */
+  }
+  .hdr__burger {
+    display: flex;
+  }
+  .hdr__logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .hdr__nav,
+  .hdr .hdr__cta,
+  .hdr .hdr__right {
+    display: none;
+  }
+  /* AdvisorHeader keeps its icon cluster visible, but drops the text nav/cta.
+     Push it to the far right so it doesn't collide with the centered logo
+     (burger is the only other flex child once nav/cta are hidden). */
+  .hdr--app .hdr__inner {
+    justify-content: space-between;
+  }
+  .hdr--app .hdr__right {
+    display: flex;
+  }
+  .hdr--app .hdr__cta {
+    display: none;
+  }
+
+  .hdr__drawer {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .hdr__drawer.is-open {
+    pointer-events: auto;
+  }
+  .hdr__drawer.is-open .hdr__scrim {
+    opacity: 1;
+  }
+  .hdr__drawer.is-open .hdr__panel {
+    transform: translateX(0);
+  }
+
+  /* ---- Hero: text only, no image, full-width stacked buttons ---- */
+  .hero {
+    padding-block: 2.5rem;
+  }
+  .hero__grid {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+  .hero__media {
+    display: none;
+  }
+  .hero__lead {
+    max-width: none;
+  }
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-2);
+    width: 100%;
+  }
+  .hero__actions .btn {
+    width: 100%;
+  }
+
+  /* ---- About ---- */
+  .about__inner {
+    gap: 3.5rem;
+  }
+  .about__intro {
+    grid-template-columns: 1fr;
+  }
+  .about__title {
+    max-width: none;
+  }
+  .about__values {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Structural Expertise ---- */
+  .svc__inner {
+    gap: 2.5rem;
+  }
+  .svc__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+  .svc__grid {
+    grid-template-columns: 1fr;
+  }
+  .svc__card {
+    padding: 2rem;
+  }
+
+  /* ---- Research ---- */
+  .rsh__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+  .rsh__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- REIFGO AI ---- */
+  .ai__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Market profiles (Investors / Developers) ---- */
+  .mp__grid {
+    grid-template-columns: 1fr;
+  }
+  .mp__stats {
+    gap: 1.5rem;
+  }
+
+  /* ---- Global Forum ---- */
+  .forum__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Footer ---- */
+  .ftr__top {
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+  .ftr__cols {
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .ftr__bottom-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .ftr__copy,
+  .ftr__tagline,
+  .ftr__meta {
+    white-space: normal;
+  }
+
+  /* =================  SERVICES PAGE  ================= */
+
+  /* The Digital Nexus (12-col -> stack) */
+  .dn__grid {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .dn__grid > * {
+    grid-column: auto;
+  }
+  .dn__frame {
+    max-width: 22rem;
+    margin-inline: auto;
+  }
+
+  /* Strategic Engagements */
+  .eng {
+    padding-inline: var(--page-pad);
+  }
+  .eng__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+  .eng__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Executive Advisory (12-col -> stack) */
+  .adv__grid {
+    grid-template-columns: 1fr;
+  }
+  .adv__content,
+  .adv__media {
+    grid-column: auto;
+  }
+  .adv__sq {
+    display: none; /* decorative squares cause horizontal overflow on phones */
+  }
+
+  /* Services footer (12-col -> stack) */
+  .sftr__cols {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .sftr__cols > * {
+    grid-column: auto;
+  }
+  .sftr__bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .sftr__copy {
+    white-space: normal;
+  }
+
+  /* =================  AI ADVISOR (CHAT) PAGE  ================= */
+  /* Desktop is a fixed 100vh 3-column app shell (sidebar / chat / rail).
+     On mobile the chat itself fills the whole screen like a normal chat app
+     (header, scrollable thread, fixed composer) — the sidebar and market
+     rail become overlays (a side drawer and a bottom sheet) instead of
+     stacking inline and forcing one long page scroll. */
+  .adp__body {
+    flex-direction: column;
+  }
+  .adp__body {
+    position: relative; /* containing block for the bottom sheet + toggle below */
+    overflow: hidden; /* clip the sheet when it's translated off-screen — without
+      this, since the sheet is taller than the gap below its docked handle,
+      translateY(100%) still leaves its top edge (the "Market Pulse" heading)
+      inside the visible frame, where it paints over the footer due to
+      stacking order. Clipping at the container guarantees it's fully hidden. */
+  }
+  .adp__body > .achat {
+    min-height: 0; /* let the column-mode flex item shrink to fill the screen */
+  }
+
+  /* Property card: image + info were squeezed into two ~100px columns —
+     stack them so the image reads properly and stats have room to breathe. */
+  .achat__prop {
+    flex-direction: column;
+  }
+  .achat__prop-media {
+    width: 100%;
+  }
+
+  /* Market Pulse: a docked handle bar sits permanently between the chat and
+     the footer (a real flex row, not floating), so it never overlaps the
+     composer/chips — the chat area simply shrinks to leave room for it.
+     Tapping it slides the sheet up from directly behind the handle. */
+  .arail__toggle {
+    position: relative; /* stays in flow, but z-index lifts it above the sheet/scrim */
+    z-index: 96;
+    flex-shrink: 0;
+    width: 100%;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--surface);
+    border: 0;
+    border-top: 1px solid var(--line-solid);
+    color: var(--brand);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .adp__body > .arail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2.75rem; /* sits directly above the docked handle bar */
+    z-index: 90;
+    width: 100%;
+    max-height: calc(80% - 2.75rem);
+    padding: 1.5rem;
+    gap: 1.75rem;
+    border: 0;
+    border-top: 1px solid var(--line-solid);
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: 0 -0.5rem 2rem rgba(27, 28, 28, 0.18);
+    background: var(--bg);
+    transform: translateY(100%);
+    transition: transform var(--dur) var(--ease);
+  }
+  .arail__rec {
+    padding: 1.5rem 1.5rem 1.75rem;
+  }
+  .arail__rec-text {
+    padding-bottom: 0.5rem;
+  }
+  .adp__body > .arail.is-open {
+    transform: translateY(0);
+  }
+  .arail__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 85;
+    background: rgba(27, 28, 28, 0.35);
+  }
+
+  /* Workspace sidebar (profile + AI Chat/Market Trends/...) is hidden by
+     default and slides in from the right when the header's account icon
+     is tapped — see Advisor.jsx. Nothing here has a backdrop-filter
+     ancestor, so a plain fixed panel + scrim is safe (no containing-block
+     trap like the nav drawer had). */
+  .adp__body > .ads {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 110;
+    width: min(20rem, 84vw);
+    transform: translateX(100%);
+    transition: transform var(--dur) var(--ease);
+    border-right: 0;
+    border-left: 1px solid var(--line-solid);
+  }
+  .adp__body > .ads.is-open {
+    transform: translateX(0);
+  }
+  .ads__close {
+    display: grid;
+    place-items: center;
+    align-self: flex-end;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-bottom: 0.5rem;
+    background: transparent;
+    border: 0;
+    color: var(--ink);
+  }
+  .ads__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 105;
+    background: rgba(27, 28, 28, 0.45);
+  }
+
+  /* ---- Chat: lighter "website widget" feel instead of the dashboard-glass
+     look — flatten the blurred cards into simple rounded bubbles, and dock
+     the composer to the bottom of the screen like a normal chat input. ---- */
+  .achat__space {
+    padding: 1.25rem;
+  }
+  .achat__thread {
+    max-width: none;
+    gap: 1.5rem;
+  }
+  .achat__bubble {
+    max-width: 85%;
+    border-radius: 1.125rem 1.125rem 0.25rem 1.125rem;
+    padding: 1rem 1.25rem;
+  }
+  .achat__card {
+    max-width: 92%;
+    padding: 1.25rem;
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0;
+    border-radius: 1.125rem 1.125rem 1.125rem 0.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  .achat__prop {
+    border-radius: 0.875rem;
+  }
+  .achat__input {
+    /* .achat is already a bounded flex column (min-height:0 above) filling
+       the screen between the header and footer, so the composer naturally
+       stays pinned at its bottom without needing position:sticky. */
+    padding: 1rem 1rem 1.25rem;
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .achat__field {
+    max-width: none;
+  }
+  .achat__textbox {
+    padding: 0.875rem 2.75rem 0.875rem 1rem;
+    border: 1px solid var(--line-solid);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+  .achat__textbox:focus {
+    border-color: var(--brand);
+  }
+  .achat__send {
+    right: 0.5rem;
+  }
+  .achat__chips {
+    max-width: none;
+  }
+
+  .adf {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+  }
+  .adf__left {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+  .adf__copy,
+  .adf__link,
+  .adf__hq span {
+    white-space: normal;
+  }
+}

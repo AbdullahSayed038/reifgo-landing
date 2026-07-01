@@ -6,9 +6,9 @@ const PULSE = [
   { label: "Global RE Liquidity", value: "Stable", icon: "scale", trend: "flat" },
 ];
 
-export default function AdvisorRail() {
+export default function AdvisorRail({ className = "" }) {
   return (
-    <aside className="arail">
+    <aside className={`arail${className ? ` ${className}` : ""}`}>
       <div className="arail__pulse" data-reveal>
         <h4 className="arail__heading">Market Pulse</h4>
         <div className="arail__stats">
