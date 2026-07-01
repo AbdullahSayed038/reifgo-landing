@@ -5,7 +5,11 @@
 .adp {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* fallback for browsers without dvh support */
+  height: 100dvh; /* tracks the *actual* visible viewport as mobile browser
+    toolbars show/hide — plain vh assumes they're collapsed, which pushed
+    content at the bottom of this fixed-height shell (the Market Pulse
+    handle) below the real fold and clipped it via overflow:hidden. */
   background: var(--bg);
   overflow: hidden;
 }
