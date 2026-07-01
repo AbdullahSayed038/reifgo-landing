@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import Icon from "./Icon.jsx";
 import AdvisorFooter from "./AdvisorFooter.jsx";
 import "./AdvisorRail.css";
@@ -7,9 +8,9 @@ const PULSE = [
   { label: "Global RE Liquidity", value: "Stable", icon: "scale", trend: "flat" },
 ];
 
-export default function AdvisorRail({ className = "" }) {
+const AdvisorRail = forwardRef(function AdvisorRail({ className = "" }, ref) {
   return (
-    <aside className={`arail${className ? ` ${className}` : ""}`}>
+    <aside ref={ref} className={`arail${className ? ` ${className}` : ""}`}>
       <div className="arail__pulse" data-reveal>
         <h4 className="arail__heading">Market Pulse</h4>
         <div className="arail__stats">
@@ -52,4 +53,6 @@ export default function AdvisorRail({ className = "" }) {
       <AdvisorFooter />
     </aside>
   );
-}
+});
+
+export default AdvisorRail;

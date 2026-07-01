@@ -240,6 +240,16 @@
   overflow-x: auto;
 }
 
+/* Mobile-only preset-prompt icon + popover — hidden on desktop, where the
+   chip row above is the visible pattern instead. */
+.achat__composer {
+  display: contents;
+}
+.achat__suggest,
+.achat__suggest-scrim {
+  display: none;
+}
+
 .achat__chip {
   flex-shrink: 0;
   padding: 0.4375rem 1.0625rem; /* 7 / 17 */

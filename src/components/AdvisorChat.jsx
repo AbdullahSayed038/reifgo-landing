@@ -22,6 +22,7 @@ const INITIAL_MESSAGES = [
 export default function AdvisorChat() {
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const spaceRef = useRef(null);
 
   useEffect(() => {
@@ -129,19 +130,56 @@ export default function AdvisorChat() {
       </div>
 
       <div className="achat__input">
-        <form className="achat__field" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            className="achat__textbox"
-            placeholder="Ask REIFGO Advisor about global portfolio strategies..."
-            aria-label="Ask REIFGO Advisor"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <button type="submit" className="achat__send" aria-label="Send">
-            <Icon name="send" size={19} />
-          </button>
-        </form>
+        {/* Mobile-only: preset prompts live behind this icon instead of a
+            horizontally-scrolling chip row. Desktop keeps the chip row. */}
+        {suggestOpen && (
+          <div className="achat__suggest-scrim" onClick={() => setSuggestOpen(false)} />
+        )}
+        <div className="achat__composer">
+          <div className="achat__suggest">
+            <button
+              type="button"
+              className="achat__suggest-btn"
+              aria-label="Suggested prompts"
+              aria-expanded={suggestOpen}
+              onClick={() => setSuggestOpen((v) => !v)}
+            >
+              <Icon name="bulb" size={18} />
+            </button>
+            {suggestOpen && (
+              <div className="achat__suggest-menu">
+                {CHIPS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="achat__suggest-item"
+                    onClick={() => {
+                      send(c);
+                      setSuggestOpen(false);
+                    }}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <form className="achat__field" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              className="achat__textbox"
+              placeholder="Ask REIFGO Advisor about global portfolio strategies..."
+              aria-label="Ask REIFGO Advisor"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <button type="submit" className="achat__send" aria-label="Send">
+              <Icon name="send" size={19} />
+            </button>
+          </form>
+        </div>
+
         <div className="achat__chips">
           {CHIPS.map((c) => (
             <button key={c} type="button" className="achat__chip" onClick={() => send(c)}>

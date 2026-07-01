@@ -270,7 +270,9 @@
   /* Market Pulse: a docked handle bar sits permanently between the chat and
      the footer (a real flex row, not floating), so it never overlaps the
      composer/chips — the chat area simply shrinks to leave room for it.
-     Tapping it slides the sheet up from directly behind the handle. */
+     Tapping it toggles the sheet; it can also be dragged up/down directly
+     (see Advisor.jsx) — touch-action:none stops the browser's own scroll
+     gesture from fighting the drag, user-select:none stops text selection. */
   .arail__toggle {
     position: relative; /* stays in flow, but z-index lifts it above the sheet/scrim */
     z-index: 96;
@@ -290,6 +292,19 @@
     font-size: 0.75rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .arail__toggle-grip {
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.25rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: var(--line-solid);
   }
   .adp__body > .arail {
     position: absolute;
@@ -421,8 +436,69 @@
   .achat__send {
     right: 0.5rem;
   }
+
+  /* Preset prompts: replace the horizontally-scrolling chip row (felt like
+     an accidental overflow on a phone) with a small icon that pops a short
+     list above the composer instead. */
   .achat__chips {
-    max-width: none;
+    display: none;
+  }
+  .achat__composer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .achat__suggest {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .achat__suggest-btn {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    background: var(--surface);
+    border: 1px solid var(--line-solid);
+    border-radius: 50%;
+    color: var(--brand);
+  }
+  .achat__suggest-btn[aria-expanded="true"] {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+  }
+  .achat__suggest-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: transparent;
+  }
+  .achat__suggest-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 0.5rem);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: max(14rem, 70vw);
+    padding: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line-solid);
+    border-radius: 0.875rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(27, 28, 28, 0.16);
+  }
+  .achat__suggest-item {
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: left;
+  }
+  .achat__suggest-item:active {
+    background: var(--surface-soft);
+    color: var(--brand);
   }
 
   .adf {
