@@ -5,15 +5,14 @@ import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
-
-const fmtPrice = (v) =>
-  v == null ? "—" : `$${Number(v).toLocaleString()}`;
+import { useCurrency } from "../currency.jsx";
 
 export default function PropertiesList() {
   const [rows, setRows] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
+  const { fmtMoney } = useCurrency();
 
   const load = () =>
     api.get("/admin/properties").then(setRows).catch((e) => toast.error(e.message));
@@ -56,7 +55,7 @@ export default function PropertiesList() {
           { key: "name", label: "Name" },
           { key: "developer", label: "Developer", render: (r) => r.developer?.name ?? "—" },
           { key: "location", label: "Location", render: (r) => r.location ?? "—" },
-          { key: "min_entry_price", label: "Min entry", render: (r) => fmtPrice(r.min_entry_price) },
+          { key: "min_entry_price", label: "Min entry", render: (r) => fmtMoney(r.min_entry_price) },
           { key: "media", label: "Media", render: (r) => r.media?.length ?? 0, width: 70 },
           { key: "status", label: "Status", render: (r) => <StatusBadge value={r.status} />, width: 120 },
           {

@@ -1,5 +1,6 @@
 import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { getToken, IS_DEMO, logout } from "../api.js";
+import { useCurrency } from "../currency.jsx";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
@@ -12,6 +13,7 @@ const NAV = [
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const { currency, setCurrency } = useCurrency();
 
   if (!getToken()) {
     return <Navigate to="/admin/login" replace />;
@@ -42,6 +44,21 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+
+        <div className="adm-currency" role="group" aria-label="Display currency">
+          <span className="adm-currency__label">Currency</span>
+          <div className="adm-currency__switch">
+            {["USD", "AED"].map((c) => (
+              <button
+                key={c}
+                className={`adm-currency__opt${currency === c ? " is-active" : ""}`}
+                onClick={() => setCurrency(c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <button
           className="adm-nav-link adm-sidebar__logout"

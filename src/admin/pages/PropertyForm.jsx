@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
+import { useCurrency, USD_TO_AED } from "../currency.jsx";
 
 const EMPTY = {
   developer_id: "",
@@ -30,6 +31,7 @@ export default function PropertyForm() {
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
+  const { currency } = useCurrency();
 
   useEffect(() => {
     api.get("/admin/developers").then(setDevelopers).catch((e) => toast.error(e.message));
@@ -177,7 +179,17 @@ export default function PropertyForm() {
             <FormField label="Asset class" value={form.asset_class} onChange={set("asset_class")} placeholder="Multi-family" />
             <FormField label="Total area (sq ft)" type="number" value={form.total_area} onChange={set("total_area")} />
             <FormField label="Completion date" type="date" value={form.completion_date} onChange={set("completion_date")} />
-            <FormField label="Min entry price ($)" type="number" value={form.min_entry_price} onChange={set("min_entry_price")} />
+            <FormField
+              label="Min entry price (USD)"
+              type="number"
+              value={form.min_entry_price}
+              onChange={set("min_entry_price")}
+              hint={
+                currency === "AED" && form.min_entry_price
+                  ? `≈ AED ${Math.round(Number(form.min_entry_price) * USD_TO_AED).toLocaleString()}`
+                  : "Prices are stored in USD"
+              }
+            />
             <FormField label="Sustainability rating (0–5)" type="number" value={form.sustainability_rating} onChange={set("sustainability_rating")} />
             <FormField label="Overview" type="textarea" value={form.overview} onChange={set("overview")} span={2} />
           </div>

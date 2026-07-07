@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import "./admin.css";
 import AdminLayout from "./components/AdminLayout.jsx";
 import { ToastProvider } from "./components/Toast.jsx";
+import { CurrencyProvider } from "./currency.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import DeveloperForm from "./pages/DeveloperForm.jsx";
 import DevelopersList from "./pages/DevelopersList.jsx";
@@ -18,6 +19,7 @@ export default function AdminApp() {
   return (
     <div className="adm-root">
       <ToastProvider>
+        <CurrencyProvider>
         <Routes>
           <Route path="login" element={<Login />} />
           <Route element={<AdminLayout />}>
@@ -35,6 +37,7 @@ export default function AdminApp() {
             <Route path="users" element={<Users />} />
           </Route>
         </Routes>
+        </CurrencyProvider>
       </ToastProvider>
     </div>
   );
