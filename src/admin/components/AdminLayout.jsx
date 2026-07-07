@@ -1,5 +1,5 @@
 import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { getToken, logout } from "../api.js";
+import { getToken, IS_DEMO, logout } from "../api.js";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
@@ -22,7 +22,7 @@ export default function AdminLayout() {
       <aside className="adm-sidebar">
         <div className="adm-sidebar__brand">
           <span className="adm-sidebar__logo">REIFGO</span>
-          <span className="adm-sidebar__sub">Content Studio</span>
+          <span className="adm-sidebar__sub">Admin Dashboard</span>
         </div>
 
         <nav className="adm-sidebar__nav">
@@ -56,6 +56,11 @@ export default function AdminLayout() {
       </aside>
 
       <main className="adm-main">
+        {IS_DEMO && (
+          <div className="adm-demo-banner">
+            Demo mode — sample data. Changes are kept for this session only.
+          </div>
+        )}
         <Outlet />
       </main>
     </div>

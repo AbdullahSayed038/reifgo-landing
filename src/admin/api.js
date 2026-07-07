@@ -1,6 +1,13 @@
 // CMS API client. In dev, /cms-api is proxied by Vite to the NestJS backend
 // on :3000; in production set VITE_API_URL to the deployed backend URL.
+// With no backend configured (production build without VITE_API_URL, or
+// VITE_DEMO=1), the dashboard runs in demo mode on built-in sample data.
+import { demoRequest } from "./demoApi.js";
+
 const BASE = import.meta.env.VITE_API_URL || "/cms-api";
+export const IS_DEMO =
+  import.meta.env.VITE_DEMO === "1" ||
+  (import.meta.env.PROD && !import.meta.env.VITE_API_URL);
 const TOKEN_KEY = "reifgo_admin_token";
 
 export function getToken() {
@@ -23,6 +30,8 @@ export class ApiError extends Error {
 }
 
 async function request(method, path, body) {
+  if (IS_DEMO) return demoRequest(method, path, body);
+
   const headers = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;

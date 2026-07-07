@@ -28,7 +28,7 @@ export default function Login() {
     <div className="adm-login">
       <form className="adm-login__card" onSubmit={submit}>
         <span className="adm-login__logo">REIFGO</span>
-        <h1>Content Studio</h1>
+        <h1>Admin Dashboard</h1>
         <p>Enter the admin password to manage app content.</p>
         <input
           type="password"
