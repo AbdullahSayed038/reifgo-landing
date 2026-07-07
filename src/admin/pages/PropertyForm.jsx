@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { api, getSession, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { useCurrency, USD_TO_AED } from "../currency.jsx";
@@ -70,6 +70,25 @@ export default function PropertyForm() {
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
   const setRoi = (key) => (value) =>
     setForm((f) => ({ ...f, roi: { ...f.roi, [key]: value } }));
+
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  const onFilesPicked = async (e) => {
+    const files = [...e.target.files];
+    e.target.value = ""; // allow re-picking the same file
+    if (!files.length) return;
+    setUploading(true);
+    for (const file of files) {
+      try {
+        const { url } = await uploadImage(file);
+        setForm((f) => ({ ...f, media: [...f.media, { url, type: "image" }] }));
+      } catch (err) {
+        toast.error(`${file.name}: ${err.message}`);
+      }
+    }
+    setUploading(false);
+  };
 
   const setMedia = (i, value) =>
     setForm((f) => ({
@@ -206,30 +225,57 @@ export default function PropertyForm() {
         <section className="adm-panel">
           <header className="adm-panel__head">
             <h2>Media</h2>
-            <button type="button" className="adm-btn adm-btn--ghost" onClick={addMedia}>
-              + Add image URL
-            </button>
+            <div className="adm-panel__head-actions">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={onFilesPicked}
+              />
+              <button
+                type="button"
+                className="adm-btn adm-btn--primary"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+              >
+                {uploading ? "Uploading…" : "↑ Upload images"}
+              </button>
+              <button type="button" className="adm-btn adm-btn--ghost" onClick={addMedia}>
+                + Add URL
+              </button>
+            </div>
           </header>
           {form.media.length === 0 && (
-            <p className="adm-panel__empty">No images yet. Add image URLs — the first one is the cover.</p>
+            <p className="adm-panel__empty">No images yet. Upload files or paste URLs — the first one is the cover.</p>
           )}
           <ul className="adm-repeater">
-            {form.media.map((m, i) => (
-              <li key={i}>
-                <span className="adm-repeater__index">{i + 1}</span>
-                <input
-                  type="url"
-                  placeholder="https://…"
-                  value={m.url}
-                  onChange={(e) => setMedia(i, e.target.value)}
-                />
-                <div className="adm-repeater__actions">
-                  <button type="button" className="adm-icon-btn" aria-label="Move up" disabled={i === 0} onClick={() => moveMedia(i, -1)}>↑</button>
-                  <button type="button" className="adm-icon-btn" aria-label="Move down" disabled={i === form.media.length - 1} onClick={() => moveMedia(i, 1)}>↓</button>
-                  <button type="button" className="adm-icon-btn adm-icon-btn--danger" aria-label="Remove" onClick={() => removeMedia(i)}>✕</button>
-                </div>
-              </li>
-            ))}
+            {form.media.map((m, i) => {
+              const isUploaded = m.url.startsWith("data:");
+              return (
+                <li key={i}>
+                  <span className="adm-repeater__index">{i + 1}</span>
+                  {m.url ? (
+                    <img className="adm-thumb" src={m.url} alt="" />
+                  ) : (
+                    <span className="adm-thumb adm-thumb--empty" />
+                  )}
+                  <input
+                    type={isUploaded ? "text" : "url"}
+                    placeholder="https://…"
+                    value={isUploaded ? "Uploaded image" : m.url}
+                    disabled={isUploaded}
+                    onChange={(e) => setMedia(i, e.target.value)}
+                  />
+                  <div className="adm-repeater__actions">
+                    <button type="button" className="adm-icon-btn" aria-label="Move up" disabled={i === 0} onClick={() => moveMedia(i, -1)}>↑</button>
+                    <button type="button" className="adm-icon-btn" aria-label="Move down" disabled={i === form.media.length - 1} onClick={() => moveMedia(i, 1)}>↓</button>
+                    <button type="button" className="adm-icon-btn adm-icon-btn--danger" aria-label="Remove" onClick={() => removeMedia(i)}>✕</button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </section>
 

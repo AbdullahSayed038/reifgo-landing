@@ -52,7 +52,20 @@ export default function PropertiesList() {
         emptyText={rows === null ? "Loading…" : "No properties yet."}
         onRowClick={(row) => navigate(`/admin/properties/${row.id}`)}
         columns={[
-          { key: "name", label: "Name" },
+          {
+            key: "name",
+            label: "Name",
+            render: (r) => (
+              <div className="adm-cell-media">
+                {r.media?.[0] ? (
+                  <img className="adm-thumb" src={r.media[0].url} alt="" loading="lazy" />
+                ) : (
+                  <span className="adm-thumb adm-thumb--empty" />
+                )}
+                <span>{r.name}</span>
+              </div>
+            ),
+          },
           { key: "developer", label: "Developer", render: (r) => r.developer?.name ?? "—" },
           { key: "location", label: "Location", render: (r) => r.location ?? "—" },
           { key: "min_entry_price", label: "Min entry", render: (r) => fmtMoney(r.min_entry_price) },

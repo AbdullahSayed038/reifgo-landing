@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { api, getSession, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 
@@ -59,6 +59,23 @@ export default function DeveloperForm({ selfMode = false }) {
   }, [id]);
 
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
+
+  const heroFileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  const onHeroPicked = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { url } = await uploadImage(file);
+      setForm((f) => ({ ...f, hero_image_url: url }));
+    } catch (err) {
+      toast.error(err.message);
+    }
+    setUploading(false);
+  };
 
   const setValue = (i, key, value) =>
     setForm((f) => ({
@@ -146,7 +163,46 @@ export default function DeveloperForm({ selfMode = false }) {
             <FormField label="Years in market" type="number" value={form.years_in_market} onChange={set("years_in_market")} />
             <FormField label="Total projects" type="number" value={form.total_projects} onChange={set("total_projects")} />
             <FormField label="International hubs" value={form.international_hubs} onChange={set("international_hubs")} placeholder="Dubai · London · New York" />
-            <FormField label="Hero image URL" type="url" value={form.hero_image_url} onChange={set("hero_image_url")} placeholder="https://…" />
+            <div className="adm-field adm-field--span2">
+              <span className="adm-field__label">Hero image</span>
+              <div className="adm-upload-row">
+                {form.hero_image_url ? (
+                  <img className="adm-thumb adm-thumb--lg" src={form.hero_image_url} alt="" />
+                ) : (
+                  <span className="adm-thumb adm-thumb--lg adm-thumb--empty">No image</span>
+                )}
+                <input
+                  type={form.hero_image_url.startsWith("data:") ? "text" : "url"}
+                  placeholder="https://… or upload a file"
+                  value={
+                    form.hero_image_url.startsWith("data:")
+                      ? "Uploaded image"
+                      : form.hero_image_url
+                  }
+                  disabled={form.hero_image_url.startsWith("data:")}
+                  onChange={(e) => set("hero_image_url")(e.target.value)}
+                />
+                <input ref={heroFileRef} type="file" accept="image/*" hidden onChange={onHeroPicked} />
+                <button
+                  type="button"
+                  className="adm-btn adm-btn--ghost"
+                  disabled={uploading}
+                  onClick={() => heroFileRef.current?.click()}
+                >
+                  {uploading ? "Uploading…" : "↑ Upload"}
+                </button>
+                {form.hero_image_url && (
+                  <button
+                    type="button"
+                    className="adm-icon-btn adm-icon-btn--danger"
+                    aria-label="Remove hero image"
+                    onClick={() => set("hero_image_url")("")}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
             {canModerate && (
               <>
                 <FormField label="Verified" type="checkbox" value={form.is_verified} onChange={set("is_verified")} />

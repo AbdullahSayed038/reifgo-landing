@@ -570,6 +570,66 @@
   padding: 6px 0;
 }
 
+.adm-panel__head-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------------- Image thumbnails & upload ---------------- */
+
+.adm-thumb {
+  width: 46px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--adm-line);
+  background: var(--adm-bg);
+  flex: 0 0 auto;
+}
+
+.adm-thumb--lg {
+  width: 96px;
+  height: 60px;
+}
+
+.adm-thumb--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+.adm-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-cell-media {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.adm-upload-row input[type="url"],
+.adm-upload-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-repeater input:disabled,
+.adm-upload-row input:disabled {
+  color: var(--adm-muted);
+  background: var(--adm-bg);
+  font-style: italic;
+}
+
 .adm-lead-list li {
   display: flex;
   align-items: center;

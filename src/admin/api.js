@@ -105,3 +105,44 @@ export async function login(username, password) {
 export function logout() {
   clearSession();
 }
+
+// Upload an image and get back a URL to store on the record.
+// Demo mode inlines the file as a data URL (kept for the session only);
+// real mode posts to /admin/uploads, which the backend will back with
+// object storage (S3/Cloudinary) when it's deployed.
+export async function uploadImage(file) {
+  if (!file.type.startsWith("image/")) {
+    throw new ApiError(400, "Only image files can be uploaded");
+  }
+  if (file.size > 2.5 * 1024 * 1024) {
+    throw new ApiError(400, "Image too large (max 2.5 MB)");
+  }
+
+  if (IS_DEMO) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ url: reader.result });
+      reader.onerror = () => reject(new ApiError(500, "Could not read the file"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const body = new FormData();
+  body.append("file", file);
+  const token = getToken();
+  let res;
+  try {
+    res = await fetch(`${BASE}/admin/uploads`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body,
+    });
+  } catch {
+    throw new ApiError(0, "Can't reach the API — is the backend running?");
+  }
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new ApiError(res.status, data?.message || "Upload failed");
+  }
+  return data;
+}
