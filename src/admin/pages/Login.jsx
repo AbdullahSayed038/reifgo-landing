@@ -1,22 +1,23 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { getToken, login } from "../api.js";
+import { getSession, IS_DEMO, login } from "../api.js";
 
 export default function Login() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
-  if (getToken()) return <Navigate to="/admin" replace />;
+  if (getSession()) return <Navigate to="/admin" replace />;
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!password || busy) return;
+    if (!username || !password || busy) return;
     setBusy(true);
     setError("");
     try {
-      await login(password);
+      await login(username, password);
       navigate("/admin");
     } catch (err) {
       setError(err.message || "Login failed");
@@ -29,11 +30,20 @@ export default function Login() {
       <form className="adm-login__card" onSubmit={submit}>
         <span className="adm-login__logo">REIFGO</span>
         <h1>Admin Dashboard</h1>
-        <p>Enter the admin password to manage app content.</p>
+        <p>Sign in to manage app content.</p>
+        <input
+          type="text"
+          autoFocus
+          autoCapitalize="none"
+          autoComplete="username"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
         <input
           type="password"
-          autoFocus
-          placeholder="Admin password"
+          autoComplete="current-password"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -41,6 +51,16 @@ export default function Login() {
         <button className="adm-btn adm-btn--primary" disabled={busy}>
           {busy ? "Signing in…" : "Sign in"}
         </button>
+        {IS_DEMO && (
+          <div className="adm-login__demo">
+            <span>Demo accounts (password 123)</span>
+            <div>
+              <button type="button" onClick={() => setUsername("admin")}>admin</button>
+              <button type="button" onClick={() => setUsername("aldar")}>aldar</button>
+              <button type="button" onClick={() => setUsername("reportage")}>reportage</button>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

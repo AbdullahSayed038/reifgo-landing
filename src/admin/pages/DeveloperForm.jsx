@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api } from "../api.js";
+import { api, getSession } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 
@@ -19,9 +19,15 @@ const EMPTY = {
 const num = (v) => (v === "" || v == null ? undefined : Number(v));
 const str = (v) => (v === "" || v == null ? undefined : v);
 
-export default function DeveloperForm() {
-  const { id } = useParams();
+// selfMode = a developer account editing its own company profile at
+// /admin/company: the id comes from the session, approval flags are
+// admin-only, and saving stays on the page.
+export default function DeveloperForm({ selfMode = false }) {
+  const params = useParams();
+  const session = getSession();
+  const id = selfMode ? session?.developer_id : params.id;
   const isNew = !id;
+  const canModerate = session?.role === "admin";
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
@@ -76,8 +82,10 @@ export default function DeveloperForm() {
       total_projects: num(form.total_projects),
       international_hubs: str(form.international_hubs),
       hero_image_url: str(form.hero_image_url),
-      is_verified: form.is_verified,
-      is_approved: form.is_approved,
+      ...(canModerate && {
+        is_verified: form.is_verified,
+        is_approved: form.is_approved,
+      }),
       values: form.values
         .filter((v) => v.title.trim())
         .map((v, i) => ({
@@ -94,9 +102,13 @@ export default function DeveloperForm() {
         toast.success("Developer created");
       } else {
         await api.patch(`/admin/developers/${id}`, payload);
-        toast.success("Developer saved");
+        toast.success(selfMode ? "Company profile saved" : "Developer saved");
       }
-      navigate("/admin/developers");
+      if (selfMode) {
+        setBusy(false);
+      } else {
+        navigate("/admin/developers");
+      }
     } catch (err) {
       toast.error(err.message);
       setBusy(false);
@@ -107,12 +119,21 @@ export default function DeveloperForm() {
     <>
       <header className="adm-page-head">
         <div>
-          <nav className="adm-crumbs">
-            <Link to="/admin/developers">Developers</Link>
-            <span>/</span>
-            <span>{isNew ? "New" : form.name || "Edit"}</span>
-          </nav>
-          <h1>{isNew ? "New developer" : form.name || "Edit developer"}</h1>
+          {!selfMode && (
+            <nav className="adm-crumbs">
+              <Link to="/admin/developers">Developers</Link>
+              <span>/</span>
+              <span>{isNew ? "New" : form.name || "Edit"}</span>
+            </nav>
+          )}
+          <h1>
+            {selfMode
+              ? "Company profile"
+              : isNew
+                ? "New developer"
+                : form.name || "Edit developer"}
+          </h1>
+          {selfMode && <p>How {form.name || "your company"} appears in the REIFGO app.</p>}
         </div>
       </header>
 
@@ -126,8 +147,12 @@ export default function DeveloperForm() {
             <FormField label="Total projects" type="number" value={form.total_projects} onChange={set("total_projects")} />
             <FormField label="International hubs" value={form.international_hubs} onChange={set("international_hubs")} placeholder="Dubai · London · New York" />
             <FormField label="Hero image URL" type="url" value={form.hero_image_url} onChange={set("hero_image_url")} placeholder="https://…" />
-            <FormField label="Verified" type="checkbox" value={form.is_verified} onChange={set("is_verified")} />
-            <FormField label="Approved (visible in app)" type="checkbox" value={form.is_approved} onChange={set("is_approved")} />
+            {canModerate && (
+              <>
+                <FormField label="Verified" type="checkbox" value={form.is_verified} onChange={set("is_verified")} />
+                <FormField label="Approved (visible in app)" type="checkbox" value={form.is_approved} onChange={set("is_approved")} />
+              </>
+            )}
           </div>
         </section>
 
@@ -159,7 +184,9 @@ export default function DeveloperForm() {
         </section>
 
         <footer className="adm-form-actions">
-          <Link className="adm-btn adm-btn--ghost" to="/admin/developers">Cancel</Link>
+          {!selfMode && (
+            <Link className="adm-btn adm-btn--ghost" to="/admin/developers">Cancel</Link>
+          )}
           <button className="adm-btn adm-btn--primary" disabled={busy}>
             {busy ? "Saving…" : isNew ? "Create developer" : "Save changes"}
           </button>

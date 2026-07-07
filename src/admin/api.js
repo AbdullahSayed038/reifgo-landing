@@ -8,18 +8,26 @@ const BASE = import.meta.env.VITE_API_URL || "/cms-api";
 export const IS_DEMO =
   import.meta.env.VITE_DEMO === "1" ||
   (import.meta.env.PROD && !import.meta.env.VITE_API_URL);
-const TOKEN_KEY = "reifgo_admin_token";
+
+// Session = { token, role: "admin" | "developer", developer_id, name }.
+// The role only drives what the UI shows; real enforcement is (and must
+// stay) server-side, keyed off the JWT claims.
+const SESSION_KEY = "reifgo_admin_session";
+
+export function getSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY));
+  } catch {
+    return null;
+  }
+}
 
 export function getToken() {
-  return sessionStorage.getItem(TOKEN_KEY);
+  return getSession()?.token ?? null;
 }
 
-export function setToken(token) {
-  sessionStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken() {
-  sessionStorage.removeItem(TOKEN_KEY);
+export function clearSession() {
+  sessionStorage.removeItem(SESSION_KEY);
 }
 
 export class ApiError extends Error {
@@ -50,7 +58,7 @@ async function request(method, path, body) {
 
   if (res.status === 401 && path !== "/admin/auth/login") {
     // Token expired or revoked: force a fresh login.
-    clearToken();
+    clearSession();
     window.location.assign("/admin/login");
     throw new ApiError(401, "Session expired — please log in again");
   }
@@ -79,12 +87,21 @@ export const api = {
   del: (path) => request("DELETE", path),
 };
 
-export async function login(password) {
-  const data = await request("POST", "/admin/auth/login", { password });
-  setToken(data.access_token);
-  return data;
+export async function login(username, password) {
+  const data = await request("POST", "/admin/auth/login", {
+    username,
+    password,
+  });
+  const session = {
+    token: data.access_token,
+    role: data.role ?? "admin",
+    developer_id: data.developer_id ?? null,
+    name: data.name ?? "Admin",
+  };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  return session;
 }
 
 export function logout() {
-  clearToken();
+  clearSession();
 }

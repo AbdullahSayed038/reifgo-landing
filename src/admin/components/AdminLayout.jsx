@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { getToken, IS_DEMO, logout } from "../api.js";
+import { getSession, IS_DEMO, logout } from "../api.js";
 import { useCurrency } from "../currency.jsx";
 
-const NAV = [
+const ADMIN_NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
   { to: "/admin/properties", label: "Properties", icon: "◨" },
   { to: "/admin/developers", label: "Developers", icon: "◈" },
@@ -12,14 +12,27 @@ const NAV = [
   { to: "/admin/users", label: "Users", icon: "◉" },
 ];
 
+const DEVELOPER_NAV = [
+  { to: "/admin", label: "Dashboard", icon: "▦", end: true },
+  { to: "/admin/properties", label: "My Properties", icon: "◨" },
+  { to: "/admin/leads", label: "Leads", icon: "◎" },
+  { to: "/admin/events", label: "Events", icon: "◷" },
+  { to: "/admin/company", label: "Company Profile", icon: "◈" },
+];
+
 export default function AdminLayout() {
   const navigate = useNavigate();
   const { currency, setCurrency } = useCurrency();
   const [menuOpen, setMenuOpen] = useState(false);
+  const session = getSession();
 
-  if (!getToken()) {
+  if (!session) {
     return <Navigate to="/admin/login" replace />;
   }
+
+  const isDeveloper = session.role === "developer";
+  const nav = isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
+  const portalLabel = isDeveloper ? "Developer Portal" : "Admin Dashboard";
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -38,7 +51,7 @@ export default function AdminLayout() {
           </svg>
         </button>
         <span className="adm-topbar__logo">REIFGO</span>
-        <span className="adm-topbar__sub">Admin</span>
+        <span className="adm-topbar__sub">{isDeveloper ? "Portal" : "Admin"}</span>
       </header>
 
       {menuOpen && <div className="adm-scrim" onClick={closeMenu} />}
@@ -46,11 +59,11 @@ export default function AdminLayout() {
       <aside className={`adm-sidebar${menuOpen ? " is-open" : ""}`}>
         <div className="adm-sidebar__brand">
           <span className="adm-sidebar__logo">REIFGO</span>
-          <span className="adm-sidebar__sub">Admin Dashboard</span>
+          <span className="adm-sidebar__sub">{portalLabel}</span>
         </div>
 
         <nav className="adm-sidebar__nav">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -67,6 +80,14 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+
+        <div className="adm-account">
+          <span className="adm-account__dot" aria-hidden="true" />
+          <div className="adm-account__info">
+            <strong>{session.name}</strong>
+            <span>{isDeveloper ? "Developer account" : "Administrator"}</span>
+          </div>
+        </div>
 
         <div className="adm-currency" role="group" aria-label="Display currency">
           <span className="adm-currency__label">Currency</span>

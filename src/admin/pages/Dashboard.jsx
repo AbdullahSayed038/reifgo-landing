@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../api.js";
+import { api, getSession } from "../api.js";
 import { BarChart, DonutChart } from "../components/charts.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -21,6 +21,8 @@ const countBy = (rows, key) =>
   rows.reduce((acc, r) => ((acc[r[key]] = (acc[r[key]] ?? 0) + 1), acc), {});
 
 export default function Dashboard() {
+  const session = getSession();
+  const isDeveloper = session?.role === "developer";
   const [stats, setStats] = useState(null);
   const [leads, setLeads] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -69,17 +71,27 @@ export default function Dashboard() {
       <header className="adm-page-head">
         <div>
           <h1>Dashboard</h1>
-          <p>REIFGO app content at a glance.</p>
+          <p>
+            {isDeveloper
+              ? `${session?.name} — your listings at a glance.`
+              : "REIFGO app content at a glance."}
+          </p>
         </div>
       </header>
 
       {error && <div className="adm-error-banner">{error}</div>}
 
       <div className="adm-stat-grid">
-        <StatCard label="Properties" value={stats?.properties} to="/admin/properties" />
-        <StatCard label="Developers" value={stats?.developers} to="/admin/developers" />
+        <StatCard
+          label={isDeveloper ? "My properties" : "Properties"}
+          value={stats?.properties}
+          to="/admin/properties"
+        />
+        {!isDeveloper && (
+          <StatCard label="Developers" value={stats?.developers} to="/admin/developers" />
+        )}
         <StatCard label="Events" value={stats?.events} to="/admin/events" />
-        <StatCard label="App users" value={stats?.users} to="/admin/users" />
+        {!isDeveloper && <StatCard label="App users" value={stats?.users} to="/admin/users" />}
         <StatCard label="Total leads" value={stats?.leads_total} to="/admin/leads" />
         <StatCard label="Pending leads" value={stats?.leads_pending} to="/admin/leads" />
       </div>

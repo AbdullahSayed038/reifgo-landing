@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api } from "../api.js";
+import { api, getSession } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { useCurrency, USD_TO_AED } from "../currency.jsx";
@@ -32,6 +32,9 @@ export default function PropertyForm() {
   const navigate = useNavigate();
   const toast = useToast();
   const { currency } = useCurrency();
+  const session = getSession();
+  // Developer accounts only ever list under their own company.
+  const isDeveloperAccount = session?.role === "developer";
 
   useEffect(() => {
     api.get("/admin/developers").then(setDevelopers).catch((e) => toast.error(e.message));
@@ -89,7 +92,10 @@ export default function PropertyForm() {
   const submit = async (e) => {
     e.preventDefault();
     if (busy) return;
-    if (!form.developer_id) {
+    const developer_id = isDeveloperAccount
+      ? form.developer_id || session.developer_id
+      : form.developer_id;
+    if (!developer_id) {
       toast.error("Pick a developer first");
       return;
     }
@@ -104,7 +110,7 @@ export default function PropertyForm() {
     const hasRoi = Object.values(roiValues).some((v) => v !== undefined);
 
     const payload = {
-      developer_id: form.developer_id,
+      developer_id,
       name: form.name,
       location: str(form.location),
       asset_class: str(form.asset_class),
@@ -153,17 +159,19 @@ export default function PropertyForm() {
           <header className="adm-panel__head"><h2>Details</h2></header>
           <div className="adm-form-grid">
             <FormField label="Name" required value={form.name} onChange={set("name")} span={2} />
-            <FormField
-              label="Developer"
-              type="select"
-              required
-              value={form.developer_id}
-              onChange={set("developer_id")}
-              options={[
-                { value: "", label: "Select a developer…" },
-                ...developers.map((d) => ({ value: d.id, label: d.name })),
-              ]}
-            />
+            {!isDeveloperAccount && (
+              <FormField
+                label="Developer"
+                type="select"
+                required
+                value={form.developer_id}
+                onChange={set("developer_id")}
+                options={[
+                  { value: "", label: "Select a developer…" },
+                  ...developers.map((d) => ({ value: d.id, label: d.name })),
+                ]}
+              />
+            )}
             <FormField
               label="Status"
               type="select"

@@ -1,13 +1,34 @@
 // In-memory implementation of the admin API for demo mode (no backend).
 // Handles the same method+path surface as api.js and returns the same
 // response shapes. State lives for the page session; a refresh resets it.
-import { ApiError } from "./api.js";
+//
+// Developer accounts see only their own rows — the same scoping the real
+// backend will apply server-side from the JWT's developer_id claim, so
+// swapping in live APIs later changes nothing in the pages.
+import { ApiError, getSession } from "./api.js";
 import { createDemoData } from "./demoData.js";
+
+// username -> account. All demo passwords are "123".
+const ACCOUNTS = {
+  admin: { role: "admin", developer_id: null, name: "REIFGO Admin" },
+  aldar: { role: "developer", developer_id: "aldar", name: "ALDAR PROPERTIES" },
+  reportage: {
+    role: "developer",
+    developer_id: "reportage",
+    name: "REPORTAGE PROPERTIES",
+  },
+};
 
 const db = createDemoData();
 let seq = 0;
 const newId = (prefix) => `${prefix}-${Date.now()}-${++seq}`;
 const wait = () => new Promise((r) => setTimeout(r, 150));
+
+// developer_id to scope to, or null for full admin access
+const scope = () => {
+  const s = getSession();
+  return s?.role === "developer" ? s.developer_id : null;
+};
 
 const notFound = (what) => {
   throw new ApiError(404, `${what} not found`);
@@ -40,34 +61,52 @@ const leadFull = (l) => {
   };
 };
 
+const myPropertyIds = (dev) =>
+  new Set(db.properties.filter((p) => p.developer_id === dev).map((p) => p.id));
+
 export async function demoRequest(method, path, body) {
   await wait();
   const key = `${method} ${path}`;
+  const dev = scope();
 
   if (key === "POST /admin/auth/login") {
-    if (body?.password !== "123") throw new ApiError(401, "Incorrect password");
-    return { access_token: "demo-session" };
+    const account = ACCOUNTS[(body?.username ?? "").trim().toLowerCase()];
+    if (!account || body?.password !== "123") {
+      throw new ApiError(401, "Invalid username or password");
+    }
+    return { access_token: `demo-${body.username}`, ...account };
   }
 
   if (key === "GET /admin/stats") {
+    const props = dev
+      ? db.properties.filter((p) => p.developer_id === dev)
+      : db.properties;
+    const mine = dev ? myPropertyIds(dev) : null;
+    const leads = mine ? db.leads.filter((l) => mine.has(l.property_id)) : db.leads;
     return {
-      properties: db.properties.length,
+      properties: props.length,
       developers: db.developers.length,
       events: db.events.length,
       users: db.users.length,
-      leads_total: db.leads.length,
-      leads_pending: db.leads.filter((l) => l.status === "pending").length,
+      leads_total: leads.length,
+      leads_pending: leads.filter((l) => l.status === "pending").length,
     };
   }
 
   // ---- Properties ----
-  if (key === "GET /admin/properties") return db.properties.map(propertyFull);
+  if (key === "GET /admin/properties") {
+    const rows = dev
+      ? db.properties.filter((p) => p.developer_id === dev)
+      : db.properties;
+    return rows.map(propertyFull);
+  }
   if (key === "POST /admin/properties") {
     const { media = [], roi, ...scalars } = body;
     const created = {
       id: newId("prop"),
       created_at: new Date().toISOString(),
       ...scalars,
+      developer_id: dev ?? scalars.developer_id,
       status: scalars.status ?? "active",
       media: media.map((m, i) => ({ id: newId("m"), display_order: i, type: "image", ...m })),
       roi: roi ? { id: newId("roi"), ...roi } : null,
@@ -78,10 +117,12 @@ export async function demoRequest(method, path, body) {
   let m = path.match(/^\/admin\/properties\/([^/]+)$/);
   if (m) {
     const p = db.properties.find((x) => x.id === m[1]) ?? notFound("Property");
+    if (dev && p.developer_id !== dev) notFound("Property");
     if (method === "GET") return propertyFull(p);
     if (method === "PATCH") {
-      const { media, roi, ...scalars } = body;
+      const { media, roi, developer_id, ...scalars } = body;
       Object.assign(p, scalars);
+      if (!dev && developer_id !== undefined) p.developer_id = developer_id;
       if (media !== undefined)
         p.media = media.map((x, i) => ({ id: newId("m"), display_order: i, type: "image", ...x }));
       if (roi !== undefined) p.roi = roi ? { id: p.roi?.id ?? newId("roi"), ...roi } : null;
@@ -95,8 +136,12 @@ export async function demoRequest(method, path, body) {
   }
 
   // ---- Developers ----
-  if (key === "GET /admin/developers") return db.developers.map(developerFull);
+  if (key === "GET /admin/developers") {
+    const rows = dev ? db.developers.filter((d) => d.id === dev) : db.developers;
+    return rows.map(developerFull);
+  }
   if (key === "POST /admin/developers") {
+    if (dev) throw new ApiError(403, "Developers can't create other developers");
     const { values = [], ...scalars } = body;
     const created = {
       id: newId("dev"),
@@ -112,15 +157,22 @@ export async function demoRequest(method, path, body) {
   m = path.match(/^\/admin\/developers\/([^/]+)$/);
   if (m) {
     const d = db.developers.find((x) => x.id === m[1]) ?? notFound("Developer");
+    if (dev && d.id !== dev) notFound("Developer");
     if (method === "GET") return developerFull(d);
     if (method === "PATCH") {
-      const { values, ...scalars } = body;
+      const { values, is_verified, is_approved, ...scalars } = body;
       Object.assign(d, scalars);
+      // Verification/approval is an admin decision — developers can't self-approve.
+      if (!dev) {
+        if (is_verified !== undefined) d.is_verified = is_verified;
+        if (is_approved !== undefined) d.is_approved = is_approved;
+      }
       if (values !== undefined)
         d.values = values.map((v, i) => ({ id: newId("v"), display_order: i, ...v }));
       return developerFull(d);
     }
     if (method === "DELETE") {
+      if (dev) throw new ApiError(403, "Developers can't delete developer accounts");
       if (db.properties.some((p) => p.developer_id === d.id)) {
         throw new ApiError(409, "This developer still has properties. Delete or reassign them first.");
       }
@@ -129,7 +181,7 @@ export async function demoRequest(method, path, body) {
     }
   }
 
-  // ---- Events ----
+  // ---- Events (shared — the app schema has no per-developer events yet) ----
   if (key === "GET /admin/events") return [...db.events];
   if (key === "POST /admin/events") {
     const created = {
@@ -154,16 +206,24 @@ export async function demoRequest(method, path, body) {
   }
 
   // ---- Leads ----
-  if (key === "GET /admin/leads") return db.leads.map(leadFull);
+  if (key === "GET /admin/leads") {
+    const mine = dev ? myPropertyIds(dev) : null;
+    const rows = mine ? db.leads.filter((l) => mine.has(l.property_id)) : db.leads;
+    return rows.map(leadFull);
+  }
   m = path.match(/^\/admin\/leads\/([^/]+)$/);
   if (m && method === "PATCH") {
     const lead = db.leads.find((x) => x.id === m[1]) ?? notFound("Lead");
+    if (dev && !myPropertyIds(dev).has(lead.property_id)) notFound("Lead");
     lead.status = body.status;
     return leadFull(lead);
   }
 
-  // ---- Users ----
-  if (key === "GET /admin/users") return [...db.users];
+  // ---- Users (admin only) ----
+  if (key === "GET /admin/users") {
+    if (dev) throw new ApiError(403, "Admin only");
+    return [...db.users];
+  }
 
   throw new ApiError(404, `No demo handler for ${key}`);
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api } from "../api.js";
+import { api, getSession } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -37,7 +37,7 @@ export default function PropertiesList() {
     <>
       <header className="adm-page-head">
         <div>
-          <h1>Properties</h1>
+          <h1>{getSession()?.role === "developer" ? "My Properties" : "Properties"}</h1>
           <p>Listings shown in the REIFGO app.</p>
         </div>
         <Link className="adm-btn adm-btn--primary" to="/admin/properties/new">
