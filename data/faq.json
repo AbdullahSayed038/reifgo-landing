@@ -1,0 +1,1322 @@
+[
+  {
+    "id": 1,
+    "category": "General About REIFGO",
+    "question": "What is REIFGO?",
+    "answer": "REIFGO is a global PropTech platform connecting accredited real estate developers with international investors — through technology, advisory, events, and research."
+  },
+  {
+    "id": 2,
+    "category": "General About REIFGO",
+    "question": "What does REIFGO stand for?",
+    "answer": "It reflects our core purpose: Real Estate Investment, Forum, Growth, Opportunity — a unified ecosystem for cross-border property investment."
+  },
+  {
+    "id": 3,
+    "category": "General About REIFGO",
+    "question": "How does REIFGO work?",
+    "answer": "Developers list vetted opportunities, investors get matched based on criteria and budget, and our advisory team supports both sides through to close."
+  },
+  {
+    "id": 4,
+    "category": "General About REIFGO",
+    "question": "Who founded REIFGO?",
+    "answer": "REIFGO was founded by a team with deep real estate, capital markets, and technology backgrounds — built to modernize cross-border investment."
+  },
+  {
+    "id": 5,
+    "category": "General About REIFGO",
+    "question": "Where is REIFGO headquartered?",
+    "answer": "REIFGO is headquartered in London, with a global network spanning the GCC, Europe, and Asia."
+  },
+  {
+    "id": 6,
+    "category": "General About REIFGO",
+    "question": "What countries does REIFGO operate in?",
+    "answer": "We operate across the GCC, Europe, and Asia-Pacific, with new markets added as demand grows."
+  },
+  {
+    "id": 7,
+    "category": "General About REIFGO",
+    "question": "Is REIFGO a real estate agency?",
+    "answer": "No. REIFGO is an investment and advisory platform — we connect capital to opportunity, we don't broker individual unit sales."
+  },
+  {
+    "id": 8,
+    "category": "General About REIFGO",
+    "question": "How is REIFGO different from a property portal like Zillow or Property Finder?",
+    "answer": "Portals list units for browsing. REIFGO curates accredited investment opportunities and pairs them with matched investors, backed by advisory and events."
+  },
+  {
+    "id": 9,
+    "category": "General About REIFGO",
+    "question": "What services does REIFGO offer?",
+    "answer": "Developer-investor matchmaking, business development advisory, partnerships, roadshows, webinars, research, and our annual Global Forum."
+  },
+  {
+    "id": 10,
+    "category": "General About REIFGO",
+    "question": "Is REIFGO free to use?",
+    "answer": "Browsing and registration are free. Certain advisory and sponsorship services carry fees — ask our team for a tailored quote."
+  },
+  {
+    "id": 11,
+    "category": "General About REIFGO",
+    "question": "Who can join REIFGO — developers, investors, or both?",
+    "answer": "Both. REIFGO is built as a two-sided platform for accredited developers and investors."
+  },
+  {
+    "id": 12,
+    "category": "General About REIFGO",
+    "question": "Is REIFGO regulated?",
+    "answer": "REIFGO operates within applicable regulatory frameworks in each market and works with licensed partners for transactions requiring local compliance."
+  },
+  {
+    "id": 13,
+    "category": "General About REIFGO",
+    "question": "Does REIFGO buy or sell property directly?",
+    "answer": "No — REIFGO facilitates connections and advisory; transactions are executed between developer and investor, or via licensed partners."
+  },
+  {
+    "id": 14,
+    "category": "General About REIFGO",
+    "question": "What makes REIFGO different from a normal brokerage?",
+    "answer": "We focus on accredited, curated deal flow and long-term relationships — not high-volume unit sales."
+  },
+  {
+    "id": 15,
+    "category": "General About REIFGO",
+    "question": "Does REIFGO charge commission?",
+    "answer": "Fee structures vary by service and are discussed directly with developers or partners — no hidden commissions on browsing or matchmaking."
+  },
+  {
+    "id": 16,
+    "category": "General About REIFGO",
+    "question": "What is REIFGO's mission?",
+    "answer": "To make cross-border real estate investment transparent, accessible, and efficient for serious developers and investors."
+  },
+  {
+    "id": 17,
+    "category": "General About REIFGO",
+    "question": "How many developers and investors are on the platform?",
+    "answer": "Our network is growing continuously — contact us for current figures by market."
+  },
+  {
+    "id": 18,
+    "category": "General About REIFGO",
+    "question": "Which markets does REIFGO cover — Dubai, Saudi, Europe, Asia?",
+    "answer": "Yes to all — plus additional emerging markets added based on investor demand."
+  },
+  {
+    "id": 19,
+    "category": "General About REIFGO",
+    "question": "Is REIFGO available in my country?",
+    "answer": "REIFGO is accessible globally online; local events and advisory support depend on market presence — tell us your country and we'll confirm."
+  },
+  {
+    "id": 20,
+    "category": "General About REIFGO",
+    "question": "How do I get in touch with REIFGO's team?",
+    "answer": "Use the contact form on our site, or ask me to connect you directly with the right team."
+  },
+  {
+    "id": 21,
+    "category": "Developers",
+    "question": "How can a developer join REIFGO?",
+    "answer": "Apply through our developer onboarding form — our team reviews and responds within days."
+  },
+  {
+    "id": 22,
+    "category": "Developers",
+    "question": "What are the requirements to list a project on REIFGO?",
+    "answer": "Verified legal ownership/development rights, project documentation, and passing our accreditation review."
+  },
+  {
+    "id": 23,
+    "category": "Developers",
+    "question": "Does REIFGO help developers raise capital?",
+    "answer": "Yes — through investor matchmaking, roadshows, and direct introductions to qualified capital."
+  },
+  {
+    "id": 24,
+    "category": "Developers",
+    "question": "Can a small/boutique developer join, or only large developers?",
+    "answer": "Both. We evaluate on project quality and credibility, not company size."
+  },
+  {
+    "id": 25,
+    "category": "Developers",
+    "question": "How does REIFGO vet developers?",
+    "answer": "Through documentation review, track record checks, and financial/legal due diligence."
+  },
+  {
+    "id": 26,
+    "category": "Developers",
+    "question": "What does it cost for a developer to list on the platform?",
+    "answer": "Costs vary by listing tier and services required — our team will scope this with you directly."
+  },
+  {
+    "id": 27,
+    "category": "Developers",
+    "question": "Can I list an off-plan project?",
+    "answer": "Yes, off-plan projects are commonly listed, provided documentation and approvals are in place."
+  },
+  {
+    "id": 28,
+    "category": "Developers",
+    "question": "Does REIFGO help with investor matchmaking for my project?",
+    "answer": "Yes — this is core to our platform, matching your project to relevant investor profiles."
+  },
+  {
+    "id": 29,
+    "category": "Developers",
+    "question": "How do developers get exposure to international investors?",
+    "answer": "Through platform listings, roadshows, webinars, and the Global Forum."
+  },
+  {
+    "id": 30,
+    "category": "Developers",
+    "question": "Can developers present at the Global Forum or roadshows?",
+    "answer": "Yes, subject to application and available speaking/exhibition slots."
+  },
+  {
+    "id": 31,
+    "category": "Developers",
+    "question": "What marketing support does REIFGO provide developers?",
+    "answer": "Platform visibility, event exposure, content features, and research inclusion where relevant."
+  },
+  {
+    "id": 32,
+    "category": "Developers",
+    "question": "Can I get feedback on my project from REIFGO's advisory team?",
+    "answer": "Yes — advisory reviews are available on request."
+  },
+  {
+    "id": 33,
+    "category": "Developers",
+    "question": "Does REIFGO help structure investment offerings (e.g., fractional, JV, debt)?",
+    "answer": "Yes, our advisory team supports structuring across equity, debt, JV, and fractional models."
+  },
+  {
+    "id": 34,
+    "category": "Developers",
+    "question": "How long does it take to get listed after applying?",
+    "answer": "Typically a few weeks, depending on documentation completeness and review depth."
+  },
+  {
+    "id": 35,
+    "category": "Developers",
+    "question": "Can I update or remove my project listing later?",
+    "answer": "Yes, listings can be updated or removed through your developer dashboard or by request."
+  },
+  {
+    "id": 36,
+    "category": "Developers",
+    "question": "Does REIFGO provide legal or compliance support for developers?",
+    "answer": "We can connect you with vetted legal and compliance partners as needed."
+  },
+  {
+    "id": 37,
+    "category": "Developers",
+    "question": "Can international developers list projects outside the UAE?",
+    "answer": "Yes — REIFGO supports developers across all markets we operate in."
+  },
+  {
+    "id": 38,
+    "category": "Developers",
+    "question": "Does REIFGO help with due diligence documentation?",
+    "answer": "Yes, our team advises on what documentation investors and REIFGO require."
+  },
+  {
+    "id": 39,
+    "category": "Developers",
+    "question": "Can developers access investor analytics (views, interest, engagement)?",
+    "answer": "Yes, engagement analytics are available via the developer dashboard."
+  },
+  {
+    "id": 40,
+    "category": "Developers",
+    "question": "How do I request a business development consultation?",
+    "answer": "Submit a request through your account or contact our advisory team directly."
+  },
+  {
+    "id": 41,
+    "category": "Investors",
+    "question": "How do I register as an investor on REIFGO?",
+    "answer": "Sign up on our platform and complete the investor accreditation process."
+  },
+  {
+    "id": 42,
+    "category": "Investors",
+    "question": "Do I need to be an accredited investor to use REIFGO?",
+    "answer": "Most opportunities require accreditation — some general content is open to all registered users."
+  },
+  {
+    "id": 43,
+    "category": "Investors",
+    "question": "What is the minimum investment amount?",
+    "answer": "Minimums vary by project — typically ranging from low six figures upward, project-dependent."
+  },
+  {
+    "id": 44,
+    "category": "Investors",
+    "question": "Can foreign investors buy property through REIFGO?",
+    "answer": "Yes, many listed markets welcome foreign ownership — we'll confirm specifics per project."
+  },
+  {
+    "id": 45,
+    "category": "Investors",
+    "question": "What types of investments are available — equity, debt, fractional?",
+    "answer": "All three, depending on the project structure set by the developer."
+  },
+  {
+    "id": 46,
+    "category": "Investors",
+    "question": "How does REIFGO vet the developers/projects I see?",
+    "answer": "Through documentation review, legal checks, and track-record verification before listing."
+  },
+  {
+    "id": 47,
+    "category": "Investors",
+    "question": "Can I invest remotely without visiting the property?",
+    "answer": "Yes — many investors transact remotely with virtual tours and digital documentation."
+  },
+  {
+    "id": 48,
+    "category": "Investors",
+    "question": "What currencies can I invest in?",
+    "answer": "Typically USD, AED, EUR, and GBP — project-dependent."
+  },
+  {
+    "id": 49,
+    "category": "Investors",
+    "question": "Does REIFGO offer financing or mortgage options?",
+    "answer": "We can connect you with financing partners where applicable to the market."
+  },
+  {
+    "id": 50,
+    "category": "Investors",
+    "question": "How do I track my investment performance?",
+    "answer": "Through your investor dashboard, with performance updates shared by the developer."
+  },
+  {
+    "id": 51,
+    "category": "Investors",
+    "question": "What documents do I need to invest?",
+    "answer": "Identification, proof of funds, and accreditation documents — full list provided at onboarding."
+  },
+  {
+    "id": 52,
+    "category": "Investors",
+    "question": "Are there tax implications I should know about?",
+    "answer": "Yes, tax treatment varies by jurisdiction — we recommend independent tax advice for your specific situation."
+  },
+  {
+    "id": 53,
+    "category": "Investors",
+    "question": "Can I speak with an advisor before investing?",
+    "answer": "Yes, advisory consultations are available on request."
+  },
+  {
+    "id": 54,
+    "category": "Investors",
+    "question": "Does REIFGO provide exit strategy support (resale, buybacks)?",
+    "answer": "Where structured into the offering, yes — this varies by project and developer."
+  },
+  {
+    "id": 55,
+    "category": "Investors",
+    "question": "How does REIFGO handle investor due diligence?",
+    "answer": "We collect and verify accreditation and compliance documentation before granting access to opportunities."
+  },
+  {
+    "id": 56,
+    "category": "Investors",
+    "question": "Can I invest in multiple projects across different countries?",
+    "answer": "Yes, there's no restriction on the number of markets or projects."
+  },
+  {
+    "id": 57,
+    "category": "Investors",
+    "question": "Is my investment insured or protected in any way?",
+    "answer": "Protection mechanisms depend on the specific project structure — ask us for details per opportunity."
+  },
+  {
+    "id": 58,
+    "category": "Investors",
+    "question": "What is REIFGO's role after I've invested — ongoing support?",
+    "answer": "We stay involved through reporting, updates, and advisory support as needed."
+  },
+  {
+    "id": 59,
+    "category": "Investors",
+    "question": "Can I get introduced directly to a developer?",
+    "answer": "Yes, direct introductions can be arranged once initial interest is confirmed."
+  },
+  {
+    "id": 60,
+    "category": "Investors",
+    "question": "How do I request a private consultation with the investment team?",
+    "answer": "Contact us through the platform or ask me to set this up for you."
+  },
+  {
+    "id": 61,
+    "category": "Real Estate Opportunities",
+    "question": "What real estate opportunities are currently available?",
+    "answer": "Opportunities span residential, commercial, and hospitality across our active markets — tell me your budget and location interest for a curated shortlist."
+  },
+  {
+    "id": 62,
+    "category": "Real Estate Opportunities",
+    "question": "Which projects offer the highest ROI?",
+    "answer": "This shifts by market cycle — share your target city and horizon, and I'll pull current top performers."
+  },
+  {
+    "id": 63,
+    "category": "Real Estate Opportunities",
+    "question": "Show me luxury villas under $2 million.",
+    "answer": "I can filter for that now — which city or region are you focused on?"
+  },
+  {
+    "id": 64,
+    "category": "Real Estate Opportunities",
+    "question": "Which developers specialize in waterfront properties in Dubai?",
+    "answer": "Several established names focus on Dubai waterfront — I can shortlist based on your budget and timeline."
+  },
+  {
+    "id": 65,
+    "category": "Real Estate Opportunities",
+    "question": "Are there any off-plan opportunities in Riyadh?",
+    "answer": "Yes, Riyadh has active off-plan listings — I'll pull current options matching your criteria."
+  },
+  {
+    "id": 66,
+    "category": "Real Estate Opportunities",
+    "question": "What are the best areas for rental yield right now?",
+    "answer": "Yield leaders shift by quarter — tell me your target market and I'll surface current top areas."
+  },
+  {
+    "id": 67,
+    "category": "Real Estate Opportunities",
+    "question": "Show me branded residences available for investment.",
+    "answer": "Branded residences are available across several markets — share your budget range to narrow it down."
+  },
+  {
+    "id": 68,
+    "category": "Real Estate Opportunities",
+    "question": "Are there opportunities in emerging markets like Southeast Asia?",
+    "answer": "Yes, we're expanding coverage there — let me know your interest area and I'll check live listings."
+  },
+  {
+    "id": 69,
+    "category": "Real Estate Opportunities",
+    "question": "Which projects have flexible payment plans?",
+    "answer": "Several projects offer extended post-handover plans — I can filter by payment structure."
+  },
+  {
+    "id": 70,
+    "category": "Real Estate Opportunities",
+    "question": "What commercial real estate opportunities are listed?",
+    "answer": "Commercial listings span office, retail, and mixed-use — tell me the sector you're targeting."
+  },
+  {
+    "id": 71,
+    "category": "Real Estate Opportunities",
+    "question": "Show me family-friendly community developments.",
+    "answer": "I can filter for family-oriented communities with schools and amenities nearby — which city?"
+  },
+  {
+    "id": 72,
+    "category": "Real Estate Opportunities",
+    "question": "Are there any hospitality or hotel investment opportunities?",
+    "answer": "Yes, hospitality assets are listed periodically — I'll check current availability."
+  },
+  {
+    "id": 73,
+    "category": "Real Estate Opportunities",
+    "question": "Which opportunities are closest to completion?",
+    "answer": "I can sort by handover date — share your target market."
+  },
+  {
+    "id": 74,
+    "category": "Real Estate Opportunities",
+    "question": "What's the entry price range for opportunities in London?",
+    "answer": "London entry points vary widely by zone and asset type — tell me your budget and I'll narrow the list."
+  },
+  {
+    "id": 75,
+    "category": "Real Estate Opportunities",
+    "question": "Are there co-investment or syndicate opportunities?",
+    "answer": "Yes, select projects offer syndicated or co-investment structures — I can flag these for you."
+  },
+  {
+    "id": 76,
+    "category": "Real Estate Opportunities",
+    "question": "Which projects have the strongest developer track record?",
+    "answer": "I can rank by developer delivery history — which market are you considering?"
+  },
+  {
+    "id": 77,
+    "category": "Real Estate Opportunities",
+    "question": "Show me opportunities with guaranteed rental returns.",
+    "answer": "Guaranteed-yield structures exist on select projects — I'll pull current options."
+  },
+  {
+    "id": 78,
+    "category": "Real Estate Opportunities",
+    "question": "What opportunities are available for under $500K?",
+    "answer": "There are entry-level options in several markets — share your preferred location."
+  },
+  {
+    "id": 79,
+    "category": "Real Estate Opportunities",
+    "question": "Are there any distressed asset or discounted opportunities?",
+    "answer": "These appear periodically — I can flag you when one matches your criteria."
+  },
+  {
+    "id": 80,
+    "category": "Real Estate Opportunities",
+    "question": "Which locations are trending among investors right now?",
+    "answer": "Interest is currently concentrated in a handful of high-growth corridors — I'll share the current list."
+  },
+  {
+    "id": 81,
+    "category": "Mobile Application",
+    "question": "Is there a REIFGO mobile app?",
+    "answer": "Yes, REIFGO is available as a mobile app for on-the-go access to listings and updates."
+  },
+  {
+    "id": 82,
+    "category": "Mobile Application",
+    "question": "Which platforms is the app available on — iOS, Android?",
+    "answer": "Both iOS and Android are supported."
+  },
+  {
+    "id": 83,
+    "category": "Mobile Application",
+    "question": "What can I do on the app that I can't on the website?",
+    "answer": "Push notifications, saved shortlists, and direct messaging are optimized for the app experience."
+  },
+  {
+    "id": 84,
+    "category": "Mobile Application",
+    "question": "Does the app support push notifications for new opportunities?",
+    "answer": "Yes, you can enable alerts for new listings matching your criteria."
+  },
+  {
+    "id": 85,
+    "category": "Mobile Application",
+    "question": "Can I message developers directly through the app?",
+    "answer": "Yes, in-app messaging connects you directly to developer representatives."
+  },
+  {
+    "id": 86,
+    "category": "Mobile Application",
+    "question": "Is the app available in multiple languages?",
+    "answer": "Yes, the app supports multiple languages for our global user base."
+  },
+  {
+    "id": 87,
+    "category": "Mobile Application",
+    "question": "Can I save or shortlist properties in the app?",
+    "answer": "Yes, use the save/shortlist feature to build your personal watchlist."
+  },
+  {
+    "id": 88,
+    "category": "Mobile Application",
+    "question": "Does the app support biometric login?",
+    "answer": "Yes, Face ID and fingerprint login are supported on compatible devices."
+  },
+  {
+    "id": 89,
+    "category": "Mobile Application",
+    "question": "Can I attend virtual events through the app?",
+    "answer": "Yes, webinars and virtual roadshow sessions are accessible directly in-app."
+  },
+  {
+    "id": 90,
+    "category": "Mobile Application",
+    "question": "How do I download the REIFGO app?",
+    "answer": "Search \"REIFGO\" on the App Store or Google Play, or use the download link on our website."
+  },
+  {
+    "id": 91,
+    "category": "AI Property Advisor",
+    "question": "Recommend investment opportunities based on my budget.",
+    "answer": "Share your budget and target market, and I'll return a curated shortlist ranked by fit."
+  },
+  {
+    "id": 92,
+    "category": "AI Property Advisor",
+    "question": "Which areas offer the highest rental yield?",
+    "answer": "Tell me your target city and I'll pull current yield leaders by area."
+  },
+  {
+    "id": 93,
+    "category": "AI Property Advisor",
+    "question": "Compare two developers for me.",
+    "answer": "Name the two developers and I'll compare track record, delivery timelines, and portfolio focus."
+  },
+  {
+    "id": 94,
+    "category": "AI Property Advisor",
+    "question": "Find family-friendly communities within my budget.",
+    "answer": "Give me your budget and city, and I'll filter for family-oriented communities."
+  },
+  {
+    "id": 95,
+    "category": "AI Property Advisor",
+    "question": "Show luxury villas under $3 million.",
+    "answer": "Tell me the market and I'll pull matching listings now."
+  },
+  {
+    "id": 96,
+    "category": "AI Property Advisor",
+    "question": "Suggest projects based on ROI, location, and property type.",
+    "answer": "Give me your priorities on those three factors and I'll rank the best-fit projects."
+  },
+  {
+    "id": 97,
+    "category": "AI Property Advisor",
+    "question": "What's the best investment for long-term capital growth vs rental income?",
+    "answer": "Depends on your horizon — growth favors emerging corridors, yield favors established rental markets. Tell me your timeline."
+  },
+  {
+    "id": 98,
+    "category": "AI Property Advisor",
+    "question": "Based on my risk profile, what should I invest in?",
+    "answer": "Share your risk tolerance (conservative, balanced, aggressive) and I'll match opportunities accordingly."
+  },
+  {
+    "id": 99,
+    "category": "AI Property Advisor",
+    "question": "Compare Dubai vs Riyadh for real estate investment right now.",
+    "answer": "Dubai offers liquidity and established yield; Riyadh offers earlier-stage growth potential tied to Vision 2030. Want the full breakdown?"
+  },
+  {
+    "id": 100,
+    "category": "AI Property Advisor",
+    "question": "Which developer has the best delivery track record in Abu Dhabi?",
+    "answer": "I can rank Abu Dhabi developers by on-time handover history — want the list?"
+  },
+  {
+    "id": 101,
+    "category": "AI Property Advisor",
+    "question": "Suggest a diversified portfolio across three cities.",
+    "answer": "Tell me your total budget and I'll propose an allocation across three complementary markets."
+  },
+  {
+    "id": 102,
+    "category": "AI Property Advisor",
+    "question": "What's the projected appreciation for this project over 5 years?",
+    "answer": "Share the project name and I'll pull available forecast data and comparables."
+  },
+  {
+    "id": 103,
+    "category": "AI Property Advisor",
+    "question": "Find me off-plan projects with under 20% down payment.",
+    "answer": "I can filter by payment structure now — which market?"
+  },
+  {
+    "id": 104,
+    "category": "AI Property Advisor",
+    "question": "Which projects match a $1M budget with 8%+ rental yield?",
+    "answer": "Let me search current listings against those two filters."
+  },
+  {
+    "id": 105,
+    "category": "AI Property Advisor",
+    "question": "Recommend properties near international schools and hospitals.",
+    "answer": "Tell me your city and I'll filter for proximity to those amenities."
+  },
+  {
+    "id": 106,
+    "category": "AI Property Advisor",
+    "question": "What's the difference in returns between off-plan and ready properties?",
+    "answer": "Off-plan typically offers higher capital appreciation potential; ready properties offer immediate rental income. Want a side-by-side for a specific project?"
+  },
+  {
+    "id": 107,
+    "category": "AI Property Advisor",
+    "question": "Suggest projects with the shortest payment plan.",
+    "answer": "I'll sort listings by payment plan duration — which market are you targeting?"
+  },
+  {
+    "id": 108,
+    "category": "AI Property Advisor",
+    "question": "Which markets are undervalued right now?",
+    "answer": "I can flag markets trading below regional growth benchmarks — want the current list?"
+  },
+  {
+    "id": 109,
+    "category": "AI Property Advisor",
+    "question": "Compare freehold vs leasehold opportunities for foreign investors.",
+    "answer": "Freehold gives full ownership rights; leasehold is time-bound but often lower entry cost. Tell me the market and I'll clarify local rules."
+  },
+  {
+    "id": 110,
+    "category": "AI Property Advisor",
+    "question": "Based on my previous searches, what would you recommend next?",
+    "answer": "Based on your activity, I can surface similar or complementary opportunities — want me to pull that now?"
+  },
+  {
+    "id": 111,
+    "category": "Events & Roadshows",
+    "question": "What events does REIFGO host?",
+    "answer": "Roadshows, corporate webinars, local investment events, round tables, and the annual Global Forum."
+  },
+  {
+    "id": 112,
+    "category": "Events & Roadshows",
+    "question": "When is the next investment roadshow?",
+    "answer": "Check our events calendar — I can pull the next confirmed date for your region."
+  },
+  {
+    "id": 113,
+    "category": "Events & Roadshows",
+    "question": "Where will the next round table roadshow take place?",
+    "answer": "Locations rotate — tell me your region of interest and I'll confirm the next stop."
+  },
+  {
+    "id": 114,
+    "category": "Events & Roadshows",
+    "question": "Can I attend an event as an investor without owning property yet?",
+    "answer": "Yes, events are open to prospective investors, not just current owners."
+  },
+  {
+    "id": 115,
+    "category": "Events & Roadshows",
+    "question": "Are events free or ticketed?",
+    "answer": "Varies by event type — most roadshows are complimentary for accredited investors, some forums are ticketed."
+  },
+  {
+    "id": 116,
+    "category": "Events & Roadshows",
+    "question": "Can I register my company as a co-host or exhibitor?",
+    "answer": "Yes, contact our partnerships team to discuss co-hosting or exhibiting."
+  },
+  {
+    "id": 117,
+    "category": "Events & Roadshows",
+    "question": "Are roadshows held in my city?",
+    "answer": "Tell me your city and I'll check our upcoming schedule."
+  },
+  {
+    "id": 118,
+    "category": "Events & Roadshows",
+    "question": "Will there be an event in Europe/Asia/US this year?",
+    "answer": "Our calendar expands regionally each year — I'll confirm current planned locations."
+  },
+  {
+    "id": 119,
+    "category": "Events & Roadshows",
+    "question": "Can I get a private meeting scheduled during an event?",
+    "answer": "Yes, private meeting requests can be arranged in advance."
+  },
+  {
+    "id": 120,
+    "category": "Events & Roadshows",
+    "question": "Are roadshows virtual, in-person, or both?",
+    "answer": "Most are in-person, with select sessions livestreamed."
+  },
+  {
+    "id": 121,
+    "category": "Events & Roadshows",
+    "question": "Who typically attends REIFGO roadshows?",
+    "answer": "Accredited investors, developers, family offices, and institutional capital representatives."
+  },
+  {
+    "id": 122,
+    "category": "Events & Roadshows",
+    "question": "Can developers pitch their projects at roadshows?",
+    "answer": "Yes, subject to application and available slots."
+  },
+  {
+    "id": 123,
+    "category": "Events & Roadshows",
+    "question": "How do I get an invite to an upcoming round table?",
+    "answer": "Register your interest through our events page or ask me to flag you for the next one."
+  },
+  {
+    "id": 124,
+    "category": "Events & Roadshows",
+    "question": "Is there a dress code or format for these events?",
+    "answer": "Business attire is standard; format details are shared upon registration."
+  },
+  {
+    "id": 125,
+    "category": "Events & Roadshows",
+    "question": "Can I get a list of confirmed speakers/attendees in advance?",
+    "answer": "Speaker lineups are published closer to the date — attendee lists are typically confidential."
+  },
+  {
+    "id": 126,
+    "category": "Corporate Webinars",
+    "question": "What are REIFGO's corporate webinars about?",
+    "answer": "Market trends, investment strategy, developer spotlights, and regulatory updates."
+  },
+  {
+    "id": 127,
+    "category": "Corporate Webinars",
+    "question": "How often are webinars held?",
+    "answer": "Monthly, with additional sessions around major market developments."
+  },
+  {
+    "id": 128,
+    "category": "Corporate Webinars",
+    "question": "Are webinars free to attend?",
+    "answer": "Yes, corporate webinars are free for registered users."
+  },
+  {
+    "id": 129,
+    "category": "Corporate Webinars",
+    "question": "Can I request a topic for a future webinar?",
+    "answer": "Yes, submit topic requests through our contact form."
+  },
+  {
+    "id": 130,
+    "category": "Corporate Webinars",
+    "question": "Are webinar recordings available afterward?",
+    "answer": "Yes, recordings are typically available on-demand after the live session."
+  },
+  {
+    "id": 131,
+    "category": "Corporate Webinars",
+    "question": "Can my company co-host a webinar with REIFGO?",
+    "answer": "Yes, reach out to our partnerships team to discuss co-hosting."
+  },
+  {
+    "id": 132,
+    "category": "Corporate Webinars",
+    "question": "Who are the typical speakers on these webinars?",
+    "answer": "Developers, investors, market analysts, and REIFGO's advisory team."
+  },
+  {
+    "id": 133,
+    "category": "Corporate Webinars",
+    "question": "Do webinars offer certificates of attendance?",
+    "answer": "Available on request for select sessions."
+  },
+  {
+    "id": 134,
+    "category": "Corporate Webinars",
+    "question": "Can I ask questions live during a webinar?",
+    "answer": "Yes, live Q&A is built into most sessions."
+  },
+  {
+    "id": 135,
+    "category": "Corporate Webinars",
+    "question": "Are webinars available in different languages?",
+    "answer": "Select sessions offer multilingual delivery or subtitles."
+  },
+  {
+    "id": 136,
+    "category": "Global Real Estate Investment Forum",
+    "question": "What is the Global Real Estate Investment Forum?",
+    "answer": "REIFGO's flagship annual event bringing together developers, investors, and industry leaders for deal-making and insight-sharing."
+  },
+  {
+    "id": 137,
+    "category": "Global Real Estate Investment Forum",
+    "question": "When and where is the next Forum taking place?",
+    "answer": "I'll confirm the current confirmed date and city for you."
+  },
+  {
+    "id": 138,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Who attends the Forum?",
+    "answer": "Developers, accredited investors, family offices, government representatives, and financial institutions."
+  },
+  {
+    "id": 139,
+    "category": "Global Real Estate Investment Forum",
+    "question": "How can I get a speaking slot at the Forum?",
+    "answer": "Submit a speaker application through our events team — slots are limited and reviewed on relevance."
+  },
+  {
+    "id": 140,
+    "category": "Global Real Estate Investment Forum",
+    "question": "What does it cost to attend the Forum?",
+    "answer": "Pricing tiers vary by pass type — I can share current rates."
+  },
+  {
+    "id": 141,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Can developers exhibit at the Forum?",
+    "answer": "Yes, exhibition packages are available — contact our team for options."
+  },
+  {
+    "id": 142,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Is there a sponsorship package for the Forum?",
+    "answer": "Yes, multiple sponsorship tiers are available with different visibility levels."
+  },
+  {
+    "id": 143,
+    "category": "Global Real Estate Investment Forum",
+    "question": "How many attendees typically join the Forum?",
+    "answer": "Attendance has grown year over year — I can share the latest figures."
+  },
+  {
+    "id": 144,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Will there be networking sessions at the Forum?",
+    "answer": "Yes, structured networking is built into the agenda."
+  },
+  {
+    "id": 145,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Can I get a VIP or investor-only pass?",
+    "answer": "Yes, VIP passes with dedicated investor access are available."
+  },
+  {
+    "id": 146,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Is the Forum held annually in the same city?",
+    "answer": "Location can rotate — I'll confirm this year's host city."
+  },
+  {
+    "id": 147,
+    "category": "Global Real Estate Investment Forum",
+    "question": "What topics are usually covered at the Forum?",
+    "answer": "Market outlook, capital trends, regulatory shifts, and developer showcases."
+  },
+  {
+    "id": 148,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Can I access Forum sessions online if I can't attend in person?",
+    "answer": "Select sessions are livestreamed for remote attendees."
+  },
+  {
+    "id": 149,
+    "category": "Global Real Estate Investment Forum",
+    "question": "How do I register for the Forum?",
+    "answer": "Registration opens on our events page — I can send you the link."
+  },
+  {
+    "id": 150,
+    "category": "Global Real Estate Investment Forum",
+    "question": "Are there deals or MOUs typically signed at the Forum?",
+    "answer": "Yes, the Forum has historically been a venue for signed partnerships and investment agreements."
+  },
+  {
+    "id": 151,
+    "category": "Research & Insights",
+    "question": "Does REIFGO publish market reports?",
+    "answer": "Yes, we publish regular market and sector reports across our covered regions."
+  },
+  {
+    "id": 152,
+    "category": "Research & Insights",
+    "question": "Where can I find the latest research on Dubai real estate?",
+    "answer": "Available in our Research & Insights section — I can pull the latest report for you."
+  },
+  {
+    "id": 153,
+    "category": "Research & Insights",
+    "question": "Can I download REIFGO's investment insights as a PDF?",
+    "answer": "Yes, most reports are downloadable in PDF format."
+  },
+  {
+    "id": 154,
+    "category": "Research & Insights",
+    "question": "Does REIFGO track rental yield data by area?",
+    "answer": "Yes, yield data is tracked and updated across our active markets."
+  },
+  {
+    "id": 155,
+    "category": "Research & Insights",
+    "question": "Do you have a report comparing GCC real estate markets?",
+    "answer": "Yes, comparative GCC reports are published periodically — I'll check the latest edition."
+  },
+  {
+    "id": 156,
+    "category": "Research & Insights",
+    "question": "How often is research updated?",
+    "answer": "Quarterly, with ad hoc updates during major market events."
+  },
+  {
+    "id": 157,
+    "category": "Research & Insights",
+    "question": "Can I request custom market research for a specific city?",
+    "answer": "Yes, custom research can be commissioned through our advisory team."
+  },
+  {
+    "id": 158,
+    "category": "Research & Insights",
+    "question": "Does REIFGO provide price trend forecasts?",
+    "answer": "Yes, forecast data is included in select reports."
+  },
+  {
+    "id": 159,
+    "category": "Research & Insights",
+    "question": "Is there a newsletter I can subscribe to?",
+    "answer": "Yes, subscribe via our website to receive research and market updates."
+  },
+  {
+    "id": 160,
+    "category": "Research & Insights",
+    "question": "Can I get insights on a specific developer's portfolio performance?",
+    "answer": "Where public data allows, yes — ask and I'll compile what's available."
+  },
+  {
+    "id": 161,
+    "category": "Business Development Advisory",
+    "question": "What does REIFGO's business development advisory include?",
+    "answer": "Market entry strategy, feasibility, investor relations, and deal structuring support."
+  },
+  {
+    "id": 162,
+    "category": "Business Development Advisory",
+    "question": "Can REIFGO help me enter a new international market?",
+    "answer": "Yes, this is a core advisory offering — we help map opportunity and regulatory pathway."
+  },
+  {
+    "id": 163,
+    "category": "Business Development Advisory",
+    "question": "Do you offer feasibility studies for new developments?",
+    "answer": "Yes, feasibility studies are available through our advisory team."
+  },
+  {
+    "id": 164,
+    "category": "Business Development Advisory",
+    "question": "Can REIFGO help structure a JV between a developer and investor?",
+    "answer": "Yes, deal structuring including JVs is part of our advisory scope."
+  },
+  {
+    "id": 165,
+    "category": "Business Development Advisory",
+    "question": "Do you provide go-to-market strategy for real estate brands?",
+    "answer": "Yes, we support brand positioning and go-to-market planning for developers."
+  },
+  {
+    "id": 166,
+    "category": "Business Development Advisory",
+    "question": "Can REIFGO advise on pricing strategy for a new project?",
+    "answer": "Yes, pricing strategy is part of our project advisory services."
+  },
+  {
+    "id": 167,
+    "category": "Business Development Advisory",
+    "question": "Do you help with investor relations strategy?",
+    "answer": "Yes, we advise on investor communications and relations frameworks."
+  },
+  {
+    "id": 168,
+    "category": "Business Development Advisory",
+    "question": "Can REIFGO connect me with legal or financial advisors?",
+    "answer": "Yes, we can introduce you to vetted partners in our network."
+  },
+  {
+    "id": 169,
+    "category": "Business Development Advisory",
+    "question": "Is advisory service available for non-real estate PropTech startups?",
+    "answer": "In select cases, yes — reach out to discuss fit."
+  },
+  {
+    "id": 170,
+    "category": "Business Development Advisory",
+    "question": "How do I book a consultation with the advisory team?",
+    "answer": "Submit a request through your account or contact us directly, and I can help schedule it."
+  },
+  {
+    "id": 171,
+    "category": "Partnership & Sponsorship",
+    "question": "How can my company become a REIFGO partner?",
+    "answer": "Submit a partnership inquiry through our contact page — our team will follow up on fit and scope."
+  },
+  {
+    "id": 172,
+    "category": "Partnership & Sponsorship",
+    "question": "What sponsorship packages are available for events?",
+    "answer": "Multiple tiers exist, from branding visibility to exclusive title sponsorship — I can share the current deck."
+  },
+  {
+    "id": 173,
+    "category": "Partnership & Sponsorship",
+    "question": "Can media companies partner with REIFGO?",
+    "answer": "Yes, media partnerships are welcomed for events and research distribution."
+  },
+  {
+    "id": 174,
+    "category": "Partnership & Sponsorship",
+    "question": "What are the benefits of becoming a strategic partner?",
+    "answer": "Access to our investor and developer network, co-branded visibility, and joint event opportunities."
+  },
+  {
+    "id": 175,
+    "category": "Partnership & Sponsorship",
+    "question": "Can financial institutions or banks partner with REIFGO?",
+    "answer": "Yes, financial institution partnerships are actively pursued for financing and investor access."
+  },
+  {
+    "id": 176,
+    "category": "Partnership & Sponsorship",
+    "question": "Is there a co-branding opportunity for sponsors?",
+    "answer": "Yes, co-branding is available at select sponsorship tiers."
+  },
+  {
+    "id": 177,
+    "category": "Partnership & Sponsorship",
+    "question": "What's the cost of a Forum sponsorship package?",
+    "answer": "Pricing depends on tier — I can share the current sponsorship deck."
+  },
+  {
+    "id": 178,
+    "category": "Partnership & Sponsorship",
+    "question": "Can government entities or trade bodies partner with REIFGO?",
+    "answer": "Yes, we actively work with government and trade partners across our markets."
+  },
+  {
+    "id": 179,
+    "category": "Partnership & Sponsorship",
+    "question": "Do partners get access to REIFGO's investor database?",
+    "answer": "Access levels vary by partnership tier — this is discussed case by case."
+  },
+  {
+    "id": 180,
+    "category": "Partnership & Sponsorship",
+    "question": "How do I submit a partnership proposal?",
+    "answer": "Send your proposal through our contact form, or I can route you to the partnerships team directly."
+  },
+  {
+    "id": 181,
+    "category": "Accreditation Process",
+    "question": "What does \"accredited developer\" mean on REIFGO?",
+    "answer": "A developer verified through our documentation, legal, and track-record review process."
+  },
+  {
+    "id": 182,
+    "category": "Accreditation Process",
+    "question": "How do I become an accredited investor on REIFGO?",
+    "answer": "Submit identification, proof of funds, and relevant financial documentation for review."
+  },
+  {
+    "id": 183,
+    "category": "Accreditation Process",
+    "question": "What documents are required for accreditation?",
+    "answer": "ID, proof of funds/net worth, and where applicable, corporate registration documents."
+  },
+  {
+    "id": 184,
+    "category": "Accreditation Process",
+    "question": "How long does the accreditation process take?",
+    "answer": "Typically 3–5 business days, depending on documentation completeness."
+  },
+  {
+    "id": 185,
+    "category": "Accreditation Process",
+    "question": "Is accreditation a one-time process or renewed annually?",
+    "answer": "Accreditation is periodically reviewed to stay current with regulatory requirements."
+  },
+  {
+    "id": 186,
+    "category": "Accreditation Process",
+    "question": "Can a company be accredited, or only individuals?",
+    "answer": "Both — corporate entities and individuals can be accredited."
+  },
+  {
+    "id": 187,
+    "category": "Accreditation Process",
+    "question": "What happens if my accreditation application is rejected?",
+    "answer": "You'll receive feedback on the reason and can reapply once requirements are met."
+  },
+  {
+    "id": 188,
+    "category": "Accreditation Process",
+    "question": "Is there a fee for accreditation?",
+    "answer": "Accreditation review is free — related advisory services may carry separate fees."
+  },
+  {
+    "id": 189,
+    "category": "Accreditation Process",
+    "question": "Does accreditation status appear publicly on my profile?",
+    "answer": "A verified badge appears on your profile; underlying documents remain confidential."
+  },
+  {
+    "id": 190,
+    "category": "Accreditation Process",
+    "question": "Who reviews accreditation applications?",
+    "answer": "REIFGO's internal compliance and advisory team."
+  },
+  {
+    "id": 191,
+    "category": "Account & Registration",
+    "question": "How do I create a REIFGO account?",
+    "answer": "Sign up on our website or app with your email or LinkedIn/Google account."
+  },
+  {
+    "id": 192,
+    "category": "Account & Registration",
+    "question": "Can I sign up using Google or LinkedIn?",
+    "answer": "Yes, both are supported for quick registration."
+  },
+  {
+    "id": 193,
+    "category": "Account & Registration",
+    "question": "How do I reset my password?",
+    "answer": "Use \"Forgot Password\" on the login screen to receive a reset link."
+  },
+  {
+    "id": 194,
+    "category": "Account & Registration",
+    "question": "Can I have both a developer and investor profile?",
+    "answer": "Yes, dual profiles are supported under one account."
+  },
+  {
+    "id": 195,
+    "category": "Account & Registration",
+    "question": "How do I update my company information?",
+    "answer": "Edit your profile details directly from your account settings."
+  },
+  {
+    "id": 196,
+    "category": "Account & Registration",
+    "question": "Can I delete my REIFGO account?",
+    "answer": "Yes, contact support to process account deletion."
+  },
+  {
+    "id": 197,
+    "category": "Account & Registration",
+    "question": "How do I verify my email/phone number?",
+    "answer": "A verification code is sent automatically during registration — enter it to confirm."
+  },
+  {
+    "id": 198,
+    "category": "Account & Registration",
+    "question": "Can I change the email linked to my account?",
+    "answer": "Yes, update it in account settings, with verification required."
+  },
+  {
+    "id": 199,
+    "category": "Account & Registration",
+    "question": "Is two-factor authentication available?",
+    "answer": "Yes, 2FA can be enabled in your security settings."
+  },
+  {
+    "id": 200,
+    "category": "Account & Registration",
+    "question": "Who can see my profile information on the platform?",
+    "answer": "Visibility is controlled by your privacy settings — core details are private by default."
+  },
+  {
+    "id": 201,
+    "category": "Contact & Support",
+    "question": "How do I contact REIFGO support?",
+    "answer": "Via the contact form, live chat, or by asking me directly."
+  },
+  {
+    "id": 202,
+    "category": "Contact & Support",
+    "question": "What's the response time for support requests?",
+    "answer": "Typically within 24–48 business hours."
+  },
+  {
+    "id": 203,
+    "category": "Contact & Support",
+    "question": "Is there a live chat option?",
+    "answer": "Yes, live chat is available on our website and app."
+  },
+  {
+    "id": 204,
+    "category": "Contact & Support",
+    "question": "Can I schedule a call with a REIFGO representative?",
+    "answer": "Yes, request a call through the contact form or ask me to arrange it."
+  },
+  {
+    "id": 205,
+    "category": "Contact & Support",
+    "question": "Do you have local offices I can visit?",
+    "answer": "We have a presence in key markets — tell me your city and I'll confirm."
+  },
+  {
+    "id": 206,
+    "category": "Contact & Support",
+    "question": "How do I report a technical issue with the app or website?",
+    "answer": "Use the \"Report an Issue\" option in settings, or contact support directly."
+  },
+  {
+    "id": 207,
+    "category": "Contact & Support",
+    "question": "Can I request a demo of the platform?",
+    "answer": "Yes, demos can be scheduled through our sales team."
+  },
+  {
+    "id": 208,
+    "category": "Contact & Support",
+    "question": "Is support available in Arabic, Mandarin, or other languages?",
+    "answer": "Yes, multilingual support is available."
+  },
+  {
+    "id": 209,
+    "category": "Contact & Support",
+    "question": "What are your support hours?",
+    "answer": "Standard business hours across our regional teams, with extended coverage during major events."
+  },
+  {
+    "id": 210,
+    "category": "Contact & Support",
+    "question": "How do I escalate an unresolved complaint?",
+    "answer": "Request escalation through support, and it will be routed to a senior team member."
+  },
+  {
+    "id": 211,
+    "category": "Frequently Asked Questions",
+    "question": "Is REIFGO safe and trustworthy?",
+    "answer": "Yes — we operate on verified accreditation, due diligence, and a transparent advisory process."
+  },
+  {
+    "id": 212,
+    "category": "Frequently Asked Questions",
+    "question": "How does REIFGO make money?",
+    "answer": "Through listing fees, advisory services, event sponsorship, and partnership arrangements."
+  },
+  {
+    "id": 213,
+    "category": "Frequently Asked Questions",
+    "question": "Can I use REIFGO without registering?",
+    "answer": "Basic browsing is available; full access requires registration."
+  },
+  {
+    "id": 214,
+    "category": "Frequently Asked Questions",
+    "question": "Is my personal data secure on the platform?",
+    "answer": "Yes, data is handled per our privacy policy with industry-standard security practices."
+  },
+  {
+    "id": 215,
+    "category": "Frequently Asked Questions",
+    "question": "Does REIFGO have investor protection or dispute resolution?",
+    "answer": "Structures vary by project — we recommend reviewing specific terms and independent legal advice."
+  },
+  {
+    "id": 216,
+    "category": "Frequently Asked Questions",
+    "question": "Can I get a referral bonus for bringing in a developer or investor?",
+    "answer": "Referral programs may be available — ask our team for current terms."
+  },
+  {
+    "id": 217,
+    "category": "Frequently Asked Questions",
+    "question": "Does REIFGO work with banks for financing?",
+    "answer": "Yes, we maintain relationships with financing partners in key markets."
+  },
+  {
+    "id": 218,
+    "category": "Frequently Asked Questions",
+    "question": "Can I follow specific developers to get their updates?",
+    "answer": "Yes, follow developers on the platform to receive their listing updates."
+  },
+  {
+    "id": 219,
+    "category": "Frequently Asked Questions",
+    "question": "What happens if a project I invested in is delayed?",
+    "answer": "Updates are communicated by the developer, with REIFGO available to support investor queries."
+  },
+  {
+    "id": 220,
+    "category": "Frequently Asked Questions",
+    "question": "How do I unsubscribe from REIFGO communications?",
+    "answer": "Use the unsubscribe link in any email, or update preferences in account settings."
+  }
+]

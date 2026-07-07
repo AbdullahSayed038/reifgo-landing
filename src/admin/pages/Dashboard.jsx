@@ -76,12 +76,12 @@ export default function Dashboard() {
       {error && <div className="adm-error-banner">{error}</div>}
 
       <div className="adm-stat-grid">
-        <StatCard label="Properties" value={stats?.properties} />
-        <StatCard label="Developers" value={stats?.developers} />
-        <StatCard label="Events" value={stats?.events} />
-        <StatCard label="App users" value={stats?.users} />
-        <StatCard label="Total leads" value={stats?.leads_total} />
-        <StatCard label="Pending leads" value={stats?.leads_pending} accent />
+        <StatCard label="Properties" value={stats?.properties} to="/admin/properties" />
+        <StatCard label="Developers" value={stats?.developers} to="/admin/developers" />
+        <StatCard label="Events" value={stats?.events} to="/admin/events" />
+        <StatCard label="App users" value={stats?.users} to="/admin/users" />
+        <StatCard label="Total leads" value={stats?.leads_total} to="/admin/leads" />
+        <StatCard label="Pending leads" value={stats?.leads_pending} to="/admin/leads" />
       </div>
 
       <div className="adm-chart-grid">

@@ -5,11 +5,10 @@ import "./AdvisorChat.css";
 const CHIPS = ["Market Pulse: London", "Risk Assessment", "Portfolio Rebalance"];
 
 // The rich "Institutional Insights" card (with the Marina Sands property
-// listing) is the seeded first reply. Anything the visitor sends after that
-// gets a plain acknowledgement bubble — there's no live model wired up yet.
-const PLACEHOLDER_REPLY =
-  "Thanks for your message — REIFGO Advisor's live market intelligence is being connected. A full AI-generated response will appear here soon.";
-
+// listing) is the seeded first exchange, kept as demo content. Everything the
+// visitor sends after that goes through the live FAQ bot at /api/chat — the
+// same retrieval gate, limits, and Claude flow as the floating site widget.
+// Seeded messages are display-only and are never sent as conversation history.
 const INITIAL_MESSAGES = [
   {
     id: "seed-user",
@@ -23,21 +22,54 @@ export default function AdvisorChat() {
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | sending | error
+  const [lastFailed, setLastFailed] = useState(null);
   const spaceRef = useRef(null);
 
   useEffect(() => {
     const el = spaceRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages]);
+  }, [messages, status]);
 
-  function send(text) {
+  async function send(text, prior = messages) {
     const trimmed = text.trim();
-    if (!trimmed) return;
-    setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text: trimmed }]);
+    if (!trimmed || status === "sending") return;
+
+    const history = prior
+      .filter((m) => !String(m.id).startsWith("seed-") && m.text)
+      .map((m) => ({
+        role: m.role === "ai" ? "assistant" : "user",
+        content: m.text,
+      }));
+
+    setMessages([...prior, { id: `u-${Date.now()}`, role: "user", text: trimmed }]);
     setInput("");
-    window.setTimeout(() => {
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "ai", text: PLACEHOLDER_REPLY }]);
-    }, 700);
+    setStatus("sending");
+    setLastFailed(null);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: trimmed, history }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.resetConversation) {
+          setMessages([...INITIAL_MESSAGES, { id: `a-${Date.now()}`, role: "ai", text: data.error }]);
+          setStatus("idle");
+          return;
+        }
+        throw new Error(data.error || "Request failed");
+      }
+
+      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "ai", text: data.reply }]);
+      setStatus("idle");
+    } catch (err) {
+      setLastFailed({ text: trimmed, prior, message: err.message });
+      setStatus("error");
+    }
   }
 
   function handleSubmit(e) {
@@ -126,6 +158,43 @@ export default function AdvisorChat() {
               </div>
             );
           })}
+
+          {status === "sending" && (
+            <div className="achat__ai">
+              <div className="achat__card achat__card--simple">
+                <div className="achat__card-head">
+                  <Icon name="barChart" size={18} />
+                  <span>Advisor AI</span>
+                </div>
+                <div className="achat__typing" aria-label="Advisor AI is typing">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {status === "error" && (
+            <div className="achat__ai">
+              <div className="achat__card achat__card--simple achat__card--error">
+                <div className="achat__card-head">
+                  <Icon name="barChart" size={18} />
+                  <span>Advisor AI</span>
+                </div>
+                <p className="achat__card-text">
+                  {lastFailed?.message || "Sorry, that didn't go through."}
+                </p>
+                <button
+                  type="button"
+                  className="achat__retry"
+                  onClick={() => lastFailed && send(lastFailed.text, lastFailed.prior)}
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

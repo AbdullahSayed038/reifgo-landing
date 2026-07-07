@@ -66,7 +66,9 @@ export default function DataTable({
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                 >
                   {columns.map((c) => (
-                    <td key={c.key}>{c.render ? c.render(row) : row[c.key]}</td>
+                    <td key={c.key} data-label={c.label}>
+                      {c.render ? c.render(row) : row[c.key]}
+                    </td>
                   ))}
                 </tr>
               ))

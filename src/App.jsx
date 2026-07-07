@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Services from "./pages/Services.jsx";
 import Advisor from "./pages/Advisor.jsx";
+import ChatWidget from "./components/ChatWidget.jsx";
 
 // CMS dashboard — code-split so visitors never download admin JS/CSS.
 const AdminApp = lazy(() => import("./admin/AdminApp.jsx"));
@@ -17,6 +18,7 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const { pathname } = useLocation();
   return (
     <>
       <ScrollToTop />
@@ -33,6 +35,8 @@ export default function App() {
           }
         />
       </Routes>
+      {/* The Advisor page has its own full-screen chat, and the CMS doesn't need it. */}
+      {pathname !== "/advisor" && !pathname.startsWith("/admin") && <ChatWidget />}
     </>
   );
 }
