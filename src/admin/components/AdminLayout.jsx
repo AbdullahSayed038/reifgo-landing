@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { getToken, IS_DEMO, logout } from "../api.js";
 import { useCurrency } from "../currency.jsx";
@@ -14,14 +15,35 @@ const NAV = [
 export default function AdminLayout() {
   const navigate = useNavigate();
   const { currency, setCurrency } = useCurrency();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   if (!getToken()) {
     return <Navigate to="/admin/login" replace />;
   }
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <div className="adm-shell">
-      <aside className="adm-sidebar">
+      {/* Mobile-only top bar; hidden on desktop where the sidebar is fixed */}
+      <header className="adm-topbar">
+        <button
+          className="adm-topbar__burger"
+          aria-label="Open menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen(true)}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+        <span className="adm-topbar__logo">REIFGO</span>
+        <span className="adm-topbar__sub">Admin</span>
+      </header>
+
+      {menuOpen && <div className="adm-scrim" onClick={closeMenu} />}
+
+      <aside className={`adm-sidebar${menuOpen ? " is-open" : ""}`}>
         <div className="adm-sidebar__brand">
           <span className="adm-sidebar__logo">REIFGO</span>
           <span className="adm-sidebar__sub">Admin Dashboard</span>
@@ -33,6 +55,7 @@ export default function AdminLayout() {
               key={item.to}
               to={item.to}
               end={item.end}
+              onClick={closeMenu}
               className={({ isActive }) =>
                 `adm-nav-link${isActive ? " is-active" : ""}`
               }
