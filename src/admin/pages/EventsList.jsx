@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
+import ChannelBadges from "../components/ChannelBadges.jsx";
 import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -60,6 +61,7 @@ export default function EventsList() {
           { key: "date", label: "When", render: (r) => fmtDate(r.date) },
           { key: "location", label: "Location", render: (r) => r.location ?? "—" },
           { key: "type", label: "Type", render: (r) => <StatusBadge value={r.type} />, width: 110 },
+          { key: "channels", label: "Where", render: (r) => <ChannelBadges channels={r.channels} />, width: 110 },
           { key: "registrations", label: "Registered", render: (r) => r._count?.registrations ?? 0, width: 100 },
           {
             key: "actions",

@@ -10,6 +10,8 @@ const LABELS = {
   express_interest: "Express interest",
   callback_request: "Callback",
   document_request: "Documents",
+  join_network: "Join network",
+  advisory_request: "Advisory",
   regular: "Regular",
   premium_investor: "Premium",
 };

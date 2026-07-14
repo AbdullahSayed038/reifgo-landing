@@ -81,8 +81,28 @@ export default function Leads() {
               </div>
             ),
           },
-          { key: "property", label: "Property", render: (r) => r.property?.name ?? "—" },
+          {
+            key: "property",
+            label: "Regarding",
+            render: (r) =>
+              r.property?.name ?? (
+                <div className="adm-cell-stack">
+                  <strong>{r.interest ?? "General enquiry"}</strong>
+                  {r.message && <span>“{r.message.slice(0, 60)}{r.message.length > 60 ? "…" : ""}”</span>}
+                </div>
+              ),
+          },
           { key: "lead_type", label: "Request", render: (r) => <StatusBadge value={r.lead_type} />, width: 140 },
+          {
+            key: "source",
+            label: "Source",
+            width: 100,
+            render: (r) => (
+              <span className={`adm-badge adm-badge--${r.source === "website" ? "chan" : "contacted"}`}>
+                {r.source === "website" ? "Website" : "App"}
+              </span>
+            ),
+          },
           { key: "created_at", label: "Received", render: (r) => fmtDate(r.created_at), width: 120 },
           {
             key: "status",

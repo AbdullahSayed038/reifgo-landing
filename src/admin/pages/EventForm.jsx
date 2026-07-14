@@ -11,6 +11,7 @@ const EMPTY = {
   type: "in_person",
   pass_type: "",
   description: "",
+  channels: { app: true, website: true },
 };
 
 // <input type="datetime-local"> wants "YYYY-MM-DDTHH:mm" in local time.
@@ -42,6 +43,7 @@ export default function EventForm() {
           type: ev.type,
           pass_type: ev.pass_type ?? "",
           description: ev.description ?? "",
+          channels: { app: ev.channels?.app ?? true, website: ev.channels?.website ?? true },
         }),
       )
       .catch((e) => toast.error(e.message));
@@ -66,6 +68,7 @@ export default function EventForm() {
       type: form.type,
       pass_type: str(form.pass_type),
       description: str(form.description),
+      channels: form.channels,
     };
 
     try {
@@ -115,6 +118,18 @@ export default function EventForm() {
             <FormField label="Location" value={form.location} onChange={set("location")} placeholder="Marina Bay Sands, Singapore" />
             <FormField label="Pass type" value={form.pass_type} onChange={set("pass_type")} placeholder="Investor pass" />
             <FormField label="Description" type="textarea" value={form.description} onChange={set("description")} span={2} />
+            <FormField
+              label="Show in the app"
+              type="checkbox"
+              value={form.channels.app}
+              onChange={(v) => setForm((f) => ({ ...f, channels: { ...f.channels, app: v } }))}
+            />
+            <FormField
+              label="Show on the website"
+              type="checkbox"
+              value={form.channels.website}
+              onChange={(v) => setForm((f) => ({ ...f, channels: { ...f.channels, website: v } }))}
+            />
           </div>
         </section>
 

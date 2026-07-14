@@ -5,6 +5,12 @@
 // Developer accounts see only their own rows — the same scoping the real
 // backend will apply server-side from the JWT's developer_id claim, so
 // swapping in live APIs later changes nothing in the pages.
+import {
+  readStoredInsights,
+  readWebsiteLeads,
+  updateWebsiteLead,
+  writeStoredInsights,
+} from "../lib/demoStore.js";
 import { ApiError, getSession } from "./api.js";
 import { createDemoData } from "./demoData.js";
 
@@ -20,6 +26,11 @@ const ACCOUNTS = {
 };
 
 const db = createDemoData();
+// Insights persist in localStorage so the public site can render them and
+// edits survive reloads; everything else resets per session.
+db.insights = readStoredInsights() ?? db.insights;
+const persistInsights = () => writeStoredInsights(db.insights);
+
 let seq = 0;
 const newId = (prefix) => `${prefix}-${Date.now()}-${++seq}`;
 const wait = () => new Promise((r) => setTimeout(r, 150));
@@ -64,6 +75,20 @@ const leadFull = (l) => {
 const myPropertyIds = (dev) =>
   new Set(db.properties.filter((p) => p.developer_id === dev).map((p) => p.id));
 
+// Website form submissions, mapped to the same shape as app leads.
+const websiteLeads = () =>
+  readWebsiteLeads().map((w) => ({
+    id: w.id,
+    source: "website",
+    lead_type: w.lead_type,
+    status: w.status,
+    created_at: w.created_at,
+    interest: w.interest,
+    message: w.message,
+    user: { id: null, full_name: w.name, phone: w.phone, email: w.email },
+    property: null,
+  }));
+
 export async function demoRequest(method, path, body) {
   await wait();
   const key = `${method} ${path}`;
@@ -82,7 +107,9 @@ export async function demoRequest(method, path, body) {
       ? db.properties.filter((p) => p.developer_id === dev)
       : db.properties;
     const mine = dev ? myPropertyIds(dev) : null;
-    const leads = mine ? db.leads.filter((l) => mine.has(l.property_id)) : db.leads;
+    const leads = mine
+      ? db.leads.filter((l) => mine.has(l.property_id))
+      : [...db.leads, ...websiteLeads()];
     return {
       properties: props.length,
       developers: db.developers.length,
@@ -206,17 +233,70 @@ export async function demoRequest(method, path, body) {
   }
 
   // ---- Leads ----
+  // Developer accounts see leads on their own properties; website form
+  // submissions (no property attached) belong to the REIFGO admin inbox.
   if (key === "GET /admin/leads") {
     const mine = dev ? myPropertyIds(dev) : null;
-    const rows = mine ? db.leads.filter((l) => mine.has(l.property_id)) : db.leads;
-    return rows.map(leadFull);
+    const rows = mine
+      ? db.leads.filter((l) => mine.has(l.property_id)).map(leadFull)
+      : [...db.leads.map(leadFull), ...websiteLeads()];
+    return rows.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   }
   m = path.match(/^\/admin\/leads\/([^/]+)$/);
   if (m && method === "PATCH") {
-    const lead = db.leads.find((x) => x.id === m[1]) ?? notFound("Lead");
-    if (dev && !myPropertyIds(dev).has(lead.property_id)) notFound("Lead");
-    lead.status = body.status;
-    return leadFull(lead);
+    const lead = db.leads.find((x) => x.id === m[1]);
+    if (lead) {
+      if (dev && !myPropertyIds(dev).has(lead.property_id)) notFound("Lead");
+      lead.status = body.status;
+      return leadFull(lead);
+    }
+    if (dev) notFound("Lead");
+    const updated = updateWebsiteLead(m[1], { status: body.status });
+    if (!updated) notFound("Lead");
+    return websiteLeads().find((w) => w.id === m[1]);
+  }
+
+  // ---- Insights ----
+  if (key === "GET /admin/insights") {
+    const rows = dev
+      ? db.insights.filter((i) => i.author_developer_id === dev)
+      : db.insights;
+    return [...rows].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+  }
+  if (key === "POST /admin/insights") {
+    const session = getSession();
+    const created = {
+      id: newId("in"),
+      created_at: new Date().toISOString(),
+      channels: { app: true, website: false },
+      published: false,
+      ...body,
+      // Developers always author as themselves.
+      ...(dev && { author_developer_id: dev, author_name: session?.name }),
+    };
+    db.insights.unshift(created);
+    persistInsights();
+    return created;
+  }
+  m = path.match(/^\/admin\/insights\/([^/]+)$/);
+  if (m) {
+    const insight = db.insights.find((x) => x.id === m[1]) ?? notFound("Insight");
+    if (dev && insight.author_developer_id !== dev) notFound("Insight");
+    if (method === "GET") return insight;
+    if (method === "PATCH") {
+      const { author_developer_id, author_name, ...rest } = body;
+      Object.assign(insight, rest);
+      if (!dev) {
+        if (author_name !== undefined) insight.author_name = author_name;
+      }
+      persistInsights();
+      return insight;
+    }
+    if (method === "DELETE") {
+      db.insights = db.insights.filter((x) => x.id !== insight.id);
+      persistInsights();
+      return { deleted: true };
+    }
   }
 
   // ---- Users (admin only) ----

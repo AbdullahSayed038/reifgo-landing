@@ -16,6 +16,7 @@ const EMPTY = {
   sustainability_rating: "",
   overview: "",
   status: "active",
+  channels: { app: true, website: true },
   media: [],
   roi: { annual_return: "", capital_appreciation: "", rental_yield: "", exit_horizon: "" },
 };
@@ -53,6 +54,7 @@ export default function PropertyForm() {
             sustainability_rating: p.sustainability_rating ?? "",
             overview: p.overview ?? "",
             status: p.status,
+            channels: { app: p.channels?.app ?? true, website: p.channels?.website ?? true },
             media: (p.media ?? []).map((m) => ({ url: m.url, type: m.type })),
             roi: {
               annual_return: p.roi?.annual_return ?? "",
@@ -139,6 +141,7 @@ export default function PropertyForm() {
       sustainability_rating: num(form.sustainability_rating),
       overview: str(form.overview),
       status: form.status,
+      channels: form.channels,
       media: form.media
         .filter((m) => m.url.trim())
         .map((m, i) => ({ url: m.url.trim(), type: m.type || "image", display_order: i })),
@@ -219,6 +222,18 @@ export default function PropertyForm() {
             />
             <FormField label="Sustainability rating (0–5)" type="number" value={form.sustainability_rating} onChange={set("sustainability_rating")} />
             <FormField label="Overview" type="textarea" value={form.overview} onChange={set("overview")} span={2} />
+            <FormField
+              label="Show in the app"
+              type="checkbox"
+              value={form.channels.app}
+              onChange={(v) => setForm((f) => ({ ...f, channels: { ...f.channels, app: v } }))}
+            />
+            <FormField
+              label="Show on the website"
+              type="checkbox"
+              value={form.channels.website}
+              onChange={(v) => setForm((f) => ({ ...f, channels: { ...f.channels, website: v } }))}
+            />
           </div>
         </section>
 

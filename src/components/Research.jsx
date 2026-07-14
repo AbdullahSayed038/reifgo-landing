@@ -1,7 +1,9 @@
 import Icon from "./Icon.jsx";
+import { readPublishedWebsiteInsights } from "../lib/demoStore.js";
 import "./Research.css";
 
-const REPORTS = [
+// Fallback content, shown until the CMS has published its own insights.
+const DEFAULT_REPORTS = [
   {
     icon: "researchTrends",
     title: "Global market trends and analysis",
@@ -24,7 +26,29 @@ const REPORTS = [
   },
 ];
 
+const CATEGORY_ICONS = {
+  "Market Report": "researchTrends",
+  Interview: "researchInterviews",
+  Guide: "researchGuides",
+  Announcement: "researchUpdates",
+};
+
+// This section is CMS-managed: insights published to the "website"
+// channel in the admin dashboard render here (via the shared demo store
+// for now; via the public API once the backend is live).
+function loadReports() {
+  const cms = readPublishedWebsiteInsights();
+  if (!cms || cms.length === 0) return DEFAULT_REPORTS;
+  return cms.slice(0, 4).map((i) => ({
+    icon: CATEGORY_ICONS[i.category] ?? "researchTrends",
+    title: i.title,
+    body: i.excerpt ?? "",
+  }));
+}
+
 export default function Research() {
+  const reports = loadReports();
+
   return (
     <section className="rsh section" style={{ background: "var(--surface-soft)" }}>
       <div className="rsh__inner container">
@@ -40,7 +64,7 @@ export default function Research() {
         </header>
 
         <ul className="rsh__grid">
-          {REPORTS.map((r, i) => (
+          {reports.map((r, i) => (
             <li
               className="rsh__card"
               key={r.title}

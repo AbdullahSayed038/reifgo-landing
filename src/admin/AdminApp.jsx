@@ -9,6 +9,8 @@ import DeveloperForm from "./pages/DeveloperForm.jsx";
 import DevelopersList from "./pages/DevelopersList.jsx";
 import EventForm from "./pages/EventForm.jsx";
 import EventsList from "./pages/EventsList.jsx";
+import InsightForm from "./pages/InsightForm.jsx";
+import InsightsList from "./pages/InsightsList.jsx";
 import Leads from "./pages/Leads.jsx";
 import Login from "./pages/Login.jsx";
 import PropertiesList from "./pages/PropertiesList.jsx";
@@ -40,6 +42,9 @@ export default function AdminApp() {
             <Route path="events" element={<EventsList />} />
             <Route path="events/new" element={<EventForm />} />
             <Route path="events/:id" element={<EventForm />} />
+            <Route path="insights" element={<InsightsList />} />
+            <Route path="insights/new" element={<InsightForm />} />
+            <Route path="insights/:id" element={<InsightForm />} />
             <Route path="leads" element={<Leads />} />
             <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />
           </Route>

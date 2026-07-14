@@ -788,6 +788,16 @@
   color: var(--adm-danger);
 }
 
+.adm-badge--chan {
+  background: var(--adm-brand-050);
+  color: var(--adm-brand-700);
+}
+
+.adm-badge--chan-off {
+  background: var(--adm-bg);
+  color: var(--adm-muted);
+}
+
 /* ---------------- Tabs ---------------- */
 
 .adm-tabs {

@@ -380,5 +380,85 @@ export function createDemoData() {
     },
   ];
 
-  return { developers, properties, events, users, leads };
+  // CMS-authored articles. The four "published + website" ones mirror the
+  // cards hardcoded on the landing page's Insights section, so the site
+  // looks identical until someone edits them in the CMS.
+  const insights = [
+    {
+      id: "in-trends",
+      title: "Global market trends and analysis",
+      category: "Market Report",
+      excerpt: "Quarterly deep-dives into regional growth and volatility.",
+      body: "Full report body goes here — regional absorption, yield movement and capital flows across the REIFGO markets.",
+      cover_url: "",
+      author_name: "REIFGO Research",
+      author_developer_id: null,
+      channels: { app: true, website: true },
+      published: true,
+      created_at: daysAgo(9),
+    },
+    {
+      id: "in-interviews",
+      title: "Developer interviews and profiles",
+      category: "Interview",
+      excerpt: "Conversations with the minds behind iconic projects.",
+      body: "",
+      cover_url: "",
+      author_name: "REIFGO Research",
+      author_developer_id: null,
+      channels: { app: true, website: true },
+      published: true,
+      created_at: daysAgo(16),
+    },
+    {
+      id: "in-guides",
+      title: "Investment guides and best practices",
+      category: "Guide",
+      excerpt: "Essential resources for cross-border asset management.",
+      body: "",
+      cover_url: "",
+      author_name: "REIFGO Research",
+      author_developer_id: null,
+      channels: { app: true, website: true },
+      published: true,
+      created_at: daysAgo(23),
+    },
+    {
+      id: "in-updates",
+      title: "Project updates and announcements",
+      category: "Announcement",
+      excerpt: "Breaking news from our developer network globally.",
+      body: "",
+      cover_url: "",
+      author_name: "REIFGO Research",
+      author_developer_id: null,
+      channels: { app: true, website: true },
+      published: true,
+      created_at: daysAgo(30),
+    },
+    {
+      id: "in-aldar-q3",
+      title: "Yas Island Q3 absorption update",
+      category: "Market Report",
+      excerpt: "Waterfront units are moving 22% faster than the Abu Dhabi average.",
+      body: "Draft — numbers pending final verification from the sales desk.",
+      cover_url: "",
+      author_name: "ALDAR PROPERTIES",
+      author_developer_id: "aldar",
+      channels: { app: true, website: false },
+      published: false,
+      created_at: daysAgo(2),
+    },
+  ];
+
+  // Where each record is shown. Mirrors the visibility flags the real
+  // schema will need (channels columns on Property/Event/Insight).
+  for (const p of properties) p.channels = { app: true, website: true };
+  properties.find((p) => p.id === "rukan-tower").channels = { app: true, website: false };
+  for (const e of events) e.channels = { app: true, website: true };
+
+  // App leads carry source "app"; website form submissions get "website".
+  for (const l of leads) l.source = "app";
+
+  return { developers, properties, events, users, leads, insights };
 }

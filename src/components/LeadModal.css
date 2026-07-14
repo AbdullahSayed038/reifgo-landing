@@ -1,0 +1,171 @@
+/* Lead-capture modal (Join the Network / Request Advisory) */
+
+.lm__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 35, 45, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.lm__card {
+  position: relative;
+  background: var(--surface);
+  border-radius: 1rem;
+  padding: 2.5rem 2.25rem 2.25rem;
+  width: 30rem;
+  max-width: 100%;
+  max-height: calc(100vh - 2.5rem);
+  max-height: calc(100dvh - 2.5rem);
+  overflow-y: auto;
+  box-shadow: 0 2.5rem 5rem -1.5rem rgba(0, 20, 28, 0.5);
+  transform-origin: center;
+  animation: lm-pop 0.22s var(--ease-out);
+}
+
+@keyframes lm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lm__card {
+    animation: none;
+  }
+}
+
+.lm__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--line-3);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease);
+}
+
+.lm__close:active {
+  transform: scale(0.94);
+}
+
+.lm__title {
+  font-size: 1.75rem;
+  color: var(--brand);
+  margin: 0.5rem 0 0.5rem;
+}
+
+.lm__lead {
+  font-size: 0.9375rem;
+  line-height: var(--lh-body);
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.lm__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lm__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.lm__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.lm__field span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.lm__field input,
+.lm__field select,
+.lm__field textarea {
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--line-solid);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  outline: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  width: 100%;
+}
+
+.lm__field input:focus,
+.lm__field select:focus,
+.lm__field textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 0.1875rem rgba(0, 85, 108, 0.12);
+}
+
+.lm__field textarea {
+  resize: vertical;
+}
+
+.lm__submit {
+  margin-top: 0.25rem;
+  justify-content: center;
+}
+
+/* Success state */
+
+.lm__done {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.lm__done-mark {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: rgba(0, 85, 108, 0.08);
+  color: var(--brand);
+  font-size: 1.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.lm__done .btn {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .lm__row {
+    grid-template-columns: 1fr;
+  }
+
+  .lm__card {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+}
