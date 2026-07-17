@@ -11,15 +11,22 @@ import EventForm from "./pages/EventForm.jsx";
 import EventsList from "./pages/EventsList.jsx";
 import InsightForm from "./pages/InsightForm.jsx";
 import InsightsList from "./pages/InsightsList.jsx";
+import LeadDetail from "./pages/LeadDetail.jsx";
 import Leads from "./pages/Leads.jsx";
 import Login from "./pages/Login.jsx";
 import PropertiesList from "./pages/PropertiesList.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
+import Team from "./pages/Team.jsx";
 import Users from "./pages/Users.jsx";
 
 // UI-level guard for admin-only sections. Real enforcement is server-side.
 function AdminOnly({ children }) {
   return getSession()?.role === "admin" ? children : <Navigate to="/admin" replace />;
+}
+
+// Admin + developer (i.e. not a broker).
+function StaffOnly({ children }) {
+  return getSession()?.role !== "broker" ? children : <Navigate to="/admin" replace />;
 }
 
 // The CMS. Mounted lazily at /admin/* — see src/App.jsx.
@@ -46,6 +53,8 @@ export default function AdminApp() {
             <Route path="insights/new" element={<InsightForm />} />
             <Route path="insights/:id" element={<InsightForm />} />
             <Route path="leads" element={<Leads />} />
+            <Route path="leads/:id" element={<LeadDetail />} />
+            <Route path="team" element={<StaffOnly><Team /></StaffOnly>} />
             <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />
           </Route>
         </Routes>

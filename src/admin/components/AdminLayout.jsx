@@ -10,6 +10,7 @@ const ADMIN_NAV = [
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },
   { to: "/admin/leads", label: "Leads", icon: "◎" },
+  { to: "/admin/team", label: "Team", icon: "◍" },
   { to: "/admin/users", label: "Users", icon: "◉" },
 ];
 
@@ -18,8 +19,14 @@ const DEVELOPER_NAV = [
   { to: "/admin/properties", label: "My Properties", icon: "◨" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },
   { to: "/admin/leads", label: "Leads", icon: "◎" },
+  { to: "/admin/team", label: "Team", icon: "◍" },
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/company", label: "Company Profile", icon: "◈" },
+];
+
+const BROKER_NAV = [
+  { to: "/admin", label: "Dashboard", icon: "▦", end: true },
+  { to: "/admin/leads", label: "My Leads", icon: "◎" },
 ];
 
 export default function AdminLayout() {
@@ -33,8 +40,18 @@ export default function AdminLayout() {
   }
 
   const isDeveloper = session.role === "developer";
-  const nav = isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
-  const portalLabel = isDeveloper ? "Developer Portal" : "Admin Dashboard";
+  const isBroker = session.role === "broker";
+  const nav = isBroker ? BROKER_NAV : isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
+  const portalLabel = isBroker
+    ? "Broker Portal"
+    : isDeveloper
+      ? "Developer Portal"
+      : "Admin Dashboard";
+  const roleLabel = isBroker
+    ? "Broker account"
+    : isDeveloper
+      ? "Developer account"
+      : "Administrator";
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -53,7 +70,7 @@ export default function AdminLayout() {
           </svg>
         </button>
         <span className="adm-topbar__logo">REIFGO</span>
-        <span className="adm-topbar__sub">{isDeveloper ? "Portal" : "Admin"}</span>
+        <span className="adm-topbar__sub">{isBroker ? "Broker" : isDeveloper ? "Portal" : "Admin"}</span>
       </header>
 
       {menuOpen && <div className="adm-scrim" onClick={closeMenu} />}
@@ -87,7 +104,7 @@ export default function AdminLayout() {
           <span className="adm-account__dot" aria-hidden="true" />
           <div className="adm-account__info">
             <strong>{session.name}</strong>
-            <span>{isDeveloper ? "Developer account" : "Administrator"}</span>
+            <span>{roleLabel}</span>
           </div>
         </div>
 

@@ -16,14 +16,29 @@ import { createDemoData } from "./demoData.js";
 
 // username -> account. All demo passwords are "123".
 const ACCOUNTS = {
-  admin: { role: "admin", developer_id: null, name: "REIFGO Admin" },
-  aldar: { role: "developer", developer_id: "aldar", name: "ALDAR PROPERTIES" },
+  admin: { role: "admin", developer_id: null, broker_id: null, name: "REIFGO Admin" },
+  aldar: { role: "developer", developer_id: "aldar", broker_id: null, name: "ALDAR PROPERTIES" },
   reportage: {
     role: "developer",
     developer_id: "reportage",
+    broker_id: null,
     name: "REPORTAGE PROPERTIES",
   },
+  // Brokers work under a developer and only see leads assigned to them.
+  omar: { role: "broker", developer_id: "aldar", broker_id: "bk-omar", name: "Omar Al Farsi" },
+  fatima: { role: "broker", developer_id: "aldar", broker_id: "bk-fatima", name: "Fatima Zahra" },
+  yusuf: { role: "broker", developer_id: "reportage", broker_id: "bk-yusuf", name: "Yusuf Rahman" },
 };
+
+const STATUS_LABEL = {
+  new: "New",
+  assigned: "Assigned",
+  contacted: "Contacted",
+  qualified: "Qualified",
+  closed_won: "Closed (won)",
+  closed_lost: "Closed (lost)",
+};
+const CLOSED = ["closed_won", "closed_lost"];
 
 const db = createDemoData();
 // Insights persist in localStorage so the public site can render them and
@@ -62,32 +77,122 @@ const developerFull = (d) => ({
   _count: { properties: db.properties.filter((p) => p.developer_id === d.id).length },
 });
 
+const sessionInfo = () => {
+  const s = getSession() ?? {};
+  return {
+    role: s.role ?? "admin",
+    developer_id: s.developer_id ?? null,
+    broker_id: s.broker_id ?? null,
+    name: s.name ?? "Admin",
+  };
+};
+
+const brokerBrief = (id) => {
+  const b = db.brokers.find((x) => x.id === id);
+  return b ? { id: b.id, name: b.name, developer_id: b.developer_id } : null;
+};
+
+// Hours between two ISO timestamps (or since `iso` if `to` omitted).
+const hoursBetween = (from, to = new Date().toISOString()) =>
+  from ? (new Date(to).getTime() - new Date(from).getTime()) / 3600000 : null;
+
+// Escalation state: an assigned lead with no broker response escalates to the
+// developer at 24h and to REIFGO at 48h. Computed live, never stored.
+function escalationOf(lead) {
+  if (!lead.assigned_broker_id || lead.first_response_at) return null;
+  if (lead.status !== "assigned") return null;
+  const h = hoursBetween(lead.assigned_at);
+  if (h == null) return null;
+  if (h >= 48) return "reifgo";
+  if (h >= 24) return "developer";
+  return null;
+}
+
+const responseHoursOf = (lead) =>
+  lead.assigned_at && lead.first_response_at
+    ? Math.round(hoursBetween(lead.assigned_at, lead.first_response_at) * 10) / 10
+    : null;
+
 const leadFull = (l) => {
   const u = db.users.find((x) => x.id === l.user_id);
   const p = db.properties.find((x) => x.id === l.property_id);
   return {
     ...l,
+    source: "app",
     user: u ? { id: u.id, full_name: u.full_name, phone: u.phone, email: u.email } : null,
     property: p ? { id: p.id, name: p.name } : null,
+    developer_id: p ? p.developer_id : null,
+    broker: l.assigned_broker_id ? brokerBrief(l.assigned_broker_id) : null,
+    escalation: escalationOf(l),
+    response_hours: responseHoursOf(l),
+    activity: [...(l.activity ?? [])].sort((a, b) => (a.at < b.at ? 1 : -1)),
   };
 };
 
 const myPropertyIds = (dev) =>
   new Set(db.properties.filter((p) => p.developer_id === dev).map((p) => p.id));
 
-// Website form submissions, mapped to the same shape as app leads.
+// Old website-lead statuses predate the broker lifecycle — map them forward.
+const mapWebsiteStatus = (s) =>
+  ({ pending: "new", contacted: "contacted", closed: "closed_won" }[s] ?? s ?? "new");
+
+// Session-lived extra state for website leads (status changes + notes) — the
+// demo store only persists status, so notes live here for the page session.
+const websiteExtra = {};
+
+// Website form submissions, mapped to the same shape as app leads so the
+// leads list and detail page treat them uniformly (admin inbox only).
 const websiteLeads = () =>
-  readWebsiteLeads().map((w) => ({
-    id: w.id,
-    source: "website",
-    lead_type: w.lead_type,
-    status: w.status,
-    created_at: w.created_at,
-    interest: w.interest,
-    message: w.message,
-    user: { id: null, full_name: w.name, phone: w.phone, email: w.email },
-    property: null,
-  }));
+  readWebsiteLeads().map((w) => {
+    const extra = websiteExtra[w.id] ?? {};
+    const creation = {
+      id: `wact-${w.id}`,
+      at: w.created_at,
+      actor: w.name || "Website visitor",
+      type: "creation",
+      note: "Submitted the website enquiry form",
+    };
+    return {
+      id: w.id,
+      source: "website",
+      lead_type: w.lead_type,
+      status: extra.status ?? mapWebsiteStatus(w.status),
+      assigned_broker_id: null,
+      broker: null,
+      developer_id: null,
+      created_at: w.created_at,
+      assigned_at: null,
+      first_response_at: null,
+      closed_at: null,
+      escalation: null,
+      response_hours: null,
+      interest: w.interest,
+      message: w.message,
+      user: { id: null, full_name: w.name, phone: w.phone, email: w.email },
+      property: null,
+      activity: [...(extra.activity ?? []), creation].sort((a, b) => (a.at < b.at ? 1 : -1)),
+    };
+  });
+
+// Per-broker performance rollup from the leads assigned to them.
+const brokerStats = (b) => {
+  const ls = db.leads.filter((l) => l.assigned_broker_id === b.id);
+  const won = ls.filter((l) => l.status === "closed_won").length;
+  const lost = ls.filter((l) => l.status === "closed_lost").length;
+  const closed = won + lost;
+  const resp = ls.map(responseHoursOf).filter((x) => x != null);
+  return {
+    total: ls.length,
+    open: ls.filter((l) => !CLOSED.includes(l.status)).length,
+    overdue: ls.filter((l) => escalationOf(l)).length,
+    closed_won: won,
+    closed_lost: lost,
+    close_rate: closed ? Math.round((won / closed) * 100) : null,
+    avg_response_hours: resp.length
+      ? Math.round((resp.reduce((a, c) => a + c, 0) / resp.length) * 10) / 10
+      : null,
+  };
+};
 
 export async function demoRequest(method, path, body) {
   await wait();
@@ -102,22 +207,58 @@ export async function demoRequest(method, path, body) {
     return { access_token: `demo-${body.username}`, ...account };
   }
 
+  const info = sessionInfo();
+  const isAdmin = info.role === "admin";
+  const isDev = info.role === "developer";
+  const isBroker = info.role === "broker";
+  const mine = isDev ? myPropertyIds(info.developer_id) : null;
+
+  // Brokers only ever touch the leads and stats surface.
+  if (isBroker) {
+    const brokerOk =
+      key === "GET /admin/stats" ||
+      key === "GET /admin/brokers" ||
+      /^\/admin\/leads(\/|$)/.test(path);
+    if (!brokerOk) throw new ApiError(403, "Not available for broker accounts");
+  }
+
+  // Leads visible to the current account, before website leads are folded in.
+  const visibleAppLeads = () => {
+    if (isBroker) return db.leads.filter((l) => l.assigned_broker_id === info.broker_id);
+    if (isDev) return db.leads.filter((l) => mine.has(l.property_id));
+    return db.leads;
+  };
+
   if (key === "GET /admin/stats") {
-    const props = dev
-      ? db.properties.filter((p) => p.developer_id === dev)
-      : db.properties;
-    const mine = dev ? myPropertyIds(dev) : null;
-    const leads = mine
-      ? db.leads.filter((l) => mine.has(l.property_id))
-      : [...db.leads, ...websiteLeads()];
+    const appLeads = visibleAppLeads();
+    const webCount = isAdmin ? readWebsiteLeads().length : 0;
+    const propsCount = isDev
+      ? db.properties.filter((p) => p.developer_id === info.developer_id).length
+      : db.properties.length;
+    const brokerCount = isAdmin
+      ? db.brokers.length
+      : isDev
+        ? db.brokers.filter((b) => b.developer_id === info.developer_id).length
+        : 1;
     return {
-      properties: props.length,
+      properties: propsCount,
       developers: db.developers.length,
       events: db.events.length,
       users: db.users.length,
-      leads_total: leads.length,
-      leads_pending: leads.filter((l) => l.status === "pending").length,
+      brokers: brokerCount,
+      leads_total: appLeads.length + webCount,
+      leads_open: appLeads.filter((l) => !CLOSED.includes(l.status)).length,
+      leads_overdue: appLeads.filter((l) => escalationOf(l)).length,
     };
+  }
+
+  if (key === "GET /admin/brokers") {
+    const rows = isAdmin
+      ? db.brokers
+      : isDev
+        ? db.brokers.filter((b) => b.developer_id === info.developer_id)
+        : db.brokers.filter((b) => b.id === info.broker_id);
+    return rows.map((b) => ({ ...b, stats: brokerStats(b) }));
   }
 
   // ---- Properties ----
@@ -233,27 +374,98 @@ export async function demoRequest(method, path, body) {
   }
 
   // ---- Leads ----
-  // Developer accounts see leads on their own properties; website form
-  // submissions (no property attached) belong to the REIFGO admin inbox.
+  // Brokers see leads assigned to them; developers see leads on their own
+  // listings; admin sees everything plus website enquiries.
   if (key === "GET /admin/leads") {
-    const mine = dev ? myPropertyIds(dev) : null;
-    const rows = mine
-      ? db.leads.filter((l) => mine.has(l.property_id)).map(leadFull)
-      : [...db.leads.map(leadFull), ...websiteLeads()];
+    const rows = [
+      ...visibleAppLeads().map(leadFull),
+      ...(isAdmin ? websiteLeads() : []),
+    ];
     return rows.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   }
-  m = path.match(/^\/admin\/leads\/([^/]+)$/);
-  if (m && method === "PATCH") {
+
+  const canTouchAppLead = (lead) => {
+    if (isAdmin) return true;
+    if (isDev) return mine.has(lead.property_id);
+    if (isBroker) return lead.assigned_broker_id === info.broker_id;
+    return false;
+  };
+  const entry = (type, note) => ({
+    id: newId("act"),
+    at: new Date().toISOString(),
+    actor: info.name,
+    type,
+    note,
+  });
+
+  // Add an activity note to a lead.
+  m = path.match(/^\/admin\/leads\/([^/]+)\/activity$/);
+  if (m && method === "POST") {
+    const note = (body?.note ?? "").trim();
+    if (!note) throw new ApiError(400, "Note can't be empty");
     const lead = db.leads.find((x) => x.id === m[1]);
     if (lead) {
-      if (dev && !myPropertyIds(dev).has(lead.property_id)) notFound("Lead");
-      lead.status = body.status;
+      if (!canTouchAppLead(lead)) notFound("Lead");
+      lead.activity.push(entry("note", note));
       return leadFull(lead);
     }
-    if (dev) notFound("Lead");
-    const updated = updateWebsiteLead(m[1], { status: body.status });
-    if (!updated) notFound("Lead");
-    return websiteLeads().find((w) => w.id === m[1]);
+    if (!isAdmin || !readWebsiteLeads().some((x) => x.id === m[1])) notFound("Lead");
+    (websiteExtra[m[1]] ??= { activity: [] }).activity.push(entry("note", note));
+    return websiteLeads().find((x) => x.id === m[1]);
+  }
+
+  m = path.match(/^\/admin\/leads\/([^/]+)$/);
+  if (m) {
+    const lead = db.leads.find((x) => x.id === m[1]);
+    if (lead) {
+      if (!canTouchAppLead(lead)) notFound("Lead");
+      if (method === "GET") return leadFull(lead);
+      if (method === "PATCH") {
+        // Assignment — admin and developers only.
+        if (body.assigned_broker_id !== undefined) {
+          if (isBroker) throw new ApiError(403, "Brokers can't reassign leads");
+          const bId = body.assigned_broker_id;
+          if (bId) {
+            const b = db.brokers.find((x) => x.id === bId);
+            if (!b) throw new ApiError(400, "Unknown broker");
+            const propDev = db.properties.find((p) => p.id === lead.property_id)?.developer_id;
+            const allowedDev = isDev ? info.developer_id : propDev;
+            if (b.developer_id !== allowedDev)
+              throw new ApiError(400, "That broker works for a different developer");
+            const reassign = lead.assigned_broker_id && lead.assigned_broker_id !== bId;
+            lead.assigned_broker_id = bId;
+            lead.assigned_at = new Date().toISOString();
+            if (lead.status === "new") lead.status = "assigned";
+            lead.activity.push(entry("assignment", `${reassign ? "Reassigned" : "Assigned"} to ${b.name}`));
+          } else {
+            lead.assigned_broker_id = null;
+            lead.assigned_at = null;
+            lead.activity.push(entry("assignment", "Unassigned"));
+          }
+        }
+        // Status change.
+        if (body.status !== undefined && body.status !== lead.status) {
+          lead.status = body.status;
+          const now = new Date().toISOString();
+          if (body.status === "contacted" && !lead.first_response_at) lead.first_response_at = now;
+          if (CLOSED.includes(body.status)) lead.closed_at = now;
+          lead.activity.push(entry("status", `Status → ${STATUS_LABEL[body.status] ?? body.status}`));
+        }
+        return leadFull(lead);
+      }
+    }
+    // Website lead (admin only).
+    if (!isAdmin || !readWebsiteLeads().some((x) => x.id === m[1])) notFound("Lead");
+    if (method === "GET") return websiteLeads().find((x) => x.id === m[1]);
+    if (method === "PATCH") {
+      if (body.status !== undefined) {
+        updateWebsiteLead(m[1], { status: body.status });
+        const extra = (websiteExtra[m[1]] ??= { activity: [] });
+        extra.status = body.status;
+        extra.activity.push(entry("status", `Status → ${STATUS_LABEL[body.status] ?? body.status}`));
+      }
+      return websiteLeads().find((x) => x.id === m[1]);
+    }
   }
 
   // ---- Insights ----

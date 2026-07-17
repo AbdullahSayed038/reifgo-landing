@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 
-// Tappable stat tile — links to the section it summarizes.
-export default function StatCard({ label, value, to }) {
+// Tappable stat tile — links to the section it summarizes. `accent` draws
+// attention (e.g. a non-zero overdue count).
+export default function StatCard({ label, value, to, accent }) {
+  const cls = `adm-stat${to ? " adm-stat--link" : ""}${accent ? " adm-stat--accent" : ""}`;
   const content = (
     <>
       <span className="adm-stat__value">{value ?? "—"}</span>
@@ -9,12 +11,9 @@ export default function StatCard({ label, value, to }) {
     </>
   );
 
-  if (to) {
-    return (
-      <Link className="adm-stat adm-stat--link" to={to}>
-        {content}
-      </Link>
-    );
-  }
-  return <div className="adm-stat">{content}</div>;
+  return to ? (
+    <Link className={cls} to={to}>{content}</Link>
+  ) : (
+    <div className={cls}>{content}</div>
+  );
 }

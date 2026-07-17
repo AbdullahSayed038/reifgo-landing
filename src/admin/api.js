@@ -96,6 +96,7 @@ export async function login(username, password) {
     token: data.access_token,
     role: data.role ?? "admin",
     developer_id: data.developer_id ?? null,
+    broker_id: data.broker_id ?? null,
     name: data.name ?? "Admin",
   };
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));

@@ -3,6 +3,7 @@
 
 const daysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString();
 const daysAhead = (n) => new Date(Date.now() + n * 86400000).toISOString();
+const hoursAgo = (n) => new Date(Date.now() - n * 3600000).toISOString();
 
 const img = (id) => `https://images.unsplash.com/${id}?w=800&q=80`;
 
@@ -319,64 +320,227 @@ export function createDemoData() {
       registered_events: [],
       _count: { leads: 1, saved_properties: 0 },
     },
+    {
+      id: "u4",
+      phone: "+971 55 771 4090",
+      full_name: "Aisha Noor",
+      email: "aisha.noor@example.com",
+      nationality: "Emirati",
+      country: "UAE",
+      city: "Abu Dhabi",
+      area_of_interest: "Residential",
+      tier: "premium_investor",
+      is_verified: true,
+      created_at: daysAgo(60),
+      registered_events: [],
+      _count: { leads: 2, saved_properties: 3 },
+    },
+    {
+      id: "u5",
+      phone: "+65 8123 4455",
+      full_name: "Marcus Chen",
+      email: "marcus.chen@example.com",
+      nationality: "Singaporean",
+      country: "Singapore",
+      city: "Singapore",
+      area_of_interest: "Residential",
+      tier: "regular",
+      is_verified: true,
+      created_at: daysAgo(45),
+      registered_events: [],
+      _count: { leads: 2, saved_properties: 1 },
+    },
   ];
 
+  // Brokers work under a developer. Each developer's team assigns leads to
+  // its brokers; a broker only sees the leads assigned to them.
+  const brokers = [
+    { id: "bk-omar", developer_id: "aldar", name: "Omar Al Farsi", email: "omar@aldar.example", phone: "+971 50 200 1188" },
+    { id: "bk-fatima", developer_id: "aldar", name: "Fatima Zahra", email: "fatima@aldar.example", phone: "+971 50 200 3300" },
+    { id: "bk-yusuf", developer_id: "reportage", name: "Yusuf Rahman", email: "yusuf@reportage.example", phone: "+971 50 400 7722" },
+  ];
+
+  // Lead activity entries are the audit trail: creation, assignment, status
+  // changes and free-text notes — reverse-chronological in the UI.
+  let aseq = 0;
+  const act = (at, actor, type, note) => ({ id: `act-${++aseq}`, at, actor, type, note });
+
   const leads = [
+    // Fresh, unassigned — the developer still needs to route it.
     {
       id: "l1",
       user_id: "u1",
-      property_id: "marina-gate",
+      property_id: "yas-bay",
       lead_type: "express_interest",
-      status: "pending",
-      created_at: daysAgo(1),
+      status: "new",
+      assigned_broker_id: null,
+      created_at: hoursAgo(3),
+      assigned_at: null,
+      first_response_at: null,
+      closed_at: null,
+      activity: [act(hoursAgo(3), "Khalid Al Mansoori", "creation", "Lead submitted via the app")],
     },
+    // Assigned, still inside the 24h response window.
     {
       id: "l2",
       user_id: "u2",
-      property_id: "nexus",
-      lead_type: "callback_request",
-      status: "pending",
-      created_at: daysAgo(2),
-    },
-    {
-      id: "l3",
-      user_id: "u1",
-      property_id: "zenith",
-      lead_type: "document_request",
-      status: "contacted",
-      created_at: daysAgo(6),
-    },
-    {
-      id: "l4",
-      user_id: "u3",
-      property_id: "aster-park",
-      lead_type: "express_interest",
-      status: "closed",
-      created_at: daysAgo(14),
-    },
-    {
-      id: "l5",
-      user_id: "u1",
       property_id: "yas-bay",
       lead_type: "callback_request",
-      status: "pending",
-      created_at: daysAgo(1),
+      status: "assigned",
+      assigned_broker_id: "bk-omar",
+      created_at: hoursAgo(8),
+      assigned_at: hoursAgo(6),
+      first_response_at: null,
+      closed_at: null,
+      activity: [
+        act(hoursAgo(6), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(8), "Sarah Whitfield", "creation", "Lead submitted via the app"),
+      ],
     },
+    // Assigned 30h ago, no response yet — escalated to the developer.
+    {
+      id: "l3",
+      user_id: "u3",
+      property_id: "saadiyat-grove",
+      lead_type: "document_request",
+      status: "assigned",
+      assigned_broker_id: "bk-fatima",
+      created_at: hoursAgo(32),
+      assigned_at: hoursAgo(30),
+      first_response_at: null,
+      closed_at: null,
+      activity: [
+        act(hoursAgo(30), "ALDAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(32), "Daniel Osei", "creation", "Lead submitted via the app"),
+      ],
+    },
+    // Assigned 54h ago, still no response — escalated all the way to REIFGO.
+    {
+      id: "l4",
+      user_id: "u4",
+      property_id: "yas-bay",
+      lead_type: "express_interest",
+      status: "assigned",
+      assigned_broker_id: "bk-omar",
+      created_at: hoursAgo(56),
+      assigned_at: hoursAgo(54),
+      first_response_at: null,
+      closed_at: null,
+      activity: [
+        act(hoursAgo(54), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(56), "Aisha Noor", "creation", "Lead submitted via the app"),
+      ],
+    },
+    // Responded in ~4h — healthy.
+    {
+      id: "l5",
+      user_id: "u5",
+      property_id: "saadiyat-grove",
+      lead_type: "callback_request",
+      status: "contacted",
+      assigned_broker_id: "bk-fatima",
+      created_at: hoursAgo(22),
+      assigned_at: hoursAgo(20),
+      first_response_at: hoursAgo(16),
+      closed_at: null,
+      activity: [
+        act(hoursAgo(16), "Fatima Zahra", "note", "Called the investor, sent the Saadiyat brochure. Following up Thursday."),
+        act(hoursAgo(16), "Fatima Zahra", "status", "Status → Contacted"),
+        act(hoursAgo(20), "ALDAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(22), "Marcus Chen", "creation", "Lead submitted via the app"),
+      ],
+    },
+    // Qualified — genuine intent confirmed.
     {
       id: "l6",
+      user_id: "u1",
+      property_id: "yas-bay",
+      lead_type: "express_interest",
+      status: "qualified",
+      assigned_broker_id: "bk-omar",
+      created_at: daysAgo(5),
+      assigned_at: hoursAgo(118),
+      first_response_at: hoursAgo(115),
+      closed_at: null,
+      activity: [
+        act(hoursAgo(70), "Omar Al Farsi", "status", "Status → Qualified"),
+        act(hoursAgo(72), "Omar Al Farsi", "note", "Budget confirmed at $60k entry, wants a 2-bed. Strong fit."),
+        act(hoursAgo(115), "Omar Al Farsi", "status", "Status → Contacted"),
+        act(hoursAgo(118), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(daysAgo(5), "Khalid Al Mansoori", "creation", "Lead submitted via the app"),
+      ],
+    },
+    // Closed — won.
+    {
+      id: "l7",
       user_id: "u2",
       property_id: "saadiyat-grove",
       lead_type: "document_request",
-      status: "contacted",
-      created_at: daysAgo(4),
+      status: "closed_won",
+      assigned_broker_id: "bk-fatima",
+      created_at: daysAgo(12),
+      assigned_at: hoursAgo(286),
+      first_response_at: hoursAgo(284),
+      closed_at: daysAgo(2),
+      activity: [
+        act(daysAgo(2), "Fatima Zahra", "status", "Status → Closed (won)"),
+        act(daysAgo(2), "Fatima Zahra", "note", "Reservation signed on a Saadiyat villa. 🎉"),
+        act(hoursAgo(284), "Fatima Zahra", "status", "Status → Contacted"),
+        act(hoursAgo(286), "ALDAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(daysAgo(12), "Sarah Whitfield", "creation", "Lead submitted via the app"),
+      ],
     },
+    // Closed — lost.
     {
-      id: "l7",
+      id: "l8",
       user_id: "u3",
+      property_id: "yas-bay",
+      lead_type: "callback_request",
+      status: "closed_lost",
+      assigned_broker_id: "bk-omar",
+      created_at: daysAgo(20),
+      assigned_at: hoursAgo(478),
+      first_response_at: hoursAgo(473),
+      closed_at: daysAgo(8),
+      activity: [
+        act(daysAgo(8), "Omar Al Farsi", "status", "Status → Closed (lost)"),
+        act(daysAgo(8), "Omar Al Farsi", "note", "Investor went with another development. Not price-sensitive — timing."),
+        act(hoursAgo(473), "Omar Al Farsi", "status", "Status → Contacted"),
+        act(hoursAgo(478), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(daysAgo(20), "Daniel Osei", "creation", "Lead submitted via the app"),
+      ],
+    },
+    // Reportage lead, assigned to Yusuf — gives the second company real data.
+    {
+      id: "l9",
+      user_id: "u5",
       property_id: "rukan-tower",
       lead_type: "express_interest",
-      status: "pending",
-      created_at: daysAgo(2),
+      status: "assigned",
+      assigned_broker_id: "bk-yusuf",
+      created_at: hoursAgo(11),
+      assigned_at: hoursAgo(9),
+      first_response_at: null,
+      closed_at: null,
+      activity: [
+        act(hoursAgo(9), "REPORTAGE PROPERTIES", "assignment", "Assigned to Yusuf Rahman"),
+        act(hoursAgo(11), "Marcus Chen", "creation", "Lead submitted via the app"),
+      ],
+    },
+    // A lead on a developer that has no broker accounts yet — shows the
+    // admin's cross-portfolio view and an unrouted lead.
+    {
+      id: "l10",
+      user_id: "u4",
+      property_id: "nexus",
+      lead_type: "express_interest",
+      status: "new",
+      assigned_broker_id: null,
+      created_at: daysAgo(1),
+      assigned_at: null,
+      first_response_at: null,
+      closed_at: null,
+      activity: [act(daysAgo(1), "Aisha Noor", "creation", "Lead submitted via the app")],
     },
   ];
 
@@ -460,5 +624,5 @@ export function createDemoData() {
   // App leads carry source "app"; website form submissions get "website".
   for (const l of leads) l.source = "app";
 
-  return { developers, properties, events, users, leads, insights };
+  return { developers, properties, events, users, brokers, leads, insights };
 }

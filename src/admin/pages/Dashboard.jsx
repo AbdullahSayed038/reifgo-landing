@@ -1,148 +1,184 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api, getSession } from "../api.js";
 import { BarChart, DonutChart } from "../components/charts.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
+import { ESCALATION, fmtHours, initials, timeAgo } from "../leadUtils.js";
 
-// Chart palette — status trio matches the badge colors; teal for single-hue
-// magnitude bars. Validated for lightness/chroma/contrast (dataviz checks).
-const STATUS_COLORS = {
-  active: "#1e7d4f",
-  coming_soon: "#92650f",
-  sold_out: "#b3372f",
-  pending: "#92650f",
-  contacted: "#1e7d4f",
-  closed: "#b3372f",
-};
-const TEAL = "#0891b2";
-
-const countBy = (rows, key) =>
-  rows.reduce((acc, r) => ((acc[r[key]] = (acc[r[key]] ?? 0) + 1), acc), {});
+const PROP_COLORS = { active: "#1e7d4f", coming_soon: "#92650f", sold_out: "#b3372f" };
+const LIFECYCLE_BARS = [
+  ["new", "New", "#2b5d8c"],
+  ["assigned", "Assigned", "#0891b2"],
+  ["contacted", "Contacted", "#1e7d4f"],
+  ["qualified", "Qualified", "#15803d"],
+  ["closed", "Closed", "#6b7a84"],
+];
 
 export default function Dashboard() {
   const session = getSession();
-  const isDeveloper = session?.role === "developer";
+  const role = session?.role ?? "admin";
+  const isAdmin = role === "admin";
+  const isDeveloper = role === "developer";
+  const isBroker = role === "broker";
+
   const [stats, setStats] = useState(null);
   const [leads, setLeads] = useState([]);
   const [properties, setProperties] = useState([]);
   const [events, setEvents] = useState([]);
+  const [brokers, setBrokers] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([
-      api.get("/admin/stats"),
-      api.get("/admin/leads"),
-      api.get("/admin/properties"),
-      api.get("/admin/events"),
-    ])
-      .then(([s, l, p, e]) => {
+    const calls = [api.get("/admin/stats"), api.get("/admin/leads")];
+    calls.push(isBroker ? Promise.resolve([]) : api.get("/admin/properties"));
+    calls.push(isBroker ? Promise.resolve([]) : api.get("/admin/events"));
+    calls.push(isBroker ? Promise.resolve([]) : api.get("/admin/brokers"));
+    Promise.all(calls)
+      .then(([s, l, p, e, b]) => {
         setStats(s);
         setLeads(l);
         setProperties(p);
         setEvents(e);
+        setBrokers(b);
       })
       .catch((err) => setError(err.message));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const pendingLeads = leads.filter((x) => x.status === "pending").slice(0, 6);
+  const count = (fn) => leads.filter(fn).length;
+  const lifecycleBars = LIFECYCLE_BARS.map(([key, label, color]) => ({
+    label,
+    color,
+    value:
+      key === "closed"
+        ? count((l) => l.status?.startsWith("closed"))
+        : count((l) => l.status === key),
+  }));
 
-  const byStatus = countBy(properties, "status");
+  const propByStatus = properties.reduce((a, p) => ((a[p.status] = (a[p.status] ?? 0) + 1), a), {});
   const propertyDonut = [
-    { label: "Active", value: byStatus.active ?? 0, color: STATUS_COLORS.active },
-    { label: "Coming soon", value: byStatus.coming_soon ?? 0, color: STATUS_COLORS.coming_soon },
-    { label: "Sold out", value: byStatus.sold_out ?? 0, color: STATUS_COLORS.sold_out },
+    { label: "Active", value: propByStatus.active ?? 0, color: PROP_COLORS.active },
+    { label: "Coming soon", value: propByStatus.coming_soon ?? 0, color: PROP_COLORS.coming_soon },
+    { label: "Sold out", value: propByStatus.sold_out ?? 0, color: PROP_COLORS.sold_out },
   ];
 
-  const byLeadStatus = countBy(leads, "status");
-  const leadBars = [
-    { label: "Pending", value: byLeadStatus.pending ?? 0, color: STATUS_COLORS.pending },
-    { label: "Contacted", value: byLeadStatus.contacted ?? 0, color: STATUS_COLORS.contacted },
-    { label: "Closed", value: byLeadStatus.closed ?? 0, color: STATUS_COLORS.closed },
-  ];
+  const brokerBars = brokers
+    .filter((b) => b.stats.avg_response_hours != null)
+    .map((b) => ({ label: b.name, value: b.stats.avg_response_hours }));
 
-  const eventBars = [...events]
-    .sort((a, b) => (b._count?.registrations ?? 0) - (a._count?.registrations ?? 0))
-    .slice(0, 5)
-    .map((e) => ({ label: e.title, value: e._count?.registrations ?? 0 }));
+  // Leads that need attention: overdue first, then unassigned/new, then awaiting response.
+  const attention = [...leads]
+    .filter((l) => l.escalation || l.status === "new" || (l.status === "assigned" && !l.first_response_at))
+    .sort((a, b) => (a.escalation ? 0 : 1) - (b.escalation ? 0 : 1))
+    .slice(0, 6);
+
+  const greeting = isBroker
+    ? `${session?.name} — your assigned leads.`
+    : isDeveloper
+      ? `${session?.name} — your listings and lead pipeline.`
+      : "REIFGO content and lead pipeline at a glance.";
 
   return (
     <>
       <header className="adm-page-head">
         <div>
           <h1>Dashboard</h1>
-          <p>
-            {isDeveloper
-              ? `${session?.name} — your listings at a glance.`
-              : "REIFGO app content at a glance."}
-          </p>
+          <p>{greeting}</p>
         </div>
       </header>
 
       {error && <div className="adm-error-banner">{error}</div>}
 
       <div className="adm-stat-grid">
-        <StatCard
-          label={isDeveloper ? "My properties" : "Properties"}
-          value={stats?.properties}
-          to="/admin/properties"
-        />
-        {!isDeveloper && (
-          <StatCard label="Developers" value={stats?.developers} to="/admin/developers" />
+        {isBroker ? (
+          <>
+            <StatCard label="Open leads" value={stats?.leads_open} to="/admin/leads" />
+            <StatCard label="Overdue" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
+            <StatCard label="Contacted" value={count((l) => l.status === "contacted")} to="/admin/leads" />
+            <StatCard label="Closed won" value={count((l) => l.status === "closed_won")} to="/admin/leads" />
+          </>
+        ) : (
+          <>
+            <StatCard label={isDeveloper ? "My properties" : "Properties"} value={stats?.properties} to="/admin/properties" />
+            {isAdmin && <StatCard label="Developers" value={stats?.developers} to="/admin/developers" />}
+            <StatCard label="Brokers" value={stats?.brokers} to="/admin/team" />
+            <StatCard label="Total leads" value={stats?.leads_total} to="/admin/leads" />
+            <StatCard label="Open leads" value={stats?.leads_open} to="/admin/leads" />
+            <StatCard label="Overdue" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
+          </>
         )}
-        <StatCard label="Events" value={stats?.events} to="/admin/events" />
-        {!isDeveloper && <StatCard label="App users" value={stats?.users} to="/admin/users" />}
-        <StatCard label="Total leads" value={stats?.leads_total} to="/admin/leads" />
-        <StatCard label="Pending leads" value={stats?.leads_pending} to="/admin/leads" />
       </div>
 
       <div className="adm-chart-grid">
-        <section className="adm-panel">
-          <header className="adm-panel__head"><h2>Properties by status</h2></header>
-          {properties.length === 0 ? (
-            <p className="adm-panel__empty">No properties yet.</p>
-          ) : (
-            <DonutChart data={propertyDonut} centerLabel="Properties" />
-          )}
-        </section>
-
         <section className="adm-panel">
           <header className="adm-panel__head"><h2>Lead pipeline</h2></header>
           {leads.length === 0 ? (
             <p className="adm-panel__empty">No leads yet.</p>
           ) : (
-            <BarChart data={leadBars} />
+            <BarChart data={lifecycleBars} />
           )}
         </section>
 
-        <section className="adm-panel">
-          <header className="adm-panel__head"><h2>Event registrations</h2></header>
-          {eventBars.length === 0 ? (
-            <p className="adm-panel__empty">No events yet.</p>
-          ) : (
-            <BarChart data={eventBars} color={TEAL} />
-          )}
-        </section>
+        {!isBroker && (
+          <section className="adm-panel">
+            <header className="adm-panel__head"><h2>Broker response time</h2></header>
+            {brokerBars.length === 0 ? (
+              <p className="adm-panel__empty">No responses logged yet.</p>
+            ) : (
+              <BarChart data={brokerBars} color="#0891b2" valueFormat={(v) => fmtHours(v)} />
+            )}
+          </section>
+        )}
+
+        {!isBroker && (
+          <section className="adm-panel">
+            <header className="adm-panel__head"><h2>Properties by status</h2></header>
+            {properties.length === 0 ? (
+              <p className="adm-panel__empty">No properties.</p>
+            ) : (
+              <DonutChart data={propertyDonut} centerLabel="Properties" />
+            )}
+          </section>
+        )}
       </div>
 
       <section className="adm-panel">
         <header className="adm-panel__head">
-          <h2>Pending leads</h2>
-          <Link className="adm-btn adm-btn--ghost" to="/admin/leads">
-            View all
-          </Link>
+          <h2>Needs attention</h2>
+          <Link className="adm-btn adm-btn--ghost" to="/admin/leads">View all leads</Link>
         </header>
-        {pendingLeads.length === 0 ? (
-          <p className="adm-panel__empty">No pending leads. All caught up.</p>
+        {attention.length === 0 ? (
+          <p className="adm-panel__empty">Nothing waiting. Every lead is moving.</p>
         ) : (
           <ul className="adm-lead-list">
-            {pendingLeads.map((lead) => (
-              <li key={lead.id}>
+            {attention.map((lead) => (
+              <li
+                key={lead.id}
+                className="adm-table__row--link"
+                onClick={() => navigate(`/admin/leads/${lead.id}`)}
+                style={{ cursor: "pointer" }}
+              >
                 <div>
-                  <strong>{lead.user?.full_name || lead.user?.phone}</strong>
-                  <span> · {lead.property?.name}</span>
+                  <strong>{lead.user?.full_name || "Unnamed"}</strong>
+                  <span> · {lead.property?.name ?? lead.interest ?? "Enquiry"}</span>
+                  {lead.broker && (
+                    <span className="adm-broker-name" style={{ marginTop: 4, fontSize: 12 }}>
+                      <span className="adm-avatar" style={{ width: 18, height: 18, fontSize: 9 }}>{initials(lead.broker.name)}</span>
+                      {lead.broker.name}
+                    </span>
+                  )}
                 </div>
-                <StatusBadge value={lead.lead_type} />
+                {lead.escalation ? (
+                  <span className={`adm-badge adm-badge--esc-${ESCALATION[lead.escalation].tone}`}>
+                    {ESCALATION[lead.escalation].label}
+                  </span>
+                ) : lead.status === "new" ? (
+                  <span className="adm-badge">Unassigned · {timeAgo(lead.created_at)}</span>
+                ) : (
+                  <StatusBadge value={lead.status} />
+                )}
               </li>
             ))}
           </ul>

@@ -540,6 +540,15 @@
   transform: scale(0.98);
 }
 
+/* Draws attention — used for a non-zero overdue count. */
+.adm-stat--accent {
+  border-color: var(--adm-warn);
+  background: var(--adm-warn-050);
+}
+.adm-stat--accent .adm-stat__value {
+  color: var(--adm-warn);
+}
+
 /* ---------------- Panels ---------------- */
 
 .adm-panel {
@@ -796,6 +805,260 @@
 .adm-badge--chan-off {
   background: var(--adm-bg);
   color: var(--adm-muted);
+}
+
+/* Lead lifecycle */
+.adm-badge--assigned {
+  background: var(--adm-brand-050);
+  color: var(--adm-brand-700);
+}
+.adm-badge--qualified,
+.adm-badge--closed_won {
+  background: var(--adm-ok-050);
+  color: var(--adm-ok);
+}
+.adm-badge--closed_lost {
+  background: var(--adm-danger-050);
+  color: var(--adm-danger);
+}
+/* Escalation */
+.adm-badge--esc-developer {
+  background: var(--adm-warn-050);
+  color: var(--adm-warn);
+}
+.adm-badge--esc-reifgo {
+  background: var(--adm-danger-050);
+  color: var(--adm-danger);
+}
+
+/* ---------------- Lead detail ---------------- */
+
+.adm-detail-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 780px) {
+  .adm-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.adm-esc-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 11px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.adm-esc-banner--developer {
+  background: var(--adm-warn-050);
+  color: var(--adm-warn);
+  border: 1px solid rgba(146, 101, 15, 0.28);
+}
+.adm-esc-banner--reifgo {
+  background: var(--adm-danger-050);
+  color: var(--adm-danger);
+  border: 1px solid rgba(179, 55, 47, 0.28);
+}
+
+/* Key/value contact block */
+.adm-kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  font-size: 13.5px;
+}
+.adm-kv dt {
+  color: var(--adm-muted);
+  font-weight: 600;
+}
+.adm-kv dd {
+  margin: 0;
+  color: var(--adm-ink);
+  text-align: right;
+}
+
+/* Lifecycle stepper */
+.adm-stepper {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.adm-step {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--adm-muted);
+  padding-top: 16px;
+  position: relative;
+}
+.adm-step::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 3px;
+  background: var(--adm-line);
+}
+.adm-step.is-done::before {
+  background: var(--adm-brand);
+}
+.adm-step.is-done {
+  color: var(--adm-brand-700);
+}
+.adm-step.is-won::before {
+  background: var(--adm-ok);
+}
+.adm-step.is-won {
+  color: var(--adm-ok);
+}
+.adm-step.is-lost::before {
+  background: var(--adm-danger);
+}
+.adm-step.is-lost {
+  color: var(--adm-danger);
+}
+
+/* Assignment control */
+.adm-assign {
+  display: flex;
+  gap: 8px;
+}
+.adm-assign select {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--adm-line);
+  border-radius: 8px;
+  background: var(--adm-surface);
+  font-size: 13.5px;
+}
+.adm-assigned-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.adm-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--adm-brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* Status action buttons */
+.adm-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Activity timeline */
+.adm-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.adm-tl {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  padding-bottom: 16px;
+  position: relative;
+}
+.adm-tl:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 24px;
+  bottom: 0;
+  width: 1px;
+  background: var(--adm-line);
+}
+.adm-tl__dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  background: var(--adm-brand-050);
+  color: var(--adm-brand-700);
+  z-index: 1;
+}
+.adm-tl__dot--note { background: var(--adm-bg); color: var(--adm-muted); }
+.adm-tl__dot--status { background: var(--adm-ok-050); color: var(--adm-ok); }
+.adm-tl__dot--assignment { background: var(--adm-brand-050); color: var(--adm-brand-700); }
+.adm-tl__dot--creation { background: var(--adm-info-050); color: var(--adm-info); }
+.adm-tl__body p {
+  margin: 0;
+  font-size: 13.5px;
+}
+.adm-tl__meta {
+  font-size: 12px;
+  color: var(--adm-muted);
+  margin-top: 2px;
+}
+.adm-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.adm-note-form textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--adm-line);
+  border-radius: 8px;
+  background: var(--adm-surface);
+  font: inherit;
+  font-size: 13.5px;
+  resize: vertical;
+  min-height: 62px;
+}
+.adm-note-form textarea:focus {
+  outline: none;
+  border-color: var(--adm-brand);
+  box-shadow: 0 0 0 3px rgba(0, 85, 108, 0.1);
+}
+
+/* Broker roster / performance */
+.adm-broker-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.adm-meter {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--adm-line);
+  overflow: hidden;
+  min-width: 64px;
+}
+.adm-meter > span {
+  display: block;
+  height: 100%;
+  background: var(--adm-ok);
+  border-radius: 3px;
 }
 
 /* ---------------- Tabs ---------------- */

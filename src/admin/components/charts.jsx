@@ -88,9 +88,10 @@ const barPath = (w) => {
   return `M 0 0 H ${width - r} A ${r} ${r} 0 0 1 ${width} ${r} V ${BAR_H - r} A ${r} ${r} 0 0 1 ${width - r} ${BAR_H} H 0 Z`;
 };
 
-export function BarChart({ data, color }) {
+export function BarChart({ data, color, valueFormat }) {
   const max = Math.max(...data.map((d) => d.value), 1);
   const trackW = CHART_W - VALUE_W;
+  const fmt = valueFormat ?? ((v) => v);
 
   return (
     <svg
@@ -104,7 +105,7 @@ export function BarChart({ data, color }) {
         const y = i * ROW_H;
         return (
           <g key={d.label} transform={`translate(0 ${y})`}>
-            <title>{`${d.label}: ${d.value}`}</title>
+            <title>{`${d.label}: ${fmt(d.value)}`}</title>
             <text x="0" y="11" fontSize="10.5" fontWeight="600" fill={MUTED}>
               {d.label.length > 38 ? `${d.label.slice(0, 37)}…` : d.label}
             </text>
@@ -117,7 +118,7 @@ export function BarChart({ data, color }) {
                 fontWeight="700"
                 fill={INK}
               >
-                {d.value}
+                {fmt(d.value)}
               </text>
             </g>
           </g>
