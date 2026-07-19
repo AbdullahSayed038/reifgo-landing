@@ -3,7 +3,7 @@ import "./ServicesHero.css";
 export default function ServicesHero() {
   return (
     <section className="shero">
-      <img className="shero__bg" src="/services-hero.png" alt="Modern architectural development at dusk" />
+      <img className="shero__bg" src="/services-hero-villa.jpg" alt="Modern hillside villa overlooking the city at sunset" />
       <span className="shero__scrim" aria-hidden="true" />
 
       <div className="shero__inner container">

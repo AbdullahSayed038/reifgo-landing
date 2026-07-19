@@ -7,7 +7,7 @@ export default function DigitalNexus() {
       <div className="dn__grid container">
         <div className="dn__frame" data-reveal>
           <div className="dn__phone">
-            <img src="/app-screen.png" alt="REIFGO mobile application dashboard" />
+            <img src="/app-mockup.jpg" alt="REIFGO mobile application dashboard" />
           </div>
         </div>
 

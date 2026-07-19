@@ -1,7 +1,11 @@
+import { useState } from "react";
 import Icon from "./Icon.jsx";
 import "./Hero.css";
 
 export default function Hero() {
+  // If /homepage.mp4 is missing or fails to load, fall back to the still.
+  const [videoFailed, setVideoFailed] = useState(false);
+
   return (
     <section className="hero section">
       <div className="hero__grid container">
@@ -37,7 +41,22 @@ export default function Hero() {
 
         <div className="hero__media" data-reveal style={{ "--reveal-delay": "0.12s" }}>
           <div className="hero__frame">
-            <img src="/hero-towers.png" alt="Illuminated towers of a global financial district" />
+            {videoFailed ? (
+              <img src="/hero-towers.png" alt="Illuminated towers of a global financial district" />
+            ) : (
+              <video
+                className="hero__video"
+                src="/homepage.mp4"
+                poster="/hero-towers.png"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label="Aerial view of a city business district"
+                onError={() => setVideoFailed(true)}
+              />
+            )}
             <span className="hero__overlay" />
           </div>
         </div>

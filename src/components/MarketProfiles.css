@@ -43,6 +43,11 @@
   filter: grayscale(1) contrast(1.02);
 }
 
+/* Investor photo stays full colour (developer side keeps the mono treatment) */
+.mp__visual--color img {
+  filter: none;
+}
+
 /* ---- Investor points ---- */
 .mp__points {
   list-style: none;

@@ -62,7 +62,7 @@ export default function Forum() {
           </div>
 
           <div className="forum__media" data-reveal style={{ "--reveal-delay": "0.12s" }}>
-            <img src="/forum-stage.png" alt="Delegates networking at the REIFGO investment forum" />
+            <img src="/forum-stage-main.jpg" alt="Delegates networking at the REIFGO investment forum" />
             <div className="forum__caption">
               <p className="forum__caption-kicker">Main Stage</p>
               <p className="forum__caption-title">The Future of Urban Living</p>

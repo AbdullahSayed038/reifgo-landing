@@ -51,7 +51,7 @@ export default function ExecutiveAdvisory() {
           <span className="adv__sq adv__sq--br" aria-hidden="true" />
           <span className="adv__sq adv__sq--tr" aria-hidden="true" />
           <div className="adv__photo">
-            <img src="/advisory-meeting.png" alt="REIFGO advisory team in a strategy session" />
+            <img src="/advisory-lounge.jpg" alt="REIFGO advisory team in a strategy session" />
           </div>
         </div>
       </div>

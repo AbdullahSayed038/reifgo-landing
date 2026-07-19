@@ -23,7 +23,9 @@ export default function MarketProfiles() {
           <h2 className="heading h2 mp__title">
             Institutional Access to Global Assets.
           </h2>
-          <div className="mp__visual mp__visual--sage" aria-hidden="true" />
+          <div className="mp__visual mp__visual--photo mp__visual--color">
+            <img src="/investor-boardroom.jpg" alt="Investor briefing with live market analysis" />
+          </div>
           <ul className="mp__points">
             {INVESTOR_POINTS.map((p) => (
               <li key={p}>
@@ -41,7 +43,7 @@ export default function MarketProfiles() {
             Reach More Investors. Generate More Leads.
           </h2>
           <div className="mp__visual mp__visual--photo">
-            <img src="/developer-building.png" alt="Modern apartment development facade" />
+            <img src="/developer-facade.jpg" alt="Modern glass development facade" />
           </div>
 
           <div className="mp__accred">
