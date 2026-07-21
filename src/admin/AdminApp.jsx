@@ -17,7 +17,6 @@ import Leads from "./pages/Leads.jsx";
 import Login from "./pages/Login.jsx";
 import PropertiesList from "./pages/PropertiesList.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
-import Team from "./pages/Team.jsx";
 import Users from "./pages/Users.jsx";
 
 // UI-level guard for admin-only sections. Real enforcement is server-side.
@@ -56,7 +55,6 @@ export default function AdminApp() {
             <Route path="categories" element={<StaffOnly><Categories /></StaffOnly>} />
             <Route path="leads" element={<Leads />} />
             <Route path="leads/:id" element={<LeadDetail />} />
-            <Route path="team" element={<StaffOnly><Team /></StaffOnly>} />
             <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />
           </Route>
         </Routes>

@@ -10,7 +10,6 @@ const ADMIN_NAV = [
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },
   { to: "/admin/leads", label: "Leads", icon: "◎" },
-  { to: "/admin/team", label: "Team", icon: "◍" },
   { to: "/admin/users", label: "Users", icon: "◉" },
 ];
 
@@ -19,7 +18,6 @@ const DEVELOPER_NAV = [
   { to: "/admin/properties", label: "My Properties", icon: "◨" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },
   { to: "/admin/leads", label: "Leads", icon: "◎" },
-  { to: "/admin/team", label: "Team", icon: "◍" },
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/company", label: "Company Profile", icon: "◈" },
 ];
