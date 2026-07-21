@@ -6,9 +6,10 @@ import FormField from "../components/FormField.jsx";
 import Modal from "../components/Modal.jsx";
 import { useToast } from "../components/Toast.jsx";
 
+// Only Insights files content under categories. The Forum page is a single
+// summit event, so it has no categories to manage.
 const SCOPES = {
   insight: { label: "Insights", back: "/admin/insights" },
-  forum: { label: "Forum", back: "/admin/forum" },
 };
 
 const EMPTY = { name: "", display_order: 0 };
@@ -99,19 +100,22 @@ export default function Categories() {
         </button>
       </header>
 
-      <div className="adm-tabs" role="tablist">
-        {Object.entries(SCOPES).map(([key, cfg]) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={scope === key}
-            className={`adm-tab${scope === key ? " adm-tab--on" : ""}`}
-            onClick={() => setParams({ scope: key })}
-          >
-            {cfg.label}
-          </button>
-        ))}
-      </div>
+      {/* A single tab is just noise — only show the switcher if there's a choice. */}
+      {Object.keys(SCOPES).length > 1 && (
+        <div className="adm-tabs" role="tablist">
+          {Object.entries(SCOPES).map(([key, cfg]) => (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={scope === key}
+              className={`adm-tab${scope === key ? " adm-tab--on" : ""}`}
+              onClick={() => setParams({ scope: key })}
+            >
+              {cfg.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <DataTable
         rows={rows ?? []}

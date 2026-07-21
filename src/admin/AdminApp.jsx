@@ -6,8 +6,6 @@ import { ToastProvider } from "./components/Toast.jsx";
 import { CurrencyProvider } from "./currency.jsx";
 import Categories from "./pages/Categories.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import ForumForm from "./pages/ForumForm.jsx";
-import ForumList from "./pages/ForumList.jsx";
 import DeveloperForm from "./pages/DeveloperForm.jsx";
 import DevelopersList from "./pages/DevelopersList.jsx";
 import EventForm from "./pages/EventForm.jsx";
@@ -55,9 +53,6 @@ export default function AdminApp() {
             <Route path="insights" element={<InsightsList />} />
             <Route path="insights/new" element={<InsightForm />} />
             <Route path="insights/:id" element={<InsightForm />} />
-            <Route path="forum" element={<StaffOnly><ForumList /></StaffOnly>} />
-            <Route path="forum/new" element={<StaffOnly><ForumForm /></StaffOnly>} />
-            <Route path="forum/:id" element={<StaffOnly><ForumForm /></StaffOnly>} />
             <Route path="categories" element={<StaffOnly><Categories /></StaffOnly>} />
             <Route path="leads" element={<Leads />} />
             <Route path="leads/:id" element={<LeadDetail />} />
