@@ -8,8 +8,8 @@ const LINKS = [
   { label: "Platform", to: "/" },
   { label: "Services", to: "/services" },
   { label: "AI Advisor", to: "/advisor" },
-  { label: "Insights", to: "/" },
-  { label: "Forum", to: "/" },
+  { label: "Insights", to: "/insights" },
+  { label: "Forum", to: "/forum" },
 ];
 
 export default function Header({ active = "Platform", cta = "Invest Now" }) {

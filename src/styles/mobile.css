@@ -530,3 +530,115 @@
     border-top: 1px solid var(--line);
   }
 }
+
+/* ---------------------------------------------------------------------
+   Insights & Forum pages — single-column reflows.
+   Same content and design language as desktop, stacked. Loaded last so
+   these win over the page stylesheets.
+   --------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  /* ---- Insights ---- */
+  .ins-hero {
+    min-height: 26rem;
+  }
+
+  .ins-spotlight__grid,
+  .ins-skeleton {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+
+  .ins-hub__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ins-hub__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Filters scroll sideways rather than wrapping into a tall block that
+     pushes the articles off-screen. */
+  .ins-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: var(--sp-1);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ins-filter {
+    flex: none;
+  }
+
+  .ins-briefing__form {
+    flex-direction: column;
+  }
+
+  .ins-hero__actions .btn,
+  .ins-briefing__form .btn {
+    width: 100%;
+  }
+
+  /* ---- Forum / summit ---- */
+  .fm-hero {
+    min-height: 30rem;
+    padding-bottom: var(--sp-8);
+  }
+
+  .fm-hero__title {
+    max-width: none;
+  }
+
+  .fm-hero__actions .btn {
+    width: 100%;
+  }
+
+  /* Absolute positioning would overlap the CTAs once the hero shortens. */
+  .fm-hero__venue {
+    position: static;
+    margin-top: var(--sp-4);
+  }
+
+  .fm-highlights__grid,
+  .fm-invite__inner {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+
+  .fm-speakers__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fm-agenda__grid,
+  .fm-awards__grid,
+  .fm-form {
+    grid-template-columns: 1fr;
+  }
+
+  /* The vertical hairline becomes a horizontal one when the row stacks. */
+  .fm-vertical {
+    border-left: 0;
+    border-top: 1px solid var(--line-3);
+  }
+
+  .fm-vertical:first-child {
+    border-top: 0;
+  }
+
+  /* The staggered offset only reads as intentional in a 2×2 grid. */
+  .fm-stat:nth-child(2),
+  .fm-stat:nth-child(3) {
+    transform: none;
+  }
+
+  .fm-form__submit {
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .fm-speakers__grid {
+    grid-template-columns: 1fr;
+  }
+}

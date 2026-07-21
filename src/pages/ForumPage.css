@@ -1,0 +1,488 @@
+/* =====================================================================
+   The Forum — Global Real Estate Investment Forum (annual summit)
+   Same rem-scaling model as the rest of the site; mobile.css handles the
+   reflow below 768px.
+   ===================================================================== */
+
+/* ---- Hero ------------------------------------------------------------ */
+.fm-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 40rem;
+  padding: var(--sp-8) var(--page-pad);
+  overflow: hidden;
+  isolation: isolate;
+  color: #fff;
+}
+
+/* Matches the Figma's dark-to-light horizontal wash. A CMS hero image is
+   layered over this via an inline background-image when one is set. */
+.fm-hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  background-color: #2b2b2b;
+  background-image: linear-gradient(100deg, #232323 0%, #4a4a4a 55%, #d8d8d8 100%);
+}
+
+.fm-hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.fm-hero__rule {
+  width: 3.5rem;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.fm-hero__title {
+  max-width: 20ch;
+  margin-top: var(--sp-3);
+  font-size: var(--fs-hero);
+  line-height: var(--lh-tight);
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.fm-hero__sub {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-h4);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.fm-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+}
+
+/* Ghost button on a dark hero — the site's default ghost assumes a light
+   background and would render invisible here. */
+.btn--ghost-dark {
+  --btn-bg: transparent;
+  --btn-fg: #fff;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn--ghost-dark:hover {
+    border-color: #fff;
+  }
+}
+
+.fm-hero__venue {
+  position: absolute;
+  right: var(--page-pad);
+  bottom: var(--sp-6);
+  padding-left: var(--sp-2);
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
+  text-align: left;
+}
+
+.fm-hero__venue-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.fm-hero__venue-name {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: var(--fs-lg);
+  color: #fff;
+}
+
+/* ---- Highlights + stats ---------------------------------------------- */
+.fm-highlights {
+  background: var(--surface-soft);
+}
+
+.fm-highlights__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-8);
+  align-items: start;
+}
+
+.fm-highlights__title {
+  margin-top: var(--sp-2);
+  max-width: 12ch;
+}
+
+.fm-highlights__list {
+  margin-top: var(--sp-5);
+  list-style: none;
+}
+
+.fm-highlight {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.fm-highlight:last-child {
+  margin-bottom: 0;
+}
+
+.fm-highlight__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--surface-chip);
+  color: var(--brand);
+}
+
+.fm-highlight__title {
+  font-size: var(--fs-h4);
+}
+
+.fm-highlight p {
+  margin-top: 0.375rem;
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+/* Offset 2×2 stat grid, mirroring the design's staggered panel. */
+.fm-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  background: #e8eef0;
+}
+
+.fm-stat {
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--surface);
+}
+
+.fm-stat:nth-child(2) {
+  transform: translateY(-1.5rem);
+}
+
+.fm-stat:nth-child(3) {
+  transform: translateY(1.5rem);
+}
+
+.fm-stat__value {
+  font-family: var(--font-head);
+  font-size: var(--fs-h2);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--brand);
+}
+
+.fm-stat__label {
+  margin-top: var(--sp-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---- Speakers -------------------------------------------------------- */
+.fm-speakers {
+  background: var(--surface-soft-2);
+}
+
+.fm-speakers__title,
+.fm-agenda__title,
+.fm-awards__title {
+  margin-top: var(--sp-2);
+  max-width: 18ch;
+}
+
+.fm-speakers__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+  margin-top: var(--sp-6);
+}
+
+.fm-speaker__photo {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--surface-chip);
+}
+
+.fm-speaker__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fm-speaker__placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #123c4c 0%, #00556c 100%);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-head);
+  font-size: var(--fs-h3);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.fm-speaker__name {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-h4);
+}
+
+.fm-speaker__role {
+  margin-top: 0.25rem;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--line-solid);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.fm-speaker__topic {
+  margin-top: var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+/* ---- Agenda verticals ------------------------------------------------ */
+.fm-agenda {
+  background: var(--surface-soft);
+}
+
+.fm-agenda__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: var(--sp-6);
+  border: 1px solid var(--line-3);
+}
+
+/* Single hairline between columns rather than a border per card, so the row
+   reads as one object like the design. */
+.fm-vertical {
+  padding: var(--sp-4) var(--sp-3);
+  border-left: 1px solid var(--line-3);
+}
+
+.fm-vertical:first-child {
+  border-left: 0;
+}
+
+.fm-vertical__icon {
+  display: block;
+  color: var(--brand);
+}
+
+.fm-vertical__title {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-h4);
+}
+
+.fm-vertical p {
+  margin-top: var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+/* ---- Awards ---------------------------------------------------------- */
+.fm-awards {
+  background: var(--brand);
+  color: #fff;
+}
+
+.fm-awards__eyebrow {
+  color: var(--brand-soft);
+}
+
+.fm-awards__title {
+  color: #fff;
+}
+
+.fm-awards__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap);
+  margin-top: var(--sp-6);
+}
+
+.fm-award {
+  padding: var(--sp-4);
+  border: 1px solid var(--line-on-dark);
+}
+
+.fm-award__title {
+  font-size: var(--fs-h4);
+  color: #fff;
+}
+
+.fm-award p {
+  margin-top: var(--sp-2);
+  color: rgba(255, 255, 255, 0.75);
+  line-height: var(--lh-body);
+}
+
+/* ---- Invitation request ---------------------------------------------- */
+.fm-invite {
+  background: var(--surface);
+}
+
+.fm-invite__inner {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--sp-8);
+  align-items: start;
+}
+
+.fm-invite__title {
+  margin-top: var(--sp-2);
+}
+
+.fm-invite__sub {
+  margin-top: var(--sp-2);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+.fm-invite__meta {
+  margin-top: var(--sp-3);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.fm-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+.fm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.fm-field--wide,
+.fm-form__error,
+.fm-form__submit {
+  grid-column: 1 / -1;
+}
+
+.fm-field label {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.fm-field input,
+.fm-field textarea {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--line-solid);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.fm-field textarea {
+  resize: vertical;
+}
+
+.fm-field input:focus-visible,
+.fm-field textarea:focus-visible {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(0, 85, 108, 0.15);
+}
+
+.fm-form__submit {
+  justify-self: start;
+  margin-top: var(--sp-1);
+}
+
+.fm-form__submit:disabled {
+  opacity: 0.6;
+}
+
+.fm-form__error {
+  color: #b3372f;
+  font-size: var(--fs-sm);
+}
+
+.fm-invite__done {
+  padding: var(--sp-5);
+  border: 1px solid var(--line-solid);
+  background: var(--surface-soft);
+}
+
+.fm-invite__done-title {
+  font-size: var(--fs-h3);
+}
+
+.fm-invite__done p {
+  margin: var(--sp-2) 0 var(--sp-4);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+/* ---- States ---------------------------------------------------------- */
+.fm-error {
+  color: #b3372f;
+}
+
+.fm-loading__bar {
+  height: 3rem;
+  margin-bottom: var(--sp-2);
+  background: var(--surface-soft-2);
+  animation: fm-pulse 1.4s ease-in-out infinite;
+}
+
+.fm-loading__bar--short {
+  width: 60%;
+}
+
+@keyframes fm-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-loading__bar {
+    animation: none;
+  }
+}

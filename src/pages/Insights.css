@@ -1,0 +1,415 @@
+/* =====================================================================
+   Insights & Research — public page
+   Follows the shared rem-scaling model in tokens.css: every value is in
+   rem so the desktop layout scales proportionally, with mobile.css taking
+   over the reflow below 768px.
+   ===================================================================== */
+
+/* ---- Hero ----------------------------------------------------------- */
+.ins-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 34rem;
+  padding: var(--sp-8) var(--page-pad);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* A deep gradient stands in for the Figma photograph until a hero image is
+   set in the CMS, so the page never renders with unreadable white-on-white. */
+.ins-hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(0, 32, 42, 0.35) 0%, rgba(0, 32, 42, 0.85) 100%),
+    linear-gradient(120deg, #00343f 0%, #00556c 45%, #0b7f92 100%);
+}
+
+.ins-hero__inner {
+  color: #fff;
+}
+
+.ins-hero__eyebrow {
+  color: var(--brand-soft);
+}
+
+.ins-hero__title {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-hero);
+  line-height: var(--lh-tight);
+  color: #fff;
+}
+
+.ins-hero__sub {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-lg);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.ins-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+}
+
+/* ---- Editorial spotlight -------------------------------------------- */
+.ins-spotlight {
+  background: var(--surface);
+}
+
+.ins-spotlight__grid {
+  display: grid;
+  /* Deliberately asymmetric: the lead article carries the section. */
+  grid-template-columns: 1.55fr 1fr;
+  gap: var(--sp-8);
+  margin-top: var(--sp-5);
+  align-items: start;
+}
+
+.ins-lead__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--surface-soft-2);
+}
+
+.ins-lead__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ins-lead__placeholder,
+.ins-card__placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #123c4c 0%, #00556c 60%, #0b7f92 100%);
+}
+
+.ins-tag {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  background: var(--surface);
+  color: var(--brand);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ins-tag--onmedia {
+  position: absolute;
+  top: var(--sp-2);
+  left: var(--sp-2);
+}
+
+.ins-lead__title {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-h3);
+}
+
+.ins-lead__excerpt {
+  margin-top: var(--sp-2);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+.ins-lead .arrow-link {
+  margin-top: var(--sp-3);
+}
+
+.ins-spotlight__side {
+  display: flex;
+  flex-direction: column;
+}
+
+.ins-side {
+  padding-bottom: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.ins-side:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.ins-kicker {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ins-side__title {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-h4);
+}
+
+.ins-side__excerpt {
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+.ins-meta {
+  margin-top: var(--sp-2);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---- Research hub ---------------------------------------------------- */
+.ins-hub {
+  background: var(--surface-soft-2);
+}
+
+.ins-hub__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.ins-hub__sub {
+  max-width: 34rem;
+  margin-top: var(--sp-2);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+.ins-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.ins-filter {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line-solid);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* Only colours move between states, so filtering never shifts the layout. */
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.ins-filter.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.ins-filter:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ins-filter:not(.is-active):hover {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+}
+
+.ins-hub__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  margin-top: var(--sp-5);
+}
+
+.ins-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ins-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.ins-card__media {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--surface-soft-2);
+}
+
+.ins-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ins-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--sp-3);
+}
+
+.ins-card__title {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-h4);
+}
+
+.ins-card__excerpt {
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+/* Pushes the footer to the bottom so cards of differing text length still
+   line their meta rows up across the grid. */
+.ins-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-top: auto;
+  padding-top: var(--sp-3);
+}
+
+.ins-card__foot .ins-meta {
+  margin-top: 0;
+}
+
+/* ---- States ---------------------------------------------------------- */
+.ins-error,
+.ins-empty {
+  margin-top: var(--sp-3);
+  color: var(--muted);
+  font-size: var(--fs-md);
+}
+
+.ins-error {
+  color: #b3372f;
+}
+
+.ins-skeleton {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: var(--sp-8);
+  margin-top: var(--sp-5);
+}
+
+.ins-skeleton__lead {
+  aspect-ratio: 16 / 10;
+}
+
+.ins-skeleton__row {
+  height: 6rem;
+  margin-bottom: var(--sp-3);
+}
+
+.ins-skeleton__lead,
+.ins-skeleton__row {
+  background: var(--surface-soft-2);
+  animation: ins-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ins-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ins-skeleton__lead,
+  .ins-skeleton__row {
+    animation: none;
+  }
+}
+
+/* ---- Strategic briefing ---------------------------------------------- */
+.ins-briefing {
+  padding: var(--section-y) var(--page-pad);
+  background: var(--brand);
+  color: #fff;
+  text-align: center;
+}
+
+.ins-briefing__title {
+  font-size: var(--fs-h2);
+  color: #fff;
+}
+
+.ins-briefing__sub {
+  max-width: 40rem;
+  margin: var(--sp-2) auto 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: var(--lh-body);
+}
+
+.ins-briefing__form {
+  display: flex;
+  gap: var(--sp-1);
+  max-width: 34rem;
+  margin: var(--sp-4) auto 0;
+}
+
+.ins-briefing__form input {
+  flex: 1;
+  min-width: 0;
+  padding: 1.0625rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--line-on-dark);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.1em;
+}
+
+.ins-briefing__form input::placeholder {
+  color: var(--brand-soft);
+  letter-spacing: 0.12em;
+}
+
+.ins-briefing__form input:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.ins-briefing__form .btn {
+  --btn-bg: #fff;
+  --btn-fg: var(--brand);
+  white-space: nowrap;
+}
+
+.ins-briefing__notice {
+  margin-top: var(--sp-2);
+  color: #ffd9a8;
+  font-size: var(--fs-sm);
+}
+
+.ins-briefing__legal {
+  margin-top: var(--sp-2);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
