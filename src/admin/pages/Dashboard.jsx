@@ -31,19 +31,39 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const calls = [api.get("/admin/stats"), api.get("/admin/leads")];
-    calls.push(isBroker ? Promise.resolve([]) : api.get("/admin/properties"));
-    calls.push(isBroker ? Promise.resolve([]) : api.get("/admin/events"));
-    calls.push(isBroker ? Promise.resolve([]) : api.get("/admin/brokers"));
-    Promise.all(calls)
-      .then(([s, l, p, e, b]) => {
-        setStats(s);
-        setLeads(l);
-        setProperties(p);
-        setEvents(e);
-        setBrokers(b);
-      })
-      .catch((err) => setError(err.message));
+    const skip = () => Promise.resolve(null);
+    const calls = [
+      api.get("/admin/stats"),
+      api.get("/admin/leads"),
+      isBroker ? skip() : api.get("/admin/properties"),
+      isBroker ? skip() : api.get("/admin/events"),
+      isBroker ? skip() : api.get("/admin/brokers"),
+    ];
+
+    // allSettled, not all: each panel sources its own endpoint, and one of them
+    // failing must not discard the responses that did succeed. With Promise.all
+    // a single 404 blanked every card on the page.
+    Promise.allSettled(calls).then((results) => {
+      const [s, l, p, e, b] = results;
+      if (s.status === "fulfilled") setStats(s.value);
+      if (l.status === "fulfilled") setLeads(l.value ?? []);
+      if (p.status === "fulfilled") setProperties(p.value ?? []);
+      if (e.status === "fulfilled") setEvents(e.value ?? []);
+      if (b.status === "fulfilled") setBrokers(b.value ?? []);
+
+      // Surface the failures, but keep them distinguishable from a total outage
+      // so a missing sub-feature doesn't read as "the dashboard is down".
+      const failed = results.filter((r) => r.status === "rejected");
+      if (failed.length === results.length) {
+        setError(failed[0].reason?.message ?? "Could not load the dashboard");
+      } else if (failed.length > 0) {
+        setError(
+          `Some panels couldn't load: ${failed
+            .map((f) => f.reason?.message ?? "unknown error")
+            .join("; ")}`,
+        );
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
