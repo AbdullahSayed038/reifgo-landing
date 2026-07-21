@@ -1,23 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { api } from "../api.js";
 import ChannelBadges from "../components/ChannelBadges.jsx";
 import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { TIER_LABEL, channelsOf, contentSort, fmtDate } from "../contentUtils.js";
 
-export default function InsightsList() {
+export default function ForumList() {
   const [rows, setRows] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
-  const isDeveloper = getSession()?.role === "developer";
 
   const load = () =>
     api
-      .get("/admin/insights")
-      // Mirror the public ordering so the list doubles as a preview of the page.
+      .get("/admin/forum/threads")
       .then((r) => setRows([...r].sort(contentSort)))
       .catch((e) => toast.error(e.message));
 
@@ -28,7 +26,7 @@ export default function InsightsList() {
 
   const confirmDelete = async () => {
     try {
-      await api.del(`/admin/insights/${pendingDelete.id}`);
+      await api.del(`/admin/forum/threads/${pendingDelete.id}`);
       toast.success(`Deleted “${pendingDelete.title}”`);
       setPendingDelete(null);
       load();
@@ -41,19 +39,18 @@ export default function InsightsList() {
     <>
       <header className="adm-page-head">
         <div>
-          <h1>Insights</h1>
+          <h1>Forum</h1>
           <p>
-            {isDeveloper
-              ? "Articles and reports published under your company."
-              : "Articles and reports shown on the website and in the app, listed in the order they'll appear."}
+            Discussion threads shown on the website and in the app, listed in the
+            order they'll appear.
           </p>
         </div>
         <div className="adm-head-actions">
-          <Link className="adm-btn adm-btn--ghost" to="/admin/categories?scope=insight">
+          <Link className="adm-btn adm-btn--ghost" to="/admin/categories?scope=forum">
             Categories
           </Link>
-          <Link className="adm-btn adm-btn--primary" to="/admin/insights/new">
-            + New insight
+          <Link className="adm-btn adm-btn--primary" to="/admin/forum/new">
+            + New thread
           </Link>
         </div>
       </header>
@@ -61,29 +58,32 @@ export default function InsightsList() {
       <DataTable
         rows={rows ?? []}
         searchKeys={["title", "author_name"]}
-        searchPlaceholder="Search insights…"
-        emptyText={rows === null ? "Loading…" : "No insights yet."}
-        onRowClick={(row) => navigate(`/admin/insights/${row.id}`)}
+        searchPlaceholder="Search threads…"
+        emptyText={rows === null ? "Loading…" : "No threads yet."}
+        onRowClick={(row) => navigate(`/admin/forum/${row.id}`)}
         columns={[
           {
             key: "title",
-            label: "Title",
+            label: "Thread",
             render: (r) => (
-              <div className="adm-cell-media">
-                {r.cover_url ? (
-                  <img className="adm-thumb" src={r.cover_url} alt="" loading="lazy" />
-                ) : (
-                  <span className="adm-thumb adm-thumb--empty" />
+              <span>
+                {r.is_pinned && (
+                  <span className="adm-pin" title="Pinned">
+                    {"📌 "}
+                  </span>
                 )}
-                <span>
-                  {r.title}
-                  {r.is_featured && (
-                    <span className="adm-star" title="Featured">
-                      {" ★"}
-                    </span>
-                  )}
-                </span>
-              </div>
+                {r.title}
+                {r.is_featured && (
+                  <span className="adm-star" title="Featured">
+                    {" ★"}
+                  </span>
+                )}
+                {r.is_locked && (
+                  <span className="adm-lock" title="Locked — no new replies">
+                    {" 🔒"}
+                  </span>
+                )}
+              </span>
             ),
           },
           {
@@ -99,11 +99,17 @@ export default function InsightsList() {
           {
             key: "category",
             label: "Category",
-            width: 130,
+            width: 150,
             render: (r) => r.category?.name ?? "—",
           },
           { key: "display_order", label: "Order", width: 70 },
-          { key: "author_name", label: "Author", render: (r) => r.author_name ?? "—" },
+          {
+            key: "replies",
+            label: "Replies",
+            width: 80,
+            render: (r) => r._count?.posts ?? 0,
+          },
+          { key: "author_name", label: "Started by", render: (r) => r.author_name ?? "—" },
           {
             key: "channels",
             label: "Where",
@@ -148,7 +154,7 @@ export default function InsightsList() {
 
       {pendingDelete && (
         <Modal
-          title="Delete insight?"
+          title="Delete thread?"
           onClose={() => setPendingDelete(null)}
           footer={
             <>
@@ -162,8 +168,10 @@ export default function InsightsList() {
           }
         >
           <p>
-            “{pendingDelete.title}” will disappear from the website and the app.
-            This can't be undone.
+            “{pendingDelete.title}” and its{" "}
+            {pendingDelete._count?.posts ?? 0} repl
+            {(pendingDelete._count?.posts ?? 0) === 1 ? "y" : "ies"} will be
+            permanently removed from the website and the app. This can't be undone.
           </p>
         </Modal>
       )}
