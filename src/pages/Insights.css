@@ -127,10 +127,27 @@
   flex-direction: column;
 }
 
+/* Whole card is a link. Anchors are inline and pick up link colouring, so
+   both need resetting for the card to lay out as it did as an <article>. */
 .ins-side {
+  display: block;
+  color: inherit;
   padding-bottom: var(--sp-4);
   margin-bottom: var(--sp-4);
   border-bottom: 1px solid var(--line);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ins-side:hover .ins-side__title,
+  .ins-card:hover .ins-card__title {
+    color: var(--brand-700);
+  }
+}
+
+.ins-side:focus-visible,
+.ins-card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
 }
 
 .ins-side:last-child {
@@ -237,6 +254,7 @@
 .ins-card {
   display: flex;
   flex-direction: column;
+  color: inherit;
   background: var(--surface);
   border: 1px solid var(--line-2);
   transition: transform var(--dur) var(--ease-out);

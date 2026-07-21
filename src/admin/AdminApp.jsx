@@ -5,6 +5,8 @@ import AdminLayout from "./components/AdminLayout.jsx";
 import { ToastProvider } from "./components/Toast.jsx";
 import { CurrencyProvider } from "./currency.jsx";
 import Categories from "./pages/Categories.jsx";
+import Summit from "./pages/Summit.jsx";
+import SummitInvitations from "./pages/SummitInvitations.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import DeveloperForm from "./pages/DeveloperForm.jsx";
 import DevelopersList from "./pages/DevelopersList.jsx";
@@ -53,6 +55,8 @@ export default function AdminApp() {
             <Route path="insights/new" element={<InsightForm />} />
             <Route path="insights/:id" element={<InsightForm />} />
             <Route path="categories" element={<StaffOnly><Categories /></StaffOnly>} />
+            <Route path="summit" element={<AdminOnly><Summit /></AdminOnly>} />
+            <Route path="summit/invitations" element={<AdminOnly><SummitInvitations /></AdminOnly>} />
             <Route path="leads" element={<Leads />} />
             <Route path="leads/:id" element={<LeadDetail />} />
             <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />

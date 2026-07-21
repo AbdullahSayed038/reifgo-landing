@@ -9,6 +9,7 @@ const ADMIN_NAV = [
   { to: "/admin/developers", label: "Developers", icon: "◈" },
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },
+  { to: "/admin/summit", label: "Forum", icon: "◫" },
   { to: "/admin/leads", label: "Leads", icon: "◎" },
   { to: "/admin/users", label: "Users", icon: "◉" },
 ];

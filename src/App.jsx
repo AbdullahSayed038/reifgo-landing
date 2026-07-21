@@ -4,6 +4,7 @@ import Home from "./pages/Home.jsx";
 import Services from "./pages/Services.jsx";
 import Advisor from "./pages/Advisor.jsx";
 import Insights from "./pages/Insights.jsx";
+import InsightArticle from "./pages/InsightArticle.jsx";
 import ForumPage from "./pages/ForumPage.jsx";
 import ChatWidget from "./components/ChatWidget.jsx";
 
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/services" element={<Services />} />
         <Route path="/advisor" element={<Advisor />} />
         <Route path="/insights" element={<Insights />} />
+        <Route path="/insights/:slug" element={<InsightArticle />} />
         <Route path="/forum" element={<ForumPage />} />
         <Route
           path="/admin/*"

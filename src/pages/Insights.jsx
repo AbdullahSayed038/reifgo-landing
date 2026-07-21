@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import { fetchCategories, fetchInsights } from "../lib/contentApi.js";
@@ -121,7 +122,7 @@ export default function Insights() {
                   </div>
                   <h2 className="heading ins-lead__title">{lead.title}</h2>
                   {lead.excerpt && <p className="ins-lead__excerpt">{lead.excerpt}</p>}
-                  <a className="arrow-link" href={`#article-${lead.slug}`}>
+                  <Link className="arrow-link" to={`/insights/${lead.slug}`}>
                     Full Analysis
                     <svg width="14" height="10" viewBox="0 0 14 10" aria-hidden="true">
                       <path
@@ -132,17 +133,17 @@ export default function Insights() {
                         strokeLinecap="round"
                       />
                     </svg>
-                  </a>
+                  </Link>
                 </article>
 
                 <div className="ins-spotlight__side">
                   {spotlightSide.map((item) => (
-                    <article className="ins-side" key={item.id} data-reveal>
+                    <Link className="ins-side" key={item.id} to={`/insights/${item.slug}`} data-reveal>
                       {item.category && <p className="ins-kicker">{item.category.name}</p>}
                       <h3 className="heading ins-side__title">{item.title}</h3>
                       {item.excerpt && <p className="ins-side__excerpt">{item.excerpt}</p>}
                       <p className="ins-meta">{readTime(item)} min read</p>
-                    </article>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -184,7 +185,7 @@ export default function Insights() {
 
             <div className="ins-hub__grid">
               {remainder.map((item) => (
-                <article className="ins-card" key={item.id} data-reveal id={`article-${item.slug}`}>
+                <Link className="ins-card" key={item.id} to={`/insights/${item.slug}`} data-reveal>
                   <div className="ins-card__media">
                     {item.cover_url ? (
                       <img src={item.cover_url} alt="" loading="lazy" />
@@ -214,7 +215,7 @@ export default function Insights() {
                       </span>
                     </div>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
 

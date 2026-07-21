@@ -1,0 +1,161 @@
+/* =====================================================================
+   Insight article — the individual read.
+   A narrower measure than the rest of the site on purpose: this is the one
+   page people actually read top to bottom.
+   ===================================================================== */
+
+.art {
+  --measure: 44rem; /* ~704px at desktop scale — comfortable line length */
+}
+
+.art-head {
+  padding: var(--sp-8) var(--page-pad) var(--sp-5);
+  background: var(--surface-soft);
+}
+
+.art-crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.art-crumbs a {
+  color: var(--brand);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .art-crumbs a:hover {
+    text-decoration: underline;
+  }
+}
+
+.art-title {
+  max-width: var(--measure);
+  margin-top: var(--sp-3);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-snug);
+}
+
+.art-standfirst {
+  max-width: var(--measure);
+  margin-top: var(--sp-2);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+/* Byline row. Separators are drawn rather than typed so they never get
+   selected or read out by a screen reader. */
+.art-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.art-meta span + span {
+  padding-left: var(--sp-2);
+  border-left: 1px solid var(--line-solid);
+}
+
+.art-cover {
+  margin-top: var(--sp-5);
+}
+
+.art-cover img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.art-body {
+  max-width: var(--measure);
+  margin-top: var(--sp-6);
+  margin-inline: auto;
+}
+
+.art-body p {
+  font-size: var(--fs-lg);
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.art-body p + p {
+  margin-top: var(--sp-3);
+}
+
+.art-body__empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.art-foot {
+  max-width: var(--measure);
+  margin: var(--sp-6) auto var(--section-y);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+
+/* Arrow points back here, so the hover nudge should too. */
+@media (hover: hover) and (pointer: fine) {
+  .art-foot .arrow-link:hover svg {
+    transform: translateX(-4px);
+  }
+}
+
+/* ---- States ---------------------------------------------------------- */
+.art-missing h1 {
+  max-width: 20ch;
+}
+
+.art-missing p {
+  max-width: 44ch;
+  margin: var(--sp-2) 0 var(--sp-4);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+.art-loading__bar {
+  height: 1.5rem;
+  max-width: var(--measure);
+  margin-bottom: var(--sp-2);
+  background: var(--surface-soft-2);
+  animation: art-pulse 1.4s ease-in-out infinite;
+}
+
+.art-loading__bar--title {
+  height: 3.5rem;
+  margin-bottom: var(--sp-4);
+}
+
+.art-loading__bar--short {
+  width: 55%;
+}
+
+@keyframes art-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art-loading__bar {
+    animation: none;
+  }
+}
