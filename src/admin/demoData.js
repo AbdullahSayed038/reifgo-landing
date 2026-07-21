@@ -54,8 +54,8 @@ export function createDemoData() {
       values: [],
     },
     {
-      id: "aldar",
-      name: "ALDAR PROPERTIES",
+      id: "emaar",
+      name: "EMAAR PROPERTIES",
       tagline: "Abu Dhabi's landmark developer",
       years_in_market: 20,
       total_projects: 92,
@@ -160,7 +160,7 @@ export function createDemoData() {
     },
     {
       id: "yas-bay",
-      developer_id: "aldar",
+      developer_id: "emaar",
       name: "Yas Bay Waterfront Residences",
       location: "Yas Island, Abu Dhabi",
       asset_class: "Residential",
@@ -179,7 +179,7 @@ export function createDemoData() {
     },
     {
       id: "saadiyat-grove",
-      developer_id: "aldar",
+      developer_id: "emaar",
       name: "Saadiyat Grove Villas",
       location: "Saadiyat Island, Abu Dhabi",
       asset_class: "Residential",
@@ -355,8 +355,8 @@ export function createDemoData() {
   // Brokers work under a developer. Each developer's team assigns leads to
   // its brokers; a broker only sees the leads assigned to them.
   const brokers = [
-    { id: "bk-omar", developer_id: "aldar", name: "Omar Al Farsi", email: "omar@aldar.example", phone: "+971 50 200 1188" },
-    { id: "bk-fatima", developer_id: "aldar", name: "Fatima Zahra", email: "fatima@aldar.example", phone: "+971 50 200 3300" },
+    { id: "bk-omar", developer_id: "emaar", name: "Omar Al Farsi", email: "omar@emaar.example", phone: "+971 50 200 1188" },
+    { id: "bk-fatima", developer_id: "emaar", name: "Fatima Zahra", email: "fatima@emaar.example", phone: "+971 50 200 3300" },
     { id: "bk-yusuf", developer_id: "reportage", name: "Yusuf Rahman", email: "yusuf@reportage.example", phone: "+971 50 400 7722" },
   ];
 
@@ -393,7 +393,7 @@ export function createDemoData() {
       first_response_at: null,
       closed_at: null,
       activity: [
-        act(hoursAgo(6), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(6), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(hoursAgo(8), "Sarah Whitfield", "creation", "Lead submitted via the app"),
       ],
     },
@@ -410,7 +410,7 @@ export function createDemoData() {
       first_response_at: null,
       closed_at: null,
       activity: [
-        act(hoursAgo(30), "ALDAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(30), "EMAAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
         act(hoursAgo(32), "Daniel Osei", "creation", "Lead submitted via the app"),
       ],
     },
@@ -427,7 +427,7 @@ export function createDemoData() {
       first_response_at: null,
       closed_at: null,
       activity: [
-        act(hoursAgo(54), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(54), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(hoursAgo(56), "Aisha Noor", "creation", "Lead submitted via the app"),
       ],
     },
@@ -446,7 +446,7 @@ export function createDemoData() {
       activity: [
         act(hoursAgo(16), "Fatima Zahra", "note", "Called the investor, sent the Saadiyat brochure. Following up Thursday."),
         act(hoursAgo(16), "Fatima Zahra", "status", "Status → Contacted"),
-        act(hoursAgo(20), "ALDAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(20), "EMAAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
         act(hoursAgo(22), "Marcus Chen", "creation", "Lead submitted via the app"),
       ],
     },
@@ -466,7 +466,7 @@ export function createDemoData() {
         act(hoursAgo(70), "Omar Al Farsi", "status", "Status → Qualified"),
         act(hoursAgo(72), "Omar Al Farsi", "note", "Budget confirmed at $60k entry, wants a 2-bed. Strong fit."),
         act(hoursAgo(115), "Omar Al Farsi", "status", "Status → Contacted"),
-        act(hoursAgo(118), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(118), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(daysAgo(5), "Khalid Al Mansoori", "creation", "Lead submitted via the app"),
       ],
     },
@@ -486,7 +486,7 @@ export function createDemoData() {
         act(daysAgo(2), "Fatima Zahra", "status", "Status → Closed (won)"),
         act(daysAgo(2), "Fatima Zahra", "note", "Reservation signed on a Saadiyat villa. 🎉"),
         act(hoursAgo(284), "Fatima Zahra", "status", "Status → Contacted"),
-        act(hoursAgo(286), "ALDAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(286), "EMAAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
         act(daysAgo(12), "Sarah Whitfield", "creation", "Lead submitted via the app"),
       ],
     },
@@ -506,7 +506,7 @@ export function createDemoData() {
         act(daysAgo(8), "Omar Al Farsi", "status", "Status → Closed (lost)"),
         act(daysAgo(8), "Omar Al Farsi", "note", "Investor went with another development. Not price-sensitive — timing."),
         act(hoursAgo(473), "Omar Al Farsi", "status", "Status → Contacted"),
-        act(hoursAgo(478), "ALDAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(478), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(daysAgo(20), "Daniel Osei", "creation", "Lead submitted via the app"),
       ],
     },
@@ -601,14 +601,14 @@ export function createDemoData() {
       created_at: daysAgo(30),
     },
     {
-      id: "in-aldar-q3",
+      id: "in-emaar-q3",
       title: "Yas Island Q3 absorption update",
       category: "Market Report",
       excerpt: "Waterfront units are moving 22% faster than the Abu Dhabi average.",
       body: "Draft — numbers pending final verification from the sales desk.",
       cover_url: "",
-      author_name: "ALDAR PROPERTIES",
-      author_developer_id: "aldar",
+      author_name: "EMAAR PROPERTIES",
+      author_developer_id: "emaar",
       channels: { app: true, website: false },
       published: false,
       created_at: daysAgo(2),

@@ -17,7 +17,7 @@ import { createDemoData } from "./demoData.js";
 // username -> account. All demo passwords are "123".
 const ACCOUNTS = {
   admin: { role: "admin", developer_id: null, broker_id: null, name: "REIFGO Admin" },
-  aldar: { role: "developer", developer_id: "aldar", broker_id: null, name: "ALDAR PROPERTIES" },
+  emaar: { role: "developer", developer_id: "emaar", broker_id: null, name: "EMAAR PROPERTIES" },
   reportage: {
     role: "developer",
     developer_id: "reportage",
@@ -25,8 +25,8 @@ const ACCOUNTS = {
     name: "REPORTAGE PROPERTIES",
   },
   // Brokers work under a developer and only see leads assigned to them.
-  omar: { role: "broker", developer_id: "aldar", broker_id: "bk-omar", name: "Omar Al Farsi" },
-  fatima: { role: "broker", developer_id: "aldar", broker_id: "bk-fatima", name: "Fatima Zahra" },
+  omar: { role: "broker", developer_id: "emaar", broker_id: "bk-omar", name: "Omar Al Farsi" },
+  fatima: { role: "broker", developer_id: "emaar", broker_id: "bk-fatima", name: "Fatima Zahra" },
   yusuf: { role: "broker", developer_id: "reportage", broker_id: "bk-yusuf", name: "Yusuf Rahman" },
 };
 

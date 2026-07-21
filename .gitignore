@@ -6,3 +6,6 @@ dist-ssr
 .vite
 .claude
 .vercel
+
+# Large source video kept locally; the web-optimised copy lives in public/
+/*.mov

@@ -56,7 +56,7 @@ export default function Login() {
             <span>Demo accounts (password 123)</span>
             <div>
               <button type="button" onClick={() => setUsername("admin")}>admin</button>
-              <button type="button" onClick={() => setUsername("aldar")}>aldar (developer)</button>
+              <button type="button" onClick={() => setUsername("emaar")}>emaar (developer)</button>
               <button type="button" onClick={() => setUsername("omar")}>omar (broker)</button>
             </div>
           </div>
