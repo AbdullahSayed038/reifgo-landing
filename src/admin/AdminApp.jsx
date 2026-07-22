@@ -16,6 +16,7 @@ import InsightForm from "./pages/InsightForm.jsx";
 import InsightsList from "./pages/InsightsList.jsx";
 import LeadDetail from "./pages/LeadDetail.jsx";
 import Leads from "./pages/Leads.jsx";
+import Team from "./pages/Team.jsx";
 import Login from "./pages/Login.jsx";
 import PropertiesList from "./pages/PropertiesList.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
@@ -59,6 +60,7 @@ export default function AdminApp() {
             <Route path="summit/invitations" element={<AdminOnly><SummitInvitations /></AdminOnly>} />
             <Route path="leads" element={<Leads />} />
             <Route path="leads/:id" element={<LeadDetail />} />
+            <Route path="team" element={<StaffOnly><Team /></StaffOnly>} />
             <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />
           </Route>
         </Routes>

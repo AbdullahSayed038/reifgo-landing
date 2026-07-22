@@ -4,7 +4,7 @@ import { api, getSession } from "../api.js";
 import { BarChart, DonutChart } from "../components/charts.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
-import { ESCALATION, initials, timeAgo } from "../leadUtils.js";
+import { ESCALATION, fmtHours, initials, timeAgo } from "../leadUtils.js";
 
 const PROP_COLORS = { active: "#1e7d4f", coming_soon: "#92650f", sold_out: "#b3372f" };
 const LIFECYCLE_BARS = [
@@ -26,31 +26,29 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [properties, setProperties] = useState([]);
   const [events, setEvents] = useState([]);
+  const [brokers, setBrokers] = useState([]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const skip = () => Promise.resolve(null);
-    // Brokers are deliberately absent: there's no Broker model on the backend
-    // yet, so /admin/brokers 404s. Requesting it only produced an error banner
-    // on every load. Restore this — and the widgets that used it — when lead
-    // management lands.
     const calls = [
       api.get("/admin/stats"),
       api.get("/admin/leads"),
       isBroker ? skip() : api.get("/admin/properties"),
       isBroker ? skip() : api.get("/admin/events"),
+      isBroker ? skip() : api.get("/admin/brokers"),
     ];
 
     // allSettled, not all: each panel sources its own endpoint, and one of them
-    // failing must not discard the responses that did succeed. With Promise.all
-    // a single 404 blanked every card on the page.
+    // failing must not discard the responses that did succeed.
     Promise.allSettled(calls).then((results) => {
-      const [s, l, p, e] = results;
+      const [s, l, p, e, b] = results;
       if (s.status === "fulfilled") setStats(s.value);
       if (l.status === "fulfilled") setLeads(l.value ?? []);
       if (p.status === "fulfilled") setProperties(p.value ?? []);
       if (e.status === "fulfilled") setEvents(e.value ?? []);
+      if (b.status === "fulfilled") setBrokers(b.value ?? []);
 
       // Surface the failures, but keep them distinguishable from a total outage
       // so a missing sub-feature doesn't read as "the dashboard is down".
@@ -84,6 +82,10 @@ export default function Dashboard() {
     { label: "Coming soon", value: propByStatus.coming_soon ?? 0, color: PROP_COLORS.coming_soon },
     { label: "Sold out", value: propByStatus.sold_out ?? 0, color: PROP_COLORS.sold_out },
   ];
+
+  const brokerBars = brokers
+    .filter((b) => b.stats.avg_response_hours != null)
+    .map((b) => ({ label: b.name, value: b.stats.avg_response_hours }));
 
   // Leads that need attention: overdue first, then unassigned/new, then awaiting response.
   const attention = [...leads]
@@ -120,9 +122,10 @@ export default function Dashboard() {
           <>
             <StatCard label={isDeveloper ? "My properties" : "Properties"} value={stats?.properties} to="/admin/properties" />
             {isAdmin && <StatCard label="Developers" value={stats?.developers} to="/admin/developers" />}
-            {isAdmin && <StatCard label="Insights" value={stats?.insights} to="/admin/insights" />}
+            <StatCard label="Brokers" value={stats?.brokers} to="/admin/team" />
             <StatCard label="Total leads" value={stats?.leads_total} to="/admin/leads" />
             <StatCard label="Open leads" value={stats?.leads_open} to="/admin/leads" />
+            <StatCard label="Overdue" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
           </>
         )}
       </div>
@@ -136,6 +139,17 @@ export default function Dashboard() {
             <BarChart data={lifecycleBars} />
           )}
         </section>
+
+        {!isBroker && (
+          <section className="adm-panel">
+            <header className="adm-panel__head"><h2>Broker response time</h2></header>
+            {brokerBars.length === 0 ? (
+              <p className="adm-panel__empty">No responses logged yet.</p>
+            ) : (
+              <BarChart data={brokerBars} color="#0891b2" valueFormat={(v) => fmtHours(v)} />
+            )}
+          </section>
+        )}
 
         {!isBroker && (
           <section className="adm-panel">
