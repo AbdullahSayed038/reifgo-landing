@@ -27,7 +27,7 @@ export function createDemoData() {
     },
     {
       id: "berkeley",
-      name: "BERKELEY GROUP",
+      name: "HARBOUR GROUP",
       tagline: "London's landmark builder",
       years_in_market: 35,
       total_projects: 120,
@@ -42,7 +42,7 @@ export function createDemoData() {
     },
     {
       id: "meraas",
-      name: "MERAAS HOLDING",
+      name: "VANTAGE HOLDING",
       tagline: "Shaping Dubai's waterfront",
       years_in_market: 17,
       total_projects: 36,
@@ -55,7 +55,7 @@ export function createDemoData() {
     },
     {
       id: "emaar",
-      name: "EMAAR PROPERTIES",
+      name: "MERIDIAN PROPERTIES",
       tagline: "Abu Dhabi's landmark developer",
       years_in_market: 20,
       total_projects: 92,
@@ -71,7 +71,7 @@ export function createDemoData() {
     },
     {
       id: "reportage",
-      name: "REPORTAGE PROPERTIES",
+      name: "CORNERSTONE PROPERTIES",
       tagline: "Contemporary living, accessible entry",
       years_in_market: 11,
       total_projects: 40,
@@ -264,7 +264,7 @@ export function createDemoData() {
       location: "The Shard, London",
       type: "in_person",
       pass_type: "Premium",
-      description: "Private viewings and 1:1 sessions with Berkeley Group leadership.",
+      description: "Private viewings and 1:1 sessions with Harbour Group leadership.",
       created_at: daysAgo(15),
       _count: { registrations: 57 },
     },
@@ -355,9 +355,9 @@ export function createDemoData() {
   // Brokers work under a developer. Each developer's team assigns leads to
   // its brokers; a broker only sees the leads assigned to them.
   const brokers = [
-    { id: "bk-omar", developer_id: "emaar", name: "Omar Al Farsi", email: "omar@emaar.example", phone: "+971 50 200 1188" },
-    { id: "bk-fatima", developer_id: "emaar", name: "Fatima Zahra", email: "fatima@emaar.example", phone: "+971 50 200 3300" },
-    { id: "bk-yusuf", developer_id: "reportage", name: "Yusuf Rahman", email: "yusuf@reportage.example", phone: "+971 50 400 7722" },
+    { id: "bk-omar", developer_id: "emaar", name: "Omar Al Farsi", email: "omar@meridian.example", phone: "+971 50 200 1188" },
+    { id: "bk-fatima", developer_id: "emaar", name: "Fatima Zahra", email: "fatima@meridian.example", phone: "+971 50 200 3300" },
+    { id: "bk-yusuf", developer_id: "reportage", name: "Yusuf Rahman", email: "yusuf@cornerstone.example", phone: "+971 50 400 7722" },
   ];
 
   // Lead activity entries are the audit trail: creation, assignment, status
@@ -393,7 +393,7 @@ export function createDemoData() {
       first_response_at: null,
       closed_at: null,
       activity: [
-        act(hoursAgo(6), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(6), "MERIDIAN PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(hoursAgo(8), "Sarah Whitfield", "creation", "Lead submitted via the app"),
       ],
     },
@@ -410,7 +410,7 @@ export function createDemoData() {
       first_response_at: null,
       closed_at: null,
       activity: [
-        act(hoursAgo(30), "EMAAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(30), "MERIDIAN PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
         act(hoursAgo(32), "Daniel Osei", "creation", "Lead submitted via the app"),
       ],
     },
@@ -427,7 +427,7 @@ export function createDemoData() {
       first_response_at: null,
       closed_at: null,
       activity: [
-        act(hoursAgo(54), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(54), "MERIDIAN PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(hoursAgo(56), "Aisha Noor", "creation", "Lead submitted via the app"),
       ],
     },
@@ -446,7 +446,7 @@ export function createDemoData() {
       activity: [
         act(hoursAgo(16), "Fatima Zahra", "note", "Called the investor, sent the Saadiyat brochure. Following up Thursday."),
         act(hoursAgo(16), "Fatima Zahra", "status", "Status → Contacted"),
-        act(hoursAgo(20), "EMAAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(20), "MERIDIAN PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
         act(hoursAgo(22), "Marcus Chen", "creation", "Lead submitted via the app"),
       ],
     },
@@ -466,7 +466,7 @@ export function createDemoData() {
         act(hoursAgo(70), "Omar Al Farsi", "status", "Status → Qualified"),
         act(hoursAgo(72), "Omar Al Farsi", "note", "Budget confirmed at $60k entry, wants a 2-bed. Strong fit."),
         act(hoursAgo(115), "Omar Al Farsi", "status", "Status → Contacted"),
-        act(hoursAgo(118), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(118), "MERIDIAN PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(daysAgo(5), "Khalid Al Mansoori", "creation", "Lead submitted via the app"),
       ],
     },
@@ -486,7 +486,7 @@ export function createDemoData() {
         act(daysAgo(2), "Fatima Zahra", "status", "Status → Closed (won)"),
         act(daysAgo(2), "Fatima Zahra", "note", "Reservation signed on a Saadiyat villa. 🎉"),
         act(hoursAgo(284), "Fatima Zahra", "status", "Status → Contacted"),
-        act(hoursAgo(286), "EMAAR PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
+        act(hoursAgo(286), "MERIDIAN PROPERTIES", "assignment", "Assigned to Fatima Zahra"),
         act(daysAgo(12), "Sarah Whitfield", "creation", "Lead submitted via the app"),
       ],
     },
@@ -506,11 +506,11 @@ export function createDemoData() {
         act(daysAgo(8), "Omar Al Farsi", "status", "Status → Closed (lost)"),
         act(daysAgo(8), "Omar Al Farsi", "note", "Investor went with another development. Not price-sensitive — timing."),
         act(hoursAgo(473), "Omar Al Farsi", "status", "Status → Contacted"),
-        act(hoursAgo(478), "EMAAR PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
+        act(hoursAgo(478), "MERIDIAN PROPERTIES", "assignment", "Assigned to Omar Al Farsi"),
         act(daysAgo(20), "Daniel Osei", "creation", "Lead submitted via the app"),
       ],
     },
-    // Reportage lead, assigned to Yusuf — gives the second company real data.
+    // Cornerstone lead, assigned to Yusuf — gives the second company real data.
     {
       id: "l9",
       user_id: "u5",
@@ -523,7 +523,7 @@ export function createDemoData() {
       first_response_at: null,
       closed_at: null,
       activity: [
-        act(hoursAgo(9), "REPORTAGE PROPERTIES", "assignment", "Assigned to Yusuf Rahman"),
+        act(hoursAgo(9), "CORNERSTONE PROPERTIES", "assignment", "Assigned to Yusuf Rahman"),
         act(hoursAgo(11), "Marcus Chen", "creation", "Lead submitted via the app"),
       ],
     },
@@ -607,7 +607,7 @@ export function createDemoData() {
       excerpt: "Waterfront units are moving 22% faster than the Abu Dhabi average.",
       body: "Draft — numbers pending final verification from the sales desk.",
       cover_url: "",
-      author_name: "EMAAR PROPERTIES",
+      author_name: "MERIDIAN PROPERTIES",
       author_developer_id: "emaar",
       channels: { app: true, website: false },
       published: false,
