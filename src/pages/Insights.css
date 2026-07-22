@@ -431,3 +431,34 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
+/* ---------------------------------------------------------------------
+   Older-Safari fallback (iOS < 15 has no aspect-ratio support). Without
+   this the media boxes collapse to zero height and every image/placeholder
+   disappears. Gated by @supports, so modern browsers never see it and keep
+   using the cleaner aspect-ratio rules above.
+   --------------------------------------------------------------------- */
+@supports not (aspect-ratio: 1 / 1) {
+  .ins-lead__media,
+  .ins-card__media {
+    position: relative;
+    height: 0;
+  }
+
+  .ins-lead__media {
+    padding-top: 62.5%; /* 10 / 16 */
+  }
+
+  .ins-card__media {
+    padding-top: 75%; /* 3 / 4 */
+  }
+
+  .ins-lead__media > *,
+  .ins-card__media > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
