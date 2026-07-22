@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, getSession } from "../api.js";
 import { BarChart, DonutChart } from "../components/charts.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
+import { useAutoRefresh } from "../useAutoRefresh.js";
 import { ESCALATION, fmtHours, initials, timeAgo } from "../leadUtils.js";
 
 const PROP_COLORS = { active: "#1e7d4f", coming_soon: "#92650f", sold_out: "#b3372f" };
@@ -30,7 +31,7 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const load = useCallback(() => {
     const skip = () => Promise.resolve(null);
     const calls = [
       api.get("/admin/stats"),
@@ -61,10 +62,18 @@ export default function Dashboard() {
             .map((f) => f.reason?.message ?? "unknown error")
             .join("; ")}`,
         );
+      } else {
+        setError("");
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isBroker]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Keep the pipeline, stats and "needs attention" list current on their own.
+  useAutoRefresh(load);
 
   const count = (fn) => leads.filter(fn).length;
   const lifecycleBars = LIFECYCLE_BARS.map(([key, label, color]) => ({

@@ -12,7 +12,9 @@ const SURFACE = "website";
 
 async function get(path) {
   const sep = path.includes("?") ? "&" : "?";
-  const res = await fetch(`${BASE}${path}${sep}surface=${SURFACE}`);
+  // no-store: the public pages should reflect a CMS edit on the next load,
+  // never a browser-cached copy.
+  const res = await fetch(`${BASE}${path}${sep}surface=${SURFACE}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(`Request failed (${res.status})`);
   }

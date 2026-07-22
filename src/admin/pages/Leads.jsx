@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, getSession } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
+import { useAutoRefresh } from "../useAutoRefresh.js";
 import { ESCALATION, initials, timeAgo } from "../leadUtils.js";
 
 const TABS = [
@@ -26,13 +27,26 @@ export default function Leads() {
   const session = getSession();
   const isBroker = session?.role === "broker";
 
+  // Silent on refresh: a background poll shouldn't pop a toast if the network
+  // hiccups, only the initial load should surface an error.
+  const load = useCallback(
+    (surfaceErrors = false) => {
+      api
+        .get("/admin/leads")
+        .then(setRows)
+        .catch((e) => surfaceErrors && toast.error(e.message));
+      if (!isBroker) api.get("/admin/brokers").then(setBrokers).catch(() => {});
+    },
+    [isBroker, toast],
+  );
+
   useEffect(() => {
-    api.get("/admin/leads").then(setRows).catch((e) => toast.error(e.message));
-    if (!isBroker) {
-      api.get("/admin/brokers").then(setBrokers).catch(() => {});
-    }
+    load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // New enquiries appear on their own within ~20s — no manual refresh.
+  useAutoRefresh(load);
 
   const activeTab = TABS.find((t) => t.key === tab) ?? TABS[0];
 

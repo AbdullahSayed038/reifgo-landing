@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
 import { useToast } from "../components/Toast.jsx";
+import { useAutoRefresh } from "../useAutoRefresh.js";
 
 const fmtDateTime = (iso) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -13,16 +14,22 @@ export default function SummitInvitations() {
   const [open, setOpen] = useState(null);
   const toast = useToast();
 
-  const load = () =>
-    api
-      .get("/admin/summit/invitations")
-      .then(setRows)
-      .catch((e) => toast.error(e.message));
+  const load = useCallback(
+    (surfaceErrors = false) =>
+      api
+        .get("/admin/summit/invitations")
+        .then(setRows)
+        .catch((e) => surfaceErrors && toast.error(e.message)),
+    [toast],
+  );
 
   useEffect(() => {
-    load();
+    load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // New requests submitted from the public Forum page show up on their own.
+  useAutoRefresh(load);
 
   const toggleHandled = async (row) => {
     try {

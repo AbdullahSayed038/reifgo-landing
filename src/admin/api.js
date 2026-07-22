@@ -51,6 +51,9 @@ async function request(method, path, body) {
       method,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
+      // The CMS shows live operational data (leads, stats), so the browser must
+      // never serve a stale cached copy — every call goes to the server.
+      cache: "no-store",
     });
   } catch {
     throw new ApiError(0, "Can't reach the API — is the backend running?");
