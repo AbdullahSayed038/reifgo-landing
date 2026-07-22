@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon.jsx";
+import { sendChat } from "../lib/chatApi.js";
+import ChatProperties from "./ChatProperties.jsx";
 import "./AdvisorChat.css";
 
 const CHIPS = ["Market Pulse: London", "Risk Assessment", "Portfolio Rebalance"];
 
 // The rich "Institutional Insights" card (with the Marina Sands property
 // listing) is the seeded first exchange, kept as demo content. Everything the
-// visitor sends after that goes through the live FAQ bot at /api/chat — the
-// same retrieval gate, limits, and Claude flow as the floating site widget.
-// Seeded messages are display-only and are never sent as conversation history.
+// visitor sends after that goes through the shared backend's /chat endpoint —
+// the same Haiku assistant and live property search as the floating widget and
+// the mobile app. Seeded messages are display-only and never sent as history.
 const INITIAL_MESSAGES = [
   {
     id: "seed-user",
@@ -48,23 +50,15 @@ export default function AdvisorChat() {
     setLastFailed(null);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, history }),
-      });
-      const data = await res.json();
+      const { reply, properties } = await sendChat([
+        ...history,
+        { role: "user", content: trimmed },
+      ]);
 
-      if (!res.ok) {
-        if (data.resetConversation) {
-          setMessages([...INITIAL_MESSAGES, { id: `a-${Date.now()}`, role: "ai", text: data.error }]);
-          setStatus("idle");
-          return;
-        }
-        throw new Error(data.error || "Request failed");
-      }
-
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "ai", text: data.reply }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: `a-${Date.now()}`, role: "ai", text: reply, properties },
+      ]);
       setStatus("idle");
     } catch (err) {
       setLastFailed({ text: trimmed, prior, message: err.message });
@@ -154,6 +148,7 @@ export default function AdvisorChat() {
                     <span>Advisor AI</span>
                   </div>
                   <p className="achat__card-text">{m.text}</p>
+                  {m.properties?.length ? <ChatProperties properties={m.properties} /> : null}
                 </div>
               </div>
             );

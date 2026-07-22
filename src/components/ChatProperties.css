@@ -1,0 +1,77 @@
+/* Property matches rendered under an assistant reply. Uses the site tokens so
+   it reads the same inside the floating widget and the Advisor panel. */
+
+.chatprops {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chatprops__card {
+  display: flex;
+  gap: 0.7rem;
+  align-items: stretch;
+  padding: 0.55rem;
+  border: 1px solid var(--line-3, rgba(0, 0, 0, 0.1));
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  /* ultra-diffuse, low-opacity — never a hard drop shadow */
+  box-shadow: 0 1px 2px rgba(20, 30, 30, 0.04), 0 8px 24px rgba(20, 30, 30, 0.05);
+}
+
+.chatprops__media {
+  flex: 0 0 52px;
+  width: 52px;
+  align-self: stretch;
+  min-height: 52px;
+  border-radius: 7px;
+  background-color: var(--surface-soft, #eef1f1);
+  background-size: cover;
+  background-position: center;
+}
+
+.chatprops__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+}
+
+.chatprops__name {
+  margin: 0;
+  font-family: var(--font-head, inherit);
+  font-weight: 600;
+  font-size: var(--fs-sm, 0.85rem);
+  color: var(--ink, #1a2323);
+  line-height: 1.25;
+}
+
+.chatprops__loc {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted, rgba(30, 40, 40, 0.6));
+  line-height: 1.2;
+}
+
+.chatprops__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.chatprops__price {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand, #2a4f4f);
+}
+
+.chatprops__yield {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted, rgba(30, 40, 40, 0.6));
+}

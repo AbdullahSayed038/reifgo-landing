@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon.jsx";
+import { sendChat } from "../lib/chatApi.js";
+import ChatProperties from "./ChatProperties.jsx";
 
 const GREETING = {
   role: "assistant",
@@ -40,23 +42,15 @@ export default function ChatWidgetPanel({ open, onClose }) {
     setLastFailed(null);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, history }),
-      });
-      const data = await res.json();
+      const { reply, properties } = await sendChat([
+        ...history,
+        { role: "user", content: trimmed },
+      ]);
 
-      if (!res.ok) {
-        if (data.resetConversation) {
-          setMessages([GREETING, { role: "assistant", content: data.error }]);
-          setStatus("idle");
-          return;
-        }
-        throw new Error(data.error || "Request failed");
-      }
-
-      setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: reply, properties },
+      ]);
       setStatus("idle");
     } catch (err) {
       setLastFailed({ text: trimmed, prior: priorMessages, message: err.message });
@@ -97,6 +91,7 @@ export default function ChatWidgetPanel({ open, onClose }) {
         {messages.map((m, i) => (
           <div key={i} className={`cw__msg cw__msg--${m.role}`}>
             {m.content}
+            {m.properties?.length ? <ChatProperties properties={m.properties} /> : null}
           </div>
         ))}
 
