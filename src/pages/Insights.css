@@ -31,11 +31,16 @@
   color: #fff;
 }
 
-.ins-hero__eyebrow {
+/* Scoped so it out-ranks the global `.eyebrow` rule (color: var(--ink)), which
+   would otherwise render this dark on the dark hero. */
+.ins-hero__inner .ins-hero__eyebrow {
   color: var(--brand-soft);
 }
 
-.ins-hero__title {
+/* Scoped under the inner wrapper so it out-ranks the global `.heading` rule,
+   which otherwise paints the title in the dark brand colour and makes it blend
+   into the dark hero gradient. */
+.ins-hero__inner .ins-hero__title {
   margin-top: var(--sp-3);
   font-size: var(--fs-hero);
   line-height: var(--lh-tight);

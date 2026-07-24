@@ -308,6 +308,21 @@
   line-height: var(--lh-body);
 }
 
+/* The global `.heading` rule (color: var(--brand)) and `.eyebrow` rule
+   (color: var(--ink)) in base.css load after this file, so on the dark hero and
+   the dark awards section they override the intended light text — the titles end
+   up brand-on-brand and vanish. Re-assert light colours with section-scoped
+   selectors, which out-rank the single-class globals. */
+.fm-hero .heading,
+.fm-awards .heading {
+  color: #fff;
+}
+
+.fm-hero .eyebrow,
+.fm-awards .eyebrow {
+  color: var(--brand-soft);
+}
+
 /* ---- Awards ---------------------------------------------------------- */
 .fm-awards {
   background: var(--brand);
