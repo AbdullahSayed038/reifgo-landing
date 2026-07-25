@@ -337,16 +337,38 @@
   color: #fff;
 }
 
-.fm-awards__grid {
+/* Copy on the left, ceremony photograph on the right — the Figma layout. */
+.fm-awards__inner {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--gap);
-  margin-top: var(--sp-6);
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-8);
+  align-items: center;
+}
+
+.fm-awards__list {
+  margin-top: var(--sp-5);
+  list-style: none;
+  padding: 0;
 }
 
 .fm-award {
-  padding: var(--sp-4);
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--line-on-dark);
+}
+
+.fm-award + .fm-award {
+  margin-top: var(--sp-2);
+}
+
+.fm-award__num {
+  flex: none;
+  font-family: var(--font-head);
+  font-size: var(--fs-h3);
+  font-weight: 800;
+  line-height: 1.1;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .fm-award__title {
@@ -355,9 +377,58 @@
 }
 
 .fm-award p {
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-1);
   color: rgba(255, 255, 255, 0.75);
   line-height: var(--lh-body);
+}
+
+.fm-awards__media {
+  position: relative;
+  margin: 0;
+}
+
+.fm-awards__media img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+/* Overlaps the photo's lower-left corner, as in the design. */
+.fm-awards__badge {
+  position: absolute;
+  left: calc(var(--sp-4) * -1);
+  bottom: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--brand);
+  border: 1px solid var(--line-on-dark);
+  max-width: 78%;
+}
+
+.fm-awards__badge-kicker {
+  font-family: var(--font-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand-soft);
+}
+
+.fm-awards__badge-title {
+  font-family: var(--font-head);
+  font-size: var(--fs-h4);
+  font-weight: 800;
+  color: #fff;
+}
+
+/* Older-Safari fallback — without aspect-ratio the photo box collapses. */
+@supports not (aspect-ratio: 1 / 1) {
+  .fm-awards__media img {
+    height: 26rem;
+  }
 }
 
 /* ---- Invitation request ---------------------------------------------- */

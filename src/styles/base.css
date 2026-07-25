@@ -13,6 +13,11 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Always reserve the scrollbar gutter. Long pages (Home, Insights) scroll
+     while the advisor shell is a fixed 100dvh with overflow:hidden — without
+     this, navigating between them shifts the whole layout sideways by the
+     scrollbar width, which reads as the header "jumping". */
+  scrollbar-gutter: stable;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -191,6 +196,26 @@ button {
 [data-reveal].is-visible {
   opacity: 1;
   transform: none;
+}
+
+/* ---- Route transition ------------------------------------------------
+   Pages crossfade instead of hard-cutting, so moving between the marketing
+   pages and the advisor app shell reads as one continuous surface rather
+   than a browser page load.
+
+   Opacity only, deliberately: a transform (or filter/will-change) here would
+   establish a containing block and trap the mobile drawer's position:fixed
+   panel inside this wrapper — the same trap documented in Header.css. The
+   per-section rise is already handled by [data-reveal] above. */
+.route-fade {
+  opacity: 1;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+/* Leave quickly so the click feels answered immediately; arrive gently. */
+.route-fade[data-phase="out"] {
+  opacity: 0;
+  transition-duration: 0.12s;
 }
 
 @media (prefers-reduced-motion: reduce) {

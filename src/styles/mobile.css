@@ -611,9 +611,15 @@
   }
 
   .fm-agenda__grid,
-  .fm-awards__grid,
+  .fm-awards__inner,
   .fm-form {
     grid-template-columns: 1fr;
+  }
+
+  /* The badge can't hang off the photo once the column is full-bleed. */
+  .fm-awards__badge {
+    left: 0;
+    max-width: 100%;
   }
 
   /* The vertical hairline becomes a horizontal one when the row stacks. */

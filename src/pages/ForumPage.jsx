@@ -246,21 +246,42 @@ export default function ForumPage() {
         {/* ---- Awards ---- */}
         {awards.length > 0 && (
           <section className="section fm-awards">
-            <div className="container">
-              <p className="eyebrow fm-awards__eyebrow" data-reveal>
-                The REIFGO Awards
-              </p>
-              <h2 className="heading h2 fm-awards__title" data-reveal>
-                Recognising excellence in craft.
-              </h2>
-              <div className="fm-awards__grid">
-                {awards.map((item) => (
-                  <article className="fm-award" key={item.id} data-reveal>
-                    <h3 className="heading fm-award__title">{item.title}</h3>
-                    {item.description && <p>{item.description}</p>}
-                  </article>
-                ))}
+            <div className="container fm-awards__inner">
+              <div className="fm-awards__copy">
+                <p className="eyebrow fm-awards__eyebrow" data-reveal>
+                  The REIFGO Awards
+                </p>
+                <h2 className="heading h2 fm-awards__title" data-reveal>
+                  Recognising excellence in craft.
+                </h2>
+                <ol className="fm-awards__list">
+                  {awards.map((item, i) => (
+                    <li className="fm-award" key={item.id} data-reveal>
+                      <span className="fm-award__num" aria-hidden="true">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className="fm-award__body">
+                        <h3 className="heading fm-award__title">{item.title}</h3>
+                        {item.description && <p>{item.description}</p>}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
               </div>
+
+              <figure className="fm-awards__media" data-reveal>
+                <img
+                  src="/forum-awards.png"
+                  alt="Skyline at dusk over the host city of the REIFGO awards ceremony"
+                  loading="lazy"
+                />
+                <figcaption className="fm-awards__badge">
+                  <span className="fm-awards__badge-kicker">Coming soon</span>
+                  <span className="fm-awards__badge-title">
+                    Official {summit.year ?? new Date().getFullYear()} Nominees
+                  </span>
+                </figcaption>
+              </figure>
             </div>
           </section>
         )}

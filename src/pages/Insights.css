@@ -16,14 +16,23 @@
   isolation: isolate;
 }
 
-/* A deep gradient stands in for the Figma photograph until a hero image is
-   set in the CMS, so the page never renders with unreadable white-on-white. */
+/* The Figma hero photograph (boardroom over a dusk skyline), with a
+   left-weighted scrim over it so the headline stays legible against the bright
+   window, and the original gradient kept underneath as the fallback for the
+   moment before the image loads — or if it ever 404s. */
 .ins-hero__media {
   position: absolute;
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(180deg, rgba(0, 32, 42, 0.35) 0%, rgba(0, 32, 42, 0.85) 100%),
+    linear-gradient(
+      100deg,
+      rgba(0, 26, 34, 0.92) 0%,
+      rgba(0, 26, 34, 0.74) 38%,
+      rgba(0, 26, 34, 0.4) 68%,
+      rgba(0, 26, 34, 0.28) 100%
+    ),
+    url("/insights-hero.jpg") center / cover no-repeat,
     linear-gradient(120deg, #00343f 0%, #00556c 45%, #0b7f92 100%);
 }
 
