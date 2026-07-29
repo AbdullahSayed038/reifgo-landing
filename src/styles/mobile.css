@@ -74,16 +74,14 @@
     transform: translateX(0);
   }
 
-  /* ---- Hero: text only, no image, full-width stacked buttons ---- */
+  /* ---- Hero: the still stands in for the video (see Hero.jsx), shorter
+     banner, full-width stacked buttons ---- */
   .hero {
-    padding-block: 2.5rem;
+    padding-block: 3.5rem;
+    min-height: 0;
   }
-  .hero__grid {
-    grid-template-columns: 1fr;
-    gap: var(--sp-5);
-  }
-  .hero__media {
-    display: none;
+  .hero__copy {
+    max-width: none;
   }
   .hero__lead {
     max-width: none;

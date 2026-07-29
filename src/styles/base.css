@@ -137,6 +137,20 @@ button {
   border-color: var(--line-solid);
 }
 
+/* Ghost button on a dark background (home video banner, forum hero) — the
+   default ghost assumes a light surface and would render nearly invisible. */
+.btn--ghost-dark {
+  --btn-bg: transparent;
+  --btn-fg: #fff;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn--ghost-dark:hover {
+    border-color: #fff;
+  }
+}
+
 /* Larger button used across the Services page (16px label, 58px tall) */
 .btn--lg {
   font-size: var(--fs-md); /* 16px */

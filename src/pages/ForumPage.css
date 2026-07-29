@@ -68,20 +68,6 @@
   margin-top: var(--sp-5);
 }
 
-/* Ghost button on a dark hero — the site's default ghost assumes a light
-   background and would render invisible here. */
-.btn--ghost-dark {
-  --btn-bg: transparent;
-  --btn-fg: #fff;
-  border-color: rgba(255, 255, 255, 0.45);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .btn--ghost-dark:hover {
-    border-color: #fff;
-  }
-}
-
 .fm-hero__venue {
   position: absolute;
   right: var(--page-pad);

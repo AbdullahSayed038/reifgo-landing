@@ -1,23 +1,65 @@
+/* Full-bleed video banner: the footage is the background and the copy sits on
+   top of a brand-blue wash, rather than the video living in a framed column. */
 .hero {
-  background-color: var(--bg);
-  /* Faint architectural grid — nods to the "architectural approach" copy */
-  background-image: linear-gradient(rgba(180, 203, 204, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180, 203, 204, 0.12) 1px, transparent 1px);
-  background-size: 5rem 5rem;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: min(88vh, 54rem);
   padding-block: 6.78rem; /* 108.5px */
+  padding-inline: var(--page-pad);
+  overflow: hidden;
+  color: #fff;
 }
 
-.hero__grid {
-  display: grid;
-  grid-template-columns: 7fr 5fr;
-  gap: var(--gap);
-  align-items: start; /* image top-aligns; taller text column drops buttons below the image */
+/* The still is the base layer, so the banner is never blank — it shows while
+   the video buffers, on phones, under reduced motion, and if the file 404s. */
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("/hero-towers.png") center / cover no-repeat;
+  background-color: #041e26;
+}
+
+.hero__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Brand-blue tint, weighted darker on the left so the headline keeps its
+   contrast over the bright parts of the footage. */
+.hero__tint {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(0, 26, 34, 0.9) 0%,
+      rgba(0, 40, 52, 0.74) 40%,
+      rgba(0, 58, 74, 0.52) 72%,
+      rgba(0, 70, 90, 0.44) 100%
+    ),
+    rgba(0, 85, 108, 0.42);
+}
+
+.hero__inner {
+  width: 100%;
 }
 
 .hero__copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  max-width: 46rem;
+}
+
+/* These three out-rank the global `.eyebrow` (var(--ink)) and `.heading`
+   (var(--brand)) rules, which would otherwise paint dark text on the video. */
+.hero__copy .hero__eyebrow {
+  color: var(--brand-soft);
 }
 
 .hero .hero__title {
@@ -25,15 +67,19 @@
   line-height: 1.1; /* 88px on 80px */
   letter-spacing: -0.03em;
   margin-top: var(--sp-3);
+  color: #fff;
 }
 
-.hero__title-muted {
-  color: var(--muted);
+.hero__copy .hero__title-muted {
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.hero__lead {
+/* Scoped like the two above: the global `.lead` rule also sets a colour and
+   would otherwise win on source order, leaving dark body text on the video. */
+.hero__copy .hero__lead {
   margin-top: var(--sp-4);
-  max-width: 40rem; /* widened so lines run as long as Figma (breaks at "elite") */
+  max-width: 40rem;
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .hero__actions {
@@ -41,32 +87,4 @@
   flex-wrap: wrap;
   gap: var(--sp-3);
   margin-top: var(--sp-5);
-}
-
-.hero__media {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.hero__frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 448 / 560;
-  border: 1px solid rgba(191, 200, 205, 0.3);
-  overflow: hidden;
-}
-
-.hero__frame img,
-.hero__frame video {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 85, 108, 0.05);
-  mix-blend-mode: multiply;
 }
