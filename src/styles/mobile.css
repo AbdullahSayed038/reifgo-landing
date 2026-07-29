@@ -74,8 +74,8 @@
     transform: translateX(0);
   }
 
-  /* ---- Hero: the still stands in for the video (see Hero.jsx), shorter
-     banner, full-width stacked buttons ---- */
+  /* ---- Hero: same video banner as desktop, just shorter, with full-width
+     stacked buttons ---- */
   .hero {
     padding-block: 3.5rem;
     min-height: 0;
