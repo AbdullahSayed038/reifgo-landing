@@ -44,13 +44,14 @@
   .hdr .hdr__right {
     display: none;
   }
-  /* AdvisorHeader keeps its icon cluster visible, but drops the text nav/cta.
-     Push it to the far right so it doesn't collide with the centered logo
-     (burger is the only other flex child once nav/cta are hidden). */
+  /* AdvisorHeader keeps its workspace button visible, but drops the text
+     nav/cta. Push it to the far right so it doesn't collide with the centered
+     logo (burger is the only other flex child once nav/cta are hidden). */
   .hdr--app .hdr__inner {
     justify-content: space-between;
   }
-  .hdr--app .hdr__right {
+  .hdr--app .hdr__right,
+  .hdr--app .hdr__icons {
     display: flex;
   }
   .hdr--app .hdr__cta {

@@ -4,7 +4,10 @@ import Logo from "./Logo.jsx";
 import { MobileBurger, MobileDrawer } from "./MobileNavDrawer.jsx";
 import "./Header.css";
 
-const LINKS = [
+// Single source of truth for site navigation — AdvisorHeader imports this too,
+// so the bar reads identically on the marketing pages and inside the advisor
+// rather than swapping to a separate set of labels.
+export const LINKS = [
   { label: "Platform", to: "/" },
   { label: "Services", to: "/services" },
   { label: "AI Advisor", to: "/advisor" },

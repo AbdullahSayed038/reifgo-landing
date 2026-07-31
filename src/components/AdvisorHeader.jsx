@@ -1,26 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "./Logo.jsx";
+import { LINKS } from "./Header.jsx";
 import { MobileBurger, MobileDrawer } from "./MobileNavDrawer.jsx";
 import "./Header.css";
 
-// Chat/app header — same shell as the marketing header so moving between the
-// site and the advisor feels continuous. Only the nav labels + the icon
-// cluster differ. Bell/user icons are vectors extracted from Figma (61:498/500).
-const NAV = [
-  { label: "Portfolio", to: "/advisor" },
-  { label: "Market Insights", to: "/advisor" },
-  { label: "Advisors", to: "/advisor" },
-  { label: "Resources", to: "/advisor" },
-];
-
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 16 20" fill="currentColor" aria-hidden="true" focusable="false">
-      <path d="M0 17V15H2V8C2 6.61667 2.41667 5.3875 3.25 4.3125C4.08333 3.2375 5.16667 2.53333 6.5 2.2V1.5C6.5 1.08333 6.64583 0.729167 6.9375 0.4375C7.22917 0.145833 7.58333 0 8 0C8.41667 0 8.77083 0.145833 9.0625 0.4375C9.35417 0.729167 9.5 1.08333 9.5 1.5V2.2C10.8333 2.53333 11.9167 3.2375 12.75 4.3125C13.5833 5.3875 14 6.61667 14 8V15H16V17H0V17M8 20C7.45 20 6.97917 19.8042 6.5875 19.4125C6.19583 19.0208 6 18.55 6 18H10C10 18.55 9.80417 19.0208 9.4125 19.4125C9.02083 19.8042 8.55 20 8 20V20M4 15H12V8C12 6.9 11.6083 5.95833 10.825 5.175C10.0417 4.39167 9.1 4 8 4C6.9 4 5.95833 4.39167 5.175 5.175C4.39167 5.95833 4 6.9 4 8V15V15Z" />
-    </svg>
-  );
-}
+// Chat/app header. Same shell AND the same navigation as the marketing header —
+// entering the advisor shouldn't swap the site nav out from under you. The only
+// addition is the workspace button, which shows on mobile only (see Header.css):
+// on desktop the advisor's sidebar is already inline, so the bar there is
+// identical to every other page.
+const ACTIVE = "AI Advisor";
 
 function UserIcon() {
   return (
@@ -43,21 +33,26 @@ export default function AdvisorHeader({ onAccountClick }) {
             <Logo className="hdr__wordmark" />
           </Link>
 
-          <nav className="hdr__nav" aria-label="Dashboard">
-            {NAV.map((l) => (
-              <a key={l.label} href="#" className="hdr__link">
+          <nav className="hdr__nav" aria-label="Primary">
+            {LINKS.map((l) => (
+              <Link
+                key={l.label}
+                to={l.to}
+                className={`hdr__link${l.label === ACTIVE ? " is-active" : ""}`}
+              >
                 {l.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
           <div className="hdr__right">
             <button className="btn hdr__cta">Invest Now</button>
             <div className="hdr__icons">
-              <button className="hdr__icon" aria-label="Notifications">
-                <BellIcon />
-              </button>
-              <button className="hdr__icon" aria-label="Account" onClick={onAccountClick}>
+              <button
+                className="hdr__icon"
+                aria-label="Open workspace menu"
+                onClick={onAccountClick}
+              >
                 <UserIcon />
               </button>
             </div>
@@ -65,7 +60,13 @@ export default function AdvisorHeader({ onAccountClick }) {
         </div>
       </header>
 
-      <MobileDrawer open={open} onClose={() => setOpen(false)} links={NAV} cta="Invest Now" />
+      <MobileDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        links={LINKS}
+        active={ACTIVE}
+        cta="Invest Now"
+      />
     </>
   );
 }
