@@ -48,6 +48,7 @@ export default function Team() {
         searchKeys={["name", "email"]}
         searchPlaceholder="Search brokers…"
         emptyText={brokers === null ? "Loading…" : "No brokers yet."}
+        groupBy={isAdmin ? (b) => b.developer_name || b.developer_id : undefined}
         columns={[
           {
             key: "name",
@@ -62,9 +63,8 @@ export default function Team() {
               </span>
             ),
           },
-          ...(isAdmin
-            ? [{ key: "developer_id", label: "Developer", render: (b) => b.developer_id, width: 120 }]
-            : []),
+          // The developer is the group band now, so it does not also need a
+          // column repeating it on every row.
           { key: "open", label: "Open", width: 70, render: (b) => b.stats.open },
           {
             key: "overdue",

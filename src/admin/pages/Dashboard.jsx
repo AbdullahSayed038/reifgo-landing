@@ -16,6 +16,9 @@ const LIFECYCLE_BARS = [
   ["closed", "Closed", "#6b7a84"],
 ];
 
+// Matches CLOSED_STATUSES server-side: a closed lead needs no broker.
+const CLOSED = ["closed_won", "closed_lost"];
+
 export default function Dashboard() {
   const session = getSession();
   const role = session?.role ?? "admin";
@@ -97,8 +100,15 @@ export default function Dashboard() {
     .map((b) => ({ label: b.name, value: b.stats.avg_response_hours }));
 
   // Leads that need attention: overdue first, then unassigned/new, then awaiting response.
+  const isUnassigned = (l) => !l.assigned_broker_id && !CLOSED.includes(l.status);
+
   const attention = [...leads]
-    .filter((l) => l.escalation || l.status === "new" || (l.status === "assigned" && !l.first_response_at))
+    .filter(
+      (l) =>
+        l.escalation ||
+        isUnassigned(l) ||
+        (l.status === "assigned" && !l.first_response_at),
+    )
     .sort((a, b) => (a.escalation ? 0 : 1) - (b.escalation ? 0 : 1))
     .slice(0, 6);
 
@@ -135,6 +145,15 @@ export default function Dashboard() {
             <StatCard label="Total leads" value={stats?.leads_total} to="/admin/leads" />
             <StatCard label="Open leads" value={stats?.leads_open} to="/admin/leads" />
             <StatCard label="Overdue" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
+            {/* A developer's first job on the dashboard is to see what still
+                needs a broker; the panel below listed these but nothing
+                counted them. */}
+            <StatCard
+              label="Unassigned"
+              value={count(isUnassigned)}
+              to="/admin/leads"
+              accent={count(isUnassigned) > 0}
+            />
           </>
         )}
       </div>
@@ -202,6 +221,8 @@ export default function Dashboard() {
                   <span className={`adm-badge adm-badge--esc-${ESCALATION[lead.escalation].tone}`}>
                     {ESCALATION[lead.escalation].label}
                   </span>
+                ) : isUnassigned(lead) ? (
+                  <span className="adm-badge adm-badge--esc-developer">Unassigned</span>
                 ) : lead.status === "new" ? (
                   <span className="adm-badge">Unassigned · {timeAgo(lead.created_at)}</span>
                 ) : (

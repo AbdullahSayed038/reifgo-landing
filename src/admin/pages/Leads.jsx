@@ -87,9 +87,12 @@ export default function Leads() {
 
       <DataTable
         rows={visible}
-        searchKeys={["user.full_name", "user.phone", "user.email", "property.name", "broker.name"]}
+        searchKeys={["user.full_name", "user.phone", "user.email", "property.name", "broker.name", "developer_name"]}
         searchPlaceholder="Search leads…"
         emptyText={rows === null ? "Loading…" : "No leads in this view."}
+        // Website enquiries have no property and so no developer; they band
+        // together under REIFGO rather than being filed under someone else.
+        groupBy={(r) => r.developer_name}
         onRowClick={(row) => navigate(`/admin/leads/${row.id}`)}
         toolbar={
           !isBroker && brokers.length > 0 ? (
@@ -120,7 +123,14 @@ export default function Leads() {
             key: "property",
             label: "Regarding",
             render: (r) =>
-              r.property?.name ?? (
+              r.property?.name ? (
+                // The property alone did not say whose lead this was, so the
+                // developer sits under it rather than in a column of its own.
+                <div className="adm-cell-stack">
+                  <strong>{r.property.name}</strong>
+                  <span>{r.developer_name ?? "Unassigned developer"}</span>
+                </div>
+              ) : (
                 <div className="adm-cell-stack">
                   <strong>{r.interest ?? "General enquiry"}</strong>
                   <span>{r.source === "website" ? "Website form" : "App"}</span>

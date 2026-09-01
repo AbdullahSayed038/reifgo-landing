@@ -1823,3 +1823,29 @@
 .adm-panel__pad {
   padding: 16px 20px;
 }
+
+/* Group bands, used by Leads and Team to separate one developer's entries
+   from another's, with REIFGO's own kept last. */
+.adm-table__group th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  padding: 8px 16px;
+  background: var(--adm-surface-alt, #f2f4f5);
+  border-top: 1px solid var(--adm-border, #e6e8ea);
+  border-bottom: 1px solid var(--adm-border, #e6e8ea);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--adm-muted, #6b7780);
+}
+
+.adm-table__group-count {
+  margin-left: 8px;
+  font-weight: 500;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
