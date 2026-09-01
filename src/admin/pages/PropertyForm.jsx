@@ -19,6 +19,10 @@ const EMPTY = {
   channels: { app: true, website: true },
   media: [],
   roi: { annual_return: "", capital_appreciation: "", rental_yield: "", exit_horizon: "" },
+  construction_progress: "",
+  progress_verified_at: "",
+  handover: "",
+  permits: "",
 };
 
 const num = (v) => (v === "" || v == null ? undefined : Number(v));
@@ -62,6 +66,14 @@ export default function PropertyForm() {
               rental_yield: p.roi?.rental_yield ?? "",
               exit_horizon: p.roi?.exit_horizon ?? "",
             },
+            construction_progress:
+              p.construction_progress == null ? "" : String(p.construction_progress),
+            progress_verified_at: p.progress_verified_at
+              ? p.progress_verified_at.slice(0, 10)
+              : "",
+            handover: p.handover ?? "",
+            // Edited as one comma-separated line; stored as an array.
+            permits: (p.permits ?? []).join(", "),
           }),
         )
         .catch((e) => toast.error(e.message));
@@ -101,6 +113,28 @@ export default function PropertyForm() {
     setForm((f) => ({ ...f, media: [...f.media, { url: "", type: "image" }] }));
   const removeMedia = (i) =>
     setForm((f) => ({ ...f, media: f.media.filter((_, j) => j !== i) }));
+  // The source index is held in a ref as well as state. State drives the
+  // styling; the ref is what the drop reads, because if dragstart and drop
+  // land in the same tick React has not re-rendered and the handler would
+  // still close over a null source.
+  const dragFromRef = useRef(null);
+  const [dragFrom, setDragFrom] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
+
+  /**
+   * Moves one image to another position, closing the gap behind it. Display
+   * order is the array order -- the payload numbers them on save -- so this is
+   * the whole of "set the display priority".
+   */
+  const reorderMedia = (from, to) =>
+    setForm((f) => {
+      if (from == null || to == null || from === to) return f;
+      const media = [...f.media];
+      const [moved] = media.splice(from, 1);
+      media.splice(to, 0, moved);
+      return { ...f, media };
+    });
+
   const moveMedia = (i, dir) =>
     setForm((f) => {
       const media = [...f.media];
@@ -145,6 +179,15 @@ export default function PropertyForm() {
       media: form.media
         .filter((m) => m.url.trim())
         .map((m, i) => ({ url: m.url.trim(), type: m.type || "image", display_order: i })),
+      construction_progress: num(form.construction_progress),
+      progress_verified_at: form.progress_verified_at
+        ? new Date(form.progress_verified_at).toISOString()
+        : undefined,
+      handover: str(form.handover),
+      permits: form.permits
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean),
       ...(hasRoi ? { roi: roiValues } : {}),
     };
 
@@ -265,11 +308,49 @@ export default function PropertyForm() {
           {form.media.length === 0 && (
             <p className="adm-panel__empty">No images yet. Upload files or paste URLs — the first one is the cover.</p>
           )}
+          {form.media.length > 1 && (
+            <p className="adm-panel__note adm-panel__pad">
+              Drag a row to set the display order. The first image is the cover.
+            </p>
+          )}
           <ul className="adm-repeater">
             {form.media.map((m, i) => {
               const isUploaded = m.url.startsWith("data:");
               return (
-                <li key={i}>
+                <li
+                  key={i}
+                  draggable
+                  onDragStart={() => {
+                    dragFromRef.current = i;
+                    setDragFrom(i);
+                  }}
+                  onDragOver={(e) => {
+                    // Without preventDefault the browser refuses the drop.
+                    e.preventDefault();
+                    if (dragOver !== i) setDragOver(i);
+                  }}
+                  onDragLeave={() => setDragOver((v) => (v === i ? null : v))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    reorderMedia(dragFromRef.current, i);
+                    dragFromRef.current = null;
+                    setDragFrom(null);
+                    setDragOver(null);
+                  }}
+                  onDragEnd={() => {
+                    dragFromRef.current = null;
+                    setDragFrom(null);
+                    setDragOver(null);
+                  }}
+                  className={[
+                    dragFrom === i ? "is-dragging" : "",
+                    dragOver === i && dragFrom !== i ? "is-drop-target" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {/* The arrows stay: dragging is not reachable by keyboard. */}
+                  <span className="adm-repeater__grip" aria-hidden="true">⠿</span>
                   <span className="adm-repeater__index">{i + 1}</span>
                   {m.url ? (
                     <img className="adm-thumb" src={m.url} alt="" />
@@ -292,6 +373,42 @@ export default function PropertyForm() {
               );
             })}
           </ul>
+        </section>
+
+        <section className="adm-panel">
+          <header className="adm-panel__head">
+            <h2>RERA verification</h2>
+            <p className="adm-panel__note">
+              Leave the progress blank to hide the verification panel on the app.
+            </p>
+          </header>
+          <div className="adm-form-grid">
+            <FormField
+              label="Construction progress (%)"
+              type="number"
+              value={form.construction_progress}
+              onChange={set("construction_progress")}
+              placeholder="65"
+            />
+            <FormField
+              label="Progress verified on"
+              type="date"
+              value={form.progress_verified_at}
+              onChange={set("progress_verified_at")}
+            />
+            <FormField
+              label="Handover"
+              value={form.handover}
+              onChange={set("handover")}
+              placeholder="Q4 2026"
+            />
+            <FormField
+              label="Permits held"
+              value={form.permits}
+              onChange={set("permits")}
+              placeholder="Building Permit, Land Title, Environmental"
+            />
+          </div>
         </section>
 
         <section className="adm-panel">
