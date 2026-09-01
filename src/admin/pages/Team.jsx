@@ -4,16 +4,55 @@ import DataTable from "../components/DataTable.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtHours, initials } from "../leadUtils.js";
+import BrokerDialog from "../components/BrokerDialog.jsx";
 
 export default function Team() {
   const [brokers, setBrokers] = useState(null);
+  const [editing, setEditing] = useState(null); // broker object, or {} for new
+  const [busyId, setBusyId] = useState(null);
   const toast = useToast();
-  const isAdmin = getSession()?.role === "admin";
+  const session = getSession();
+  const isAdmin = session?.role === "admin";
+  // Brokers can see their desk but not manage it; the server refuses these
+  // writes either way, this just keeps the controls out of the way.
+  const canManage = session?.role !== "broker";
+
+  const reload = () =>
+    api.get("/admin/brokers").then(setBrokers).catch((e) => toast.error(e.message));
 
   useEffect(() => {
-    api.get("/admin/brokers").then(setBrokers).catch((e) => toast.error(e.message));
+    reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const toggleActive = async (b) => {
+    setBusyId(b.id);
+    try {
+      await api.patch(`/admin/brokers/${b.id}`, { is_active: !b.is_active });
+      toast.success(b.is_active ? `${b.name} deactivated` : `${b.name} reactivated`);
+      await reload();
+    } catch (e) {
+      toast.error(e.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const remove = async (b) => {
+    if (!window.confirm(`Remove ${b.name}? This cannot be undone.`)) return;
+    setBusyId(b.id);
+    try {
+      await api.del(`/admin/brokers/${b.id}`);
+      toast.success(`${b.name} removed`);
+      await reload();
+    } catch (e) {
+      // The server refuses to delete a broker holding live leads and says how
+      // many; surfacing that verbatim is more useful than "failed".
+      toast.error(e.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const totals = (brokers ?? []).reduce(
     (a, b) => {
@@ -34,6 +73,11 @@ export default function Team() {
           <h1>Team</h1>
           <p>Your brokers and how they're performing against assigned leads.</p>
         </div>
+        {canManage && (
+          <button className="adm-btn adm-btn--primary" onClick={() => setEditing({})}>
+            + Add broker
+          </button>
+        )}
       </header>
 
       <div className="adm-stat-grid">
@@ -55,10 +99,15 @@ export default function Team() {
             label: "Broker",
             render: (b) => (
               <span className="adm-broker-name">
-                <span className="adm-avatar">{initials(b.name)}</span>
+                <span className={`adm-avatar${b.is_active ? "" : " adm-avatar--off"}`}>
+                  {initials(b.name)}
+                </span>
                 <span className="adm-cell-stack">
-                  <strong>{b.name}</strong>
-                  <span>{b.email}</span>
+                  <strong>
+                    {b.name}
+                    {!b.is_active && <span className="adm-badge adm-badge--muted">Deactivated</span>}
+                  </strong>
+                  <span>{b.position ? `${b.position} · ${b.email}` : b.email}</span>
                 </span>
               </span>
             ),
@@ -92,8 +141,57 @@ export default function Team() {
                 </span>
               ),
           },
+          ...(canManage
+            ? [
+                {
+                  key: "manage",
+                  label: "",
+                  width: 190,
+                  render: (b) => (
+                    <div className="adm-row-actions">
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn--ghost adm-btn--sm"
+                        onClick={() => setEditing(b)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn--ghost adm-btn--sm"
+                        disabled={busyId === b.id}
+                        onClick={() => toggleActive(b)}
+                      >
+                        {b.is_active ? "Deactivate" : "Activate"}
+                      </button>
+                      <button
+                        type="button"
+                        className="adm-icon-btn adm-icon-btn--danger"
+                        aria-label={`Remove ${b.name}`}
+                        disabled={busyId === b.id}
+                        onClick={() => remove(b)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ),
+                },
+              ]
+            : []),
         ]}
       />
+
+      {editing && (
+        <BrokerDialog
+          broker={editing}
+          isAdmin={isAdmin}
+          onClose={() => setEditing(null)}
+          onSaved={async () => {
+            setEditing(null);
+            await reload();
+          }}
+        />
+      )}
     </>
   );
 }

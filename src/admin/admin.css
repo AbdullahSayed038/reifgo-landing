@@ -1871,3 +1871,67 @@
 .adm-repeater li:active .adm-repeater__grip {
   cursor: grabbing;
 }
+
+/* Broker add/edit dialog, and the row controls that open it. */
+.adm-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 22, 26, 0.45);
+}
+
+.adm-dialog {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: var(--adm-surface, #fff);
+  box-shadow: 0 20px 60px rgba(12, 22, 26, 0.28);
+}
+
+.adm-dialog__head {
+  padding: 20px 24px 0;
+}
+
+.adm-dialog__head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.adm-dialog__body {
+  padding: 20px 24px;
+}
+
+.adm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 24px 20px;
+}
+
+.adm-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adm-btn--sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* A deactivated account stays visible — its leads and history still matter —
+   but reads as switched off rather than active. */
+.adm-avatar--off {
+  opacity: 0.45;
+}
+
+.adm-badge--muted {
+  margin-left: 8px;
+  background: var(--adm-surface-alt, #eef0f1);
+  color: var(--adm-muted, #6b7780);
+}
