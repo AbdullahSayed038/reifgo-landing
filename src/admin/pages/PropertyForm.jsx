@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, getSession, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
+import RowListEditor from "../components/RowListEditor.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { useCurrency, USD_TO_AED } from "../currency.jsx";
 
@@ -23,6 +24,11 @@ const EMPTY = {
   progress_verified_at: "",
   handover: "",
   permits: "",
+  // The lower half of the property page (Figma 722:57).
+  unit_types: [],
+  amenities: [],
+  nearby_places: [],
+  faqs: [],
 };
 
 const num = (v) => (v === "" || v == null ? undefined : Number(v));
@@ -74,6 +80,31 @@ export default function PropertyForm() {
             handover: p.handover ?? "",
             // Edited as one comma-separated line; stored as an array.
             permits: (p.permits ?? []).join(", "),
+            // Numbers become strings for the inputs; blanks stay blank rather
+            // than becoming a literal 0 the editor would have to clear.
+            unit_types: (p.unit_types ?? []).map((u) => ({
+              name: u.name ?? "",
+              min_area: u.min_area ?? "",
+              max_area: u.max_area ?? "",
+              from_price: u.from_price ?? "",
+              floor_plan_url: u.floor_plan_url ?? "",
+            })),
+            amenities: (p.amenities ?? []).map((a) => ({
+              group_name: a.group_name ?? "",
+              icon: a.icon ?? "",
+              label: a.label ?? "",
+            })),
+            nearby_places: (p.nearby_places ?? []).map((n) => ({
+              name: n.name ?? "",
+              icon: n.icon ?? "",
+              travel_minutes: n.travel_minutes ?? "",
+              travel_mode: n.travel_mode ?? "drive",
+              distance_km: n.distance_km ?? "",
+            })),
+            faqs: (p.faqs ?? []).map((f) => ({
+              question: f.question ?? "",
+              answer: f.answer ?? "",
+            })),
           }),
         )
         .catch((e) => toast.error(e.message));
@@ -188,6 +219,44 @@ export default function PropertyForm() {
         .split(",")
         .map((x) => x.trim())
         .filter(Boolean),
+      // Rows are ordered by their position in the list, so display_order is
+      // written from the index and never edited by hand. Blank rows are dropped
+      // rather than saved as empty tiles.
+      unit_types: form.unit_types
+        .filter((u) => u.name.trim())
+        .map((u, i) => ({
+          name: u.name.trim(),
+          min_area: num(u.min_area),
+          max_area: num(u.max_area),
+          from_price: num(u.from_price),
+          floor_plan_url: str(u.floor_plan_url?.trim()),
+          display_order: i,
+        })),
+      amenities: form.amenities
+        .filter((a) => a.label.trim() && a.icon.trim())
+        .map((a, i) => ({
+          group_name: str(a.group_name?.trim()) ?? "Amenities",
+          icon: a.icon.trim(),
+          label: a.label.trim(),
+          display_order: i,
+        })),
+      nearby_places: form.nearby_places
+        .filter((n) => n.name.trim() && n.icon.trim() && n.distance_km !== "")
+        .map((n, i) => ({
+          name: n.name.trim(),
+          icon: n.icon.trim(),
+          travel_minutes: num(n.travel_minutes),
+          travel_mode: n.travel_mode || "drive",
+          distance_km: Number(n.distance_km),
+          display_order: i,
+        })),
+      faqs: form.faqs
+        .filter((f) => f.question.trim() && f.answer.trim())
+        .map((f, i) => ({
+          question: f.question.trim(),
+          answer: f.answer.trim(),
+          display_order: i,
+        })),
       ...(hasRoi ? { roi: roiValues } : {}),
     };
 
@@ -420,6 +489,79 @@ export default function PropertyForm() {
             <FormField label="Exit horizon" value={form.roi.exit_horizon} onChange={setRoi("exit_horizon")} placeholder="5 years" />
           </div>
         </section>
+
+        {/* ── The lower half of the property page, per Figma 722:57 ── */}
+
+        <RowListEditor
+          title="Unit types"
+          hint="Shown as the Unit Types rail, and as the Floor Plan tabs for any row with a plan URL."
+          emptyText="No unit types yet. Add one per configuration on offer."
+          addLabel="+ Add unit type"
+          rows={form.unit_types}
+          onChange={set("unit_types")}
+          blank={{ name: "", min_area: "", max_area: "", from_price: "", floor_plan_url: "" }}
+          columns={[
+            { key: "name", label: "Name", placeholder: "2BHK", flex: 1 },
+            { key: "min_area", label: "Min sqft", type: "number", placeholder: "850", flex: 1 },
+            { key: "max_area", label: "Max sqft", type: "number", placeholder: "920", flex: 1 },
+            { key: "from_price", label: "From price", type: "number", placeholder: "550000", flex: 1 },
+            { key: "floor_plan_url", label: "Floor plan URL", placeholder: "https://…", flex: 2, minWidth: 200 },
+          ]}
+        />
+
+        <RowListEditor
+          title="Amenities & facilities"
+          hint="Group is the sub-heading the tile sits under, e.g. Building Amenities or Unit Facilities. Icon is an Ionicons name such as water-outline or barbell-outline."
+          emptyText="No amenities yet."
+          addLabel="+ Add amenity"
+          rows={form.amenities}
+          onChange={set("amenities")}
+          blank={{ group_name: "Building Amenities", icon: "", label: "" }}
+          columns={[
+            { key: "group_name", label: "Group", placeholder: "Building Amenities", flex: 1.4 },
+            { key: "icon", label: "Icon", placeholder: "water-outline", flex: 1.2 },
+            { key: "label", label: "Label", placeholder: "Swimming Pool", flex: 1.4 },
+          ]}
+        />
+
+        <RowListEditor
+          title="Nearby places"
+          hint="Distance drives both the printed figure and the length of the bar, which is scaled against the furthest place on this property."
+          emptyText="No nearby places yet."
+          addLabel="+ Add place"
+          rows={form.nearby_places}
+          onChange={set("nearby_places")}
+          blank={{ name: "", icon: "", travel_minutes: "", travel_mode: "drive", distance_km: "" }}
+          columns={[
+            { key: "name", label: "Name", placeholder: "Marina Mall", flex: 1.6 },
+            { key: "icon", label: "Icon", placeholder: "bag-outline", flex: 1.2 },
+            { key: "travel_minutes", label: "Minutes", type: "number", placeholder: "10", flex: 0.8 },
+            {
+              key: "travel_mode",
+              label: "Mode",
+              flex: 0.9,
+              options: [
+                { value: "drive", label: "Drive" },
+                { value: "walk", label: "Walk" },
+              ],
+            },
+            { key: "distance_km", label: "Distance (km)", type: "number", placeholder: "2.5", flex: 1 },
+          ]}
+        />
+
+        <RowListEditor
+          title="Frequently asked questions"
+          hint="The first question is open when the page loads."
+          emptyText="No questions yet."
+          addLabel="+ Add question"
+          rows={form.faqs}
+          onChange={set("faqs")}
+          blank={{ question: "", answer: "" }}
+          columns={[
+            { key: "question", label: "Question", placeholder: "What is the payment plan?", flex: 1, minWidth: 200 },
+            { key: "answer", label: "Answer", multiline: true, flex: 1.6, minWidth: 240 },
+          ]}
+        />
 
         <footer className="adm-form-actions">
           <Link className="adm-btn adm-btn--ghost" to="/admin/properties">Cancel</Link>

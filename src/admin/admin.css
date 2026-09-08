@@ -1935,3 +1935,118 @@
   background: var(--adm-surface-alt, #eef0f1);
   color: var(--adm-muted, #6b7780);
 }
+
+/* ---------------- Section row editors (property page, Figma 722:57) ----------
+   Unit types, amenities, nearby places and FAQs all edit as a list of rows with
+   a variable number of fields, so these sit alongside .adm-repeater__fields
+   rather than replacing it — that one is a fixed three-column grid used by the
+   media list. */
+
+.adm-panel__note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--adm-muted);
+  max-width: 68ch;
+}
+
+.adm-repeater__row {
+  align-items: flex-end;
+}
+
+.adm-rowfields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-rowfield {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.adm-rowfield__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+
+.adm-repeater select,
+.adm-repeater textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--adm-line);
+  border-radius: 8px;
+  background: var(--adm-surface);
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s var(--adm-ease), box-shadow 0.15s var(--adm-ease);
+}
+
+.adm-repeater textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+
+.adm-repeater select:focus,
+.adm-repeater textarea:focus {
+  border-color: var(--adm-brand);
+  box-shadow: 0 0 0 3px rgba(0, 85, 108, 0.1);
+}
+
+.adm-rowactions {
+  display: inline-flex;
+  gap: 4px;
+  flex: none;
+  padding-bottom: 1px;
+}
+
+.adm-iconbtn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--adm-line);
+  border-radius: 8px;
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s var(--adm-ease), border-color 0.15s var(--adm-ease);
+}
+
+.adm-iconbtn:hover:not(:disabled) {
+  background: var(--adm-surface-alt);
+  border-color: var(--adm-brand);
+}
+
+.adm-iconbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.adm-iconbtn--danger:hover:not(:disabled) {
+  background: var(--adm-danger-050);
+  border-color: var(--adm-danger);
+  color: var(--adm-danger);
+}
+
+@media (max-width: 720px) {
+  .adm-repeater__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-rowactions {
+    justify-content: flex-end;
+  }
+}
