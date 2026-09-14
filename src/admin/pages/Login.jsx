@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { getSession, IS_DEMO, login } from "../api.js";
+import PasswordInput from "../components/PasswordInput.jsx";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -40,8 +41,7 @@ export default function Login() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <input
-          type="password"
+        <PasswordInput
           autoComplete="current-password"
           placeholder="Password"
           value={password}
@@ -57,7 +57,7 @@ export default function Login() {
             <div>
               <button type="button" onClick={() => setUsername("admin")}>admin</button>
               <button type="button" onClick={() => setUsername("emaar")}>emaar (developer)</button>
-              <button type="button" onClick={() => setUsername("omar")}>omar (broker)</button>
+              <button type="button" onClick={() => setUsername("omar")}>omar (sales agent)</button>
             </div>
           </div>
         )}

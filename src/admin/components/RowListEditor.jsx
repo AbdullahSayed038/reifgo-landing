@@ -1,3 +1,5 @@
+import { useDragReorder, moveItem } from "../useDragReorder.js";
+
 /**
  * A repeatable list of rows, for the property-page sections added in Syed's
  * August round — unit types, amenities, nearby places and FAQs (Figma 722:57).
@@ -6,9 +8,10 @@
  * remove, and an order that matters. One driver keeps them behaving alike
  * rather than four near-identical blocks drifting apart in PropertyForm.
  *
- * Order is the array's own order — rows move with the arrows rather than a
- * display_order field, so the number never has to be edited by hand. The
- * caller writes display_order from the index when it builds the payload.
+ * Order is the array's own order — rows are dragged by their grip, or moved
+ * with the arrows from the keyboard — rather than a display_order field, so the
+ * number never has to be edited by hand. The caller writes display_order from
+ * the index when it builds the payload.
  */
 export default function RowListEditor({
   title,
@@ -27,6 +30,8 @@ export default function RowListEditor({
 
   const remove = (index) => onChange(rows.filter((_, i) => i !== index));
 
+  const drag = useDragReorder((from, to) => onChange(moveItem(rows, from, to)));
+
   const move = (index, delta) => {
     const target = index + delta;
     if (target < 0 || target >= rows.length) return;
@@ -41,6 +46,9 @@ export default function RowListEditor({
         <div>
           <h2>{title}</h2>
           {hint && <p className="adm-panel__note">{hint}</p>}
+          {rows.length > 1 && (
+            <p className="adm-panel__note">Drag a row by its handle to change the order on the app.</p>
+          )}
         </div>
         <button type="button" className="adm-btn adm-btn--ghost" onClick={add}>
           {addLabel}
@@ -52,7 +60,14 @@ export default function RowListEditor({
       ) : (
         <ul className="adm-repeater">
           {rows.map((row, i) => (
-            <li key={i} className="adm-repeater__row">
+            <li
+              key={i}
+              {...drag.rowProps(i)}
+              className={`adm-repeater__row ${drag.rowClass(i)}`.trim()}
+            >
+              <span className="adm-repeater__grip adm-rowgrip" title="Drag to reorder" {...drag.handleProps(i)}>
+                ⋮⋮
+              </span>
               <div className="adm-rowfields">
                 {columns.map((col) => (
                   <label

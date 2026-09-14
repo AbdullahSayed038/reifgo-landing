@@ -70,7 +70,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
         toast.success(`${payload.name} added`);
       } else {
         await api.patch(`/admin/brokers/${broker.id}`, payload);
-        toast.success("Broker saved");
+        toast.success("Sales Agent saved");
       }
       onSaved();
     } catch (err) {
@@ -85,11 +85,11 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
         className="adm-dialog"
         role="dialog"
         aria-modal="true"
-        aria-label={isNew ? "Add broker" : `Edit ${broker.name}`}
+        aria-label={isNew ? "Add Sales Agent" : `Edit ${broker.name}`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <header className="adm-dialog__head">
-          <h2>{isNew ? "Add broker" : "Edit broker"}</h2>
+          <h2>{isNew ? "Add Sales Agent" : "Edit Sales Agent"}</h2>
         </header>
 
         <form className="adm-form" onSubmit={submit}>
@@ -138,7 +138,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
               Cancel
             </button>
             <button className="adm-btn adm-btn--primary" disabled={busy}>
-              {busy ? "Saving…" : isNew ? "Add broker" : "Save changes"}
+              {busy ? "Saving…" : isNew ? "Add Sales Agent" : "Save changes"}
             </button>
           </footer>
         </form>

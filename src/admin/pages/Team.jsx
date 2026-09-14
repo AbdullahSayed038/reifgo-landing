@@ -71,7 +71,7 @@ export default function Team() {
       <header className="adm-page-head">
         <div>
           <h1>Team</h1>
-          <p>Your brokers and how they're performing against assigned leads.</p>
+          <p>Your Sales Agents and how they're performing against assigned leads.</p>
         </div>
         {canManage && (
           <button className="adm-btn adm-btn--primary" onClick={() => setEditing({})}>
@@ -81,22 +81,22 @@ export default function Team() {
       </header>
 
       <div className="adm-stat-grid">
-        <StatCard label="Brokers" value={brokers?.length} />
+        <StatCard label="Sales Agents" value={brokers?.length} />
         <StatCard label="Open leads" value={totals.open} />
-        <StatCard label="Overdue" value={totals.overdue} />
+        <StatCard label="Needs Attention" value={totals.overdue} />
         <StatCard label="Team close rate" value={teamCloseRate == null ? "—" : `${teamCloseRate}%`} />
       </div>
 
       <DataTable
         rows={brokers ?? []}
         searchKeys={["name", "email"]}
-        searchPlaceholder="Search brokers…"
-        emptyText={brokers === null ? "Loading…" : "No brokers yet."}
+        searchPlaceholder="Search Sales Agents…"
+        emptyText={brokers === null ? "Loading…" : "No Sales Agents yet."}
         groupBy={isAdmin ? (b) => b.developer_name || b.developer_id : undefined}
         columns={[
           {
             key: "name",
-            label: "Broker",
+            label: "Sales Agent",
             render: (b) => (
               <span className="adm-broker-name">
                 <span className={`adm-avatar${b.is_active ? "" : " adm-avatar--off"}`}>
@@ -117,7 +117,7 @@ export default function Team() {
           { key: "open", label: "Open", width: 70, render: (b) => b.stats.open },
           {
             key: "overdue",
-            label: "Overdue",
+            label: "Needs Attention",
             width: 90,
             render: (b) =>
               b.stats.overdue > 0 ? (

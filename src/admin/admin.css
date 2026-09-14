@@ -2050,3 +2050,200 @@
     justify-content: flex-end;
   }
 }
+
+/* ---------------- Password field with show/hide ----------------
+   The wrapper takes the input's place in whatever layout it sits in; the input
+   keeps the styling it already gets from .adm-field / .adm-login__card and just
+   leaves room on the right for the toggle. */
+
+.adm-password {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.adm-password > input {
+  flex: 1;
+  width: 100%;
+  padding-right: 42px !important;
+}
+
+.adm-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--adm-muted);
+  cursor: pointer;
+  transition: color 0.15s var(--adm-ease), background-color 0.15s var(--adm-ease);
+}
+
+.adm-password__toggle:focus-visible {
+  outline: 2px solid var(--adm-brand);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .adm-password__toggle:hover {
+    color: var(--adm-ink);
+    background: var(--adm-surface-alt);
+  }
+}
+
+/* ---------------- Lead filters (September round) ---------------- */
+
+.adm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.adm-daterange {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--adm-muted);
+}
+
+.adm-daterange input[type="date"] {
+  min-width: 132px;
+  font-family: inherit;
+}
+
+@media (max-width: 720px) {
+  .adm-filters {
+    justify-content: stretch;
+  }
+
+  .adm-filters > select,
+  .adm-daterange {
+    flex: 1 1 100%;
+  }
+
+  .adm-daterange input[type="date"] {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* With several filters the actions no longer fit beside the search on one line,
+   so the toolbar wraps and the filters take the remaining width. */
+.adm-table-toolbar {
+  flex-wrap: wrap;
+}
+
+.adm-table-toolbar__actions {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ---------------- Event hero upload (September round) ---------------- */
+
+.adm-hero-upload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px 4px;
+}
+
+.adm-hero-upload__preview {
+  flex: none;
+  width: 168px;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--adm-surface-alt);
+  border: 1px solid var(--adm-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.adm-hero-upload__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.adm-hero-upload__preview span {
+  padding: 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--adm-muted);
+}
+
+.adm-hero-upload__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------------- Draggable picker + row grips ---------------- */
+
+.adm-picker__item {
+  display: flex;
+  align-items: stretch;
+}
+
+.adm-picker__item .adm-picker__row {
+  flex: 1;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.adm-picker__grip,
+.adm-rowgrip {
+  flex: none;
+  width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.adm-picker__grip {
+  border-bottom: 1px solid var(--adm-border, #e6e8ea);
+  padding-left: 8px;
+}
+
+.adm-rowgrip {
+  align-self: stretch;
+  padding-top: 18px;
+  align-items: flex-start;
+}
+
+.adm-picker__grip--empty {
+  cursor: default;
+}
+
+.adm-picker__item.is-dragging,
+.adm-repeater__row.is-dragging {
+  opacity: 0.45;
+}
+
+.adm-picker__item.is-drop-target {
+  box-shadow: inset 0 2px 0 0 var(--adm-accent, #003c4e);
+}
+
+@media (max-width: 720px) {
+  .adm-hero-upload {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-hero-upload__preview {
+    width: 100%;
+  }
+}

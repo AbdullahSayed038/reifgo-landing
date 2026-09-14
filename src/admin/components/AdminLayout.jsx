@@ -21,7 +21,6 @@ const DEVELOPER_NAV = [
   { to: "/admin/insights", label: "Insights", icon: "◪" },
   { to: "/admin/leads", label: "Leads", icon: "◎" },
   { to: "/admin/team", label: "Team", icon: "◍" },
-  { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/company", label: "Company Profile", icon: "◈" },
 ];
 
@@ -43,12 +42,12 @@ export default function AdminLayout() {
   const isBroker = session.role === "broker";
   const nav = isBroker ? BROKER_NAV : isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
   const portalLabel = isBroker
-    ? "Broker Portal"
+    ? "Sales Agent Portal"
     : isDeveloper
       ? "Developer Portal"
       : "Admin Dashboard";
   const roleLabel = isBroker
-    ? "Broker account"
+    ? "Sales Agent account"
     : isDeveloper
       ? "Developer account"
       : "Administrator";
@@ -70,7 +69,7 @@ export default function AdminLayout() {
           </svg>
         </button>
         <span className="adm-topbar__logo">REIFGO</span>
-        <span className="adm-topbar__sub">{isBroker ? "Broker" : isDeveloper ? "Portal" : "Admin"}</span>
+        <span className="adm-topbar__sub">{isBroker ? "Sales Agent" : isDeveloper ? "Portal" : "Admin"}</span>
       </header>
 
       {menuOpen && <div className="adm-scrim" onClick={closeMenu} />}

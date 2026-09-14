@@ -22,6 +22,15 @@ export function getSession() {
   }
 }
 
+/**
+ * REIFGO's own staff, as opposed to a developer or a Sales Agent. The backend
+ * now issues `reifgo_admin` and `regional_admin` tokens alongside the original
+ * shared `admin` login, so checking for "admin" alone would lock those out.
+ */
+export function isReifgoTier(session = getSession()) {
+  return ["admin", "reifgo_admin", "regional_admin"].includes(session?.role);
+}
+
 export function getToken() {
   return getSession()?.token ?? null;
 }

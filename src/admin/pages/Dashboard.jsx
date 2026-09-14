@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { api, getSession, isReifgoTier } from "../api.js";
 import { BarChart, DonutChart } from "../components/charts.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -40,7 +40,8 @@ export default function Dashboard() {
       api.get("/admin/stats"),
       api.get("/admin/leads"),
       isBroker ? skip() : api.get("/admin/properties"),
-      isBroker ? skip() : api.get("/admin/events"),
+      // REIFGO-only since the September round; a developer token is refused.
+      isReifgoTier({ role }) ? api.get("/admin/events") : skip(),
       isBroker ? skip() : api.get("/admin/brokers"),
     ];
 
@@ -133,7 +134,7 @@ export default function Dashboard() {
         {isBroker ? (
           <>
             <StatCard label="Open leads" value={stats?.leads_open} to="/admin/leads" />
-            <StatCard label="Overdue" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
+            <StatCard label="Needs Attention" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
             <StatCard label="Contacted" value={count((l) => l.status === "contacted")} to="/admin/leads" />
             <StatCard label="Closed won" value={count((l) => l.status === "closed_won")} to="/admin/leads" />
           </>
@@ -141,10 +142,10 @@ export default function Dashboard() {
           <>
             <StatCard label={isDeveloper ? "My properties" : "Properties"} value={stats?.properties} to="/admin/properties" />
             {isAdmin && <StatCard label="Developers" value={stats?.developers} to="/admin/developers" />}
-            <StatCard label="Brokers" value={stats?.brokers} to="/admin/team" />
+            <StatCard label="Sales Agents" value={stats?.brokers} to="/admin/team" />
             <StatCard label="Total leads" value={stats?.leads_total} to="/admin/leads" />
             <StatCard label="Open leads" value={stats?.leads_open} to="/admin/leads" />
-            <StatCard label="Overdue" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
+            <StatCard label="Needs Attention" value={stats?.leads_overdue} to="/admin/leads" accent={stats?.leads_overdue > 0} />
             {/* A developer's first job on the dashboard is to see what still
                 needs a broker; the panel below listed these but nothing
                 counted them. */}
@@ -170,7 +171,7 @@ export default function Dashboard() {
 
         {!isBroker && (
           <section className="adm-panel">
-            <header className="adm-panel__head"><h2>Broker response time</h2></header>
+            <header className="adm-panel__head"><h2>Sales Agent response time</h2></header>
             {brokerBars.length === 0 ? (
               <p className="adm-panel__empty">No responses logged yet.</p>
             ) : (

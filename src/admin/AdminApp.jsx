@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import "./admin.css";
-import { getSession } from "./api.js";
+import { getSession, isReifgoTier } from "./api.js";
 import AdminLayout from "./components/AdminLayout.jsx";
 import { ToastProvider } from "./components/Toast.jsx";
 import { CurrencyProvider } from "./currency.jsx";
@@ -27,6 +27,11 @@ function AdminOnly({ children }) {
   return getSession()?.role === "admin" ? children : <Navigate to="/admin" replace />;
 }
 
+// REIFGO staff only — the events programme is REIFGO's, not a developer tool.
+function ReifgoOnly({ children }) {
+  return isReifgoTier() ? children : <Navigate to="/admin" replace />;
+}
+
 // Admin + developer (i.e. not a broker).
 function StaffOnly({ children }) {
   return getSession()?.role !== "broker" ? children : <Navigate to="/admin" replace />;
@@ -49,9 +54,10 @@ export default function AdminApp() {
             <Route path="developers/new" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
             <Route path="developers/:id" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
             <Route path="company" element={<DeveloperForm selfMode />} />
-            <Route path="events" element={<EventsList />} />
-            <Route path="events/new" element={<EventForm />} />
-            <Route path="events/:id" element={<EventForm />} />
+            {/* Events are REIFGO's own, not a developer tool (September round). */}
+            <Route path="events" element={<ReifgoOnly><EventsList /></ReifgoOnly>} />
+            <Route path="events/new" element={<ReifgoOnly><EventForm /></ReifgoOnly>} />
+            <Route path="events/:id" element={<ReifgoOnly><EventForm /></ReifgoOnly>} />
             <Route path="insights" element={<InsightsList />} />
             <Route path="insights/new" element={<InsightForm />} />
             <Route path="insights/:id" element={<InsightForm />} />

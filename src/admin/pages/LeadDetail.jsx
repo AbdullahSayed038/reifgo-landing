@@ -104,7 +104,7 @@ export default function LeadDetail() {
 
       {esc && (
         <div className={`adm-esc-banner adm-esc-banner--${esc.tone}`}>
-          ⚠ {esc.label} — no broker response within {lead.escalation === "reifgo" ? "48h" : "24h"} of assignment.
+          ⚠ {esc.label} — no Sales Agent response within {lead.escalation === "reifgo" ? "48h" : "24h"} of assignment.
         </div>
       )}
 
@@ -149,7 +149,7 @@ export default function LeadDetail() {
               </div>
             ) : lead.status === "new" ? (
               <p className="adm-panel__empty" style={{ marginTop: 14 }}>
-                {canAssign ? "Assign a broker to start the pipeline." : "Waiting to be assigned."}
+                {canAssign ? "Assign a Sales Agent to start the pipeline." : "Waiting to be assigned."}
               </p>
             ) : null}
           </section>

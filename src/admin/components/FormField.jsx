@@ -1,3 +1,5 @@
+import PasswordInput from "./PasswordInput.jsx";
+
 // Label + control wrapper. `type` picks the control: text (default), number,
 // url, date, datetime-local, textarea, select (pass `options`), checkbox.
 export default function FormField({
@@ -37,6 +39,13 @@ export default function FormField({
           value={value ?? ""}
           rows={4}
           placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : type === "password" ? (
+        <PasswordInput
+          value={value}
+          placeholder={placeholder}
+          autoComplete="new-password"
           onChange={(e) => onChange(e.target.value)}
         />
       ) : type === "select" ? (

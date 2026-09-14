@@ -219,7 +219,7 @@ export async function demoRequest(method, path, body) {
       key === "GET /admin/stats" ||
       key === "GET /admin/brokers" ||
       /^\/admin\/leads(\/|$)/.test(path);
-    if (!brokerOk) throw new ApiError(403, "Not available for broker accounts");
+    if (!brokerOk) throw new ApiError(403, "Not available for Sales Agent accounts");
   }
 
   // Leads visible to the current account, before website leads are folded in.
@@ -423,15 +423,15 @@ export async function demoRequest(method, path, body) {
       if (method === "PATCH") {
         // Assignment — admin and developers only.
         if (body.assigned_broker_id !== undefined) {
-          if (isBroker) throw new ApiError(403, "Brokers can't reassign leads");
+          if (isBroker) throw new ApiError(403, "Sales Agents can't reassign leads");
           const bId = body.assigned_broker_id;
           if (bId) {
             const b = db.brokers.find((x) => x.id === bId);
-            if (!b) throw new ApiError(400, "Unknown broker");
+            if (!b) throw new ApiError(400, "Unknown Sales Agent");
             const propDev = db.properties.find((p) => p.id === lead.property_id)?.developer_id;
             const allowedDev = isDev ? info.developer_id : propDev;
             if (b.developer_id !== allowedDev)
-              throw new ApiError(400, "That broker works for a different developer");
+              throw new ApiError(400, "That Sales Agent works for a different developer");
             const reassign = lead.assigned_broker_id && lead.assigned_broker_id !== bId;
             lead.assigned_broker_id = bId;
             lead.assigned_at = new Date().toISOString();

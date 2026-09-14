@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { api, getSession, isReifgoTier } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -9,7 +9,7 @@ import { ESCALATION, initials, timeAgo } from "../leadUtils.js";
 
 const TABS = [
   { key: "all", label: "All", match: () => true },
-  { key: "overdue", label: "Overdue", match: (r) => !!r.escalation },
+  { key: "overdue", label: "Needs Attention", match: (r) => !!r.escalation },
   { key: "new", label: "New", match: (r) => r.status === "new" },
   { key: "assigned", label: "Assigned", match: (r) => r.status === "assigned" },
   { key: "contacted", label: "Contacted", match: (r) => r.status === "contacted" },
@@ -22,6 +22,11 @@ export default function Leads() {
   const [brokers, setBrokers] = useState([]);
   const [tab, setTab] = useState("all");
   const [brokerFilter, setBrokerFilter] = useState("all");
+  // Syed, September round: filter by developer, property and a date range.
+  const [developerFilter, setDeveloperFilter] = useState("all");
+  const [propertyFilter, setPropertyFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const navigate = useNavigate();
   const toast = useToast();
   const session = getSession();
@@ -50,14 +55,64 @@ export default function Leads() {
 
   const activeTab = TABS.find((t) => t.key === tab) ?? TABS[0];
 
-  const visible = useMemo(() => {
+  const isAdmin = isReifgoTier(session);
+
+  // Options come from the leads themselves, so a developer or property with no
+  // enquiries never appears as a choice that returns an empty table.
+  const developerOptions = useMemo(() => {
+    const seen = new Map();
+    for (const r of rows ?? []) {
+      if (r.developer_id && !seen.has(r.developer_id)) seen.set(r.developer_id, r.developer_name);
+    }
+    return [...seen].sort((a, b) => (a[1] ?? "").localeCompare(b[1] ?? ""));
+  }, [rows]);
+
+  const propertyOptions = useMemo(() => {
+    const seen = new Map();
+    for (const r of rows ?? []) {
+      if (!r.property_id || seen.has(r.property_id)) continue;
+      // Narrowed to the chosen developer, so the list stays short and relevant.
+      if (developerFilter !== "all" && r.developer_id !== developerFilter) continue;
+      seen.set(r.property_id, r.property?.name ?? "Untitled property");
+    }
+    return [...seen].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [rows, developerFilter]);
+
+  // Everything except the status tab. The tab counts are taken from this, so
+  // "Needs Attention 3" means three within the current filters, not overall.
+  const filtered = useMemo(() => {
     if (!rows) return [];
-    return rows.filter(
-      (r) =>
-        activeTab.match(r) &&
-        (brokerFilter === "all" || r.assigned_broker_id === brokerFilter),
-    );
-  }, [rows, activeTab, brokerFilter]);
+    // Inclusive of the whole "to" day, in the viewer's own timezone.
+    const from = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null;
+    const to = dateTo ? new Date(`${dateTo}T23:59:59.999`) : null;
+    return rows.filter((r) => {
+      const created = new Date(r.created_at);
+      return (
+        (brokerFilter === "all" || r.assigned_broker_id === brokerFilter) &&
+        (developerFilter === "all" || r.developer_id === developerFilter) &&
+        (propertyFilter === "all" || r.property_id === propertyFilter) &&
+        (!from || created >= from) &&
+        (!to || created <= to)
+      );
+    });
+  }, [rows, brokerFilter, developerFilter, propertyFilter, dateFrom, dateTo]);
+
+  const visible = useMemo(() => filtered.filter(activeTab.match), [filtered, activeTab]);
+
+  const filtersActive =
+    brokerFilter !== "all" ||
+    developerFilter !== "all" ||
+    propertyFilter !== "all" ||
+    !!dateFrom ||
+    !!dateTo;
+
+  const clearFilters = () => {
+    setBrokerFilter("all");
+    setDeveloperFilter("all");
+    setPropertyFilter("all");
+    setDateFrom("");
+    setDateTo("");
+  };
 
   return (
     <>
@@ -80,7 +135,7 @@ export default function Leads() {
             onClick={() => setTab(t.key)}
           >
             {t.label}
-            {rows && <span className="adm-tab__count">{rows.filter(t.match).length}</span>}
+            {rows && <span className="adm-tab__count">{filtered.filter(t.match).length}</span>}
           </button>
         ))}
       </div>
@@ -95,18 +150,79 @@ export default function Leads() {
         groupBy={(r) => r.developer_name}
         onRowClick={(row) => navigate(`/admin/leads/${row.id}`)}
         toolbar={
-          !isBroker && brokers.length > 0 ? (
-            <select
-              className="adm-inline-select"
-              value={brokerFilter}
-              onChange={(e) => setBrokerFilter(e.target.value)}
-            >
-              <option value="all">All brokers</option>
-              {brokers.map((b) => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
-          ) : null
+          <div className="adm-filters">
+            {isAdmin && developerOptions.length > 1 && (
+              <select
+                className="adm-inline-select"
+                value={developerFilter}
+                aria-label="Filter by developer"
+                onChange={(e) => {
+                  setDeveloperFilter(e.target.value);
+                  // A property from the previous developer would silently empty the table.
+                  setPropertyFilter("all");
+                }}
+              >
+                <option value="all">All developers</option>
+                {developerOptions.map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
+            )}
+
+            {propertyOptions.length > 0 && (
+              <select
+                className="adm-inline-select"
+                value={propertyFilter}
+                aria-label="Filter by property"
+                onChange={(e) => setPropertyFilter(e.target.value)}
+              >
+                <option value="all">All properties</option>
+                {propertyOptions.map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
+            )}
+
+            {!isBroker && brokers.length > 0 && (
+              <select
+                className="adm-inline-select"
+                value={brokerFilter}
+                aria-label="Filter by Sales Agent"
+                onChange={(e) => setBrokerFilter(e.target.value)}
+              >
+                <option value="all">All Sales Agents</option>
+                {brokers.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            )}
+
+            <span className="adm-daterange">
+              <input
+                type="date"
+                className="adm-inline-select"
+                value={dateFrom}
+                max={dateTo || undefined}
+                aria-label="Received from"
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
+              <span aria-hidden="true">–</span>
+              <input
+                type="date"
+                className="adm-inline-select"
+                value={dateTo}
+                min={dateFrom || undefined}
+                aria-label="Received to"
+                onChange={(e) => setDateTo(e.target.value)}
+              />
+            </span>
+
+            {filtersActive && (
+              <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={clearFilters}>
+                Clear filters
+              </button>
+            )}
+          </div>
         }
         columns={[
           {
@@ -139,7 +255,7 @@ export default function Leads() {
           },
           {
             key: "broker",
-            label: "Broker",
+            label: "Sales Agent",
             width: 150,
             render: (r) =>
               r.broker ? (
@@ -153,7 +269,7 @@ export default function Leads() {
           },
           {
             key: "sla",
-            label: "SLA",
+            label: "Response Time",
             width: 130,
             render: (r) => {
               if (r.escalation) {

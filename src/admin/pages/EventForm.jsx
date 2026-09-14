@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api } from "../api.js";
+import { api, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
+import { useDragReorder, moveItem } from "../useDragReorder.js";
 
 const EMPTY = {
   title: "",
@@ -43,6 +44,25 @@ export default function EventForm() {
   const [developers, setDevelopers] = useState([]);
   const navigate = useNavigate();
   const toast = useToast();
+
+  // Hero image upload (September round) — the URL box stays for pasting a
+  // hosted image; the button fills it from a file.
+  const heroFileRef = useRef(null);
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const uploadHero = async (file) => {
+    if (!file) return;
+    setUploadingHero(true);
+    try {
+      const { url } = await uploadImage(file);
+      setForm((f) => ({ ...f, image_url: url }));
+      toast.success("Hero image uploaded");
+    } catch (e) {
+      toast.error(e.message);
+    } finally {
+      setUploadingHero(false);
+      if (heroFileRef.current) heroFileRef.current.value = "";
+    }
+  };
 
   // Scoped by the signed-in role server-side, so a developer only ever picks
   // from their own projects.
@@ -183,12 +203,48 @@ export default function EventForm() {
 
         <section className="adm-panel">
           <header className="adm-panel__head"><h2>Presentation</h2></header>
+          <div className="adm-hero-upload">
+            <div className="adm-hero-upload__preview">
+              {form.image_url ? (
+                <img src={form.image_url} alt="Event hero preview" />
+              ) : (
+                <span>No hero image — the app shows a default photo.</span>
+              )}
+            </div>
+            <div className="adm-hero-upload__actions">
+              <input
+                ref={heroFileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => uploadHero(e.target.files?.[0])}
+              />
+              <button
+                type="button"
+                className="adm-btn adm-btn--ghost"
+                disabled={uploadingHero}
+                onClick={() => heroFileRef.current?.click()}
+              >
+                {uploadingHero ? "Uploading…" : form.image_url ? "↑ Replace image" : "↑ Upload image"}
+              </button>
+              {form.image_url && (
+                <button
+                  type="button"
+                  className="adm-btn adm-btn--ghost"
+                  onClick={() => setForm((f) => ({ ...f, image_url: "" }))}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
           <div className="adm-form-grid">
             <FormField
               label="Hero image URL"
-              value={form.image_url}
+              hint="Or paste a link to an image that's already hosted. JPG or PNG, up to 2.5 MB when uploading."
+              value={form.image_url?.startsWith("data:") ? "" : form.image_url}
               onChange={set("image_url")}
-              placeholder="https://…"
+              placeholder={form.image_url?.startsWith("data:") ? "Uploaded image in use" : "https://…"}
               span={2}
             />
             <FormField
@@ -238,7 +294,7 @@ export default function EventForm() {
         <section className="adm-panel">
           <header className="adm-panel__head">
             <h2>Featured projects</h2>
-            <p className="adm-panel__note">Shown on the event page, in the order picked.</p>
+            <p className="adm-panel__note">Tick to feature. Drag a ticked project by its handle to set the order on the event page.</p>
           </header>
           <MultiPicker
             options={properties.map((p) => ({ id: p.id, label: p.name, meta: p.location }))}
@@ -251,7 +307,7 @@ export default function EventForm() {
         <section className="adm-panel">
           <header className="adm-panel__head">
             <h2>Presenting developers</h2>
-            <p className="adm-panel__note">Shown on the event page, in the order picked.</p>
+            <p className="adm-panel__note">Tick to include. Drag a ticked developer by its handle to set the order.</p>
           </header>
           <MultiPicker
             options={developers.map((d) => ({ id: d.id, label: (d.name || "").replace(/\s+/g, " ") }))}
@@ -273,33 +329,59 @@ export default function EventForm() {
 }
 
 /**
- * Checkbox list that remembers the order things were picked in, because the
- * API stores display_order from the array position — so the order here is the
- * order on the app, and re-picking should not silently reshuffle the rail.
+ * Checkbox list whose ticked items can be dragged into order, because the API
+ * stores display_order from the array position — so the order here is the
+ * order on the app.
+ *
+ * Ticked items sit at the top in their chosen order, the rest follow in their
+ * natural order; ticking appends to the end so it never reshuffles the rail.
  */
 function MultiPicker({ options, selected, onChange, empty }) {
+  const drag = useDragReorder((from, to) => onChange(moveItem(selected, from, to)));
+
   if (!options.length) return <p className="adm-panel__note adm-panel__pad">{empty}</p>;
 
   const toggle = (id) =>
     onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
 
+  const byId = new Map(options.map((o) => [o.id, o]));
+  // A selected id whose record was since deleted is dropped from the view
+  // rather than rendered as a blank row.
+  const picked = selected.map((id) => byId.get(id)).filter(Boolean);
+  const rest = options.filter((o) => !selected.includes(o.id));
+
   return (
     <ul className="adm-picker">
-      {options.map((o) => {
+      {picked.map((o) => {
         const at = selected.indexOf(o.id);
         return (
-          <li key={o.id}>
+          <li key={o.id} {...drag.rowProps(at)} className={`adm-picker__item ${drag.rowClass(at)}`.trim()}>
+            <span className="adm-repeater__grip adm-picker__grip" title="Drag to reorder" {...drag.handleProps(at)}>
+              ⋮⋮
+            </span>
             <label className="adm-picker__row">
-              <input type="checkbox" checked={at > -1} onChange={() => toggle(o.id)} />
+              <input type="checkbox" checked onChange={() => toggle(o.id)} />
               <span className="adm-picker__label">
                 {o.label}
                 {o.meta ? <em className="adm-picker__meta">{o.meta}</em> : null}
               </span>
-              {at > -1 ? <span className="adm-picker__order">{at + 1}</span> : null}
+              <span className="adm-picker__order">{at + 1}</span>
             </label>
           </li>
         );
       })}
+      {rest.map((o) => (
+        <li key={o.id} className="adm-picker__item">
+          <span className="adm-picker__grip adm-picker__grip--empty" />
+          <label className="adm-picker__row">
+            <input type="checkbox" checked={false} onChange={() => toggle(o.id)} />
+            <span className="adm-picker__label">
+              {o.label}
+              {o.meta ? <em className="adm-picker__meta">{o.meta}</em> : null}
+            </span>
+          </label>
+        </li>
+      ))}
     </ul>
   );
 }
