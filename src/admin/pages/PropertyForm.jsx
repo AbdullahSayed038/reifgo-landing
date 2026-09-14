@@ -11,6 +11,10 @@ const EMPTY = {
   name: "",
   location: "",
   asset_class: "",
+  // The app's overview card (Figma 722:115).
+  payment_plan: "",
+  property_type: "",
+  ownership_type: "",
   total_area: "",
   completion_date: "",
   min_entry_price: "",
@@ -30,6 +34,9 @@ const EMPTY = {
   nearby_places: [],
   faqs: [],
 };
+
+// Must match PROPERTY_TYPES in the backend DTO, which rejects anything else.
+const PROPERTY_TYPES = ["Apartment", "Villa", "Townhouse", "Commercial", "Mixed-Use"];
 
 const num = (v) => (v === "" || v == null ? undefined : Number(v));
 const str = (v) => (v === "" || v == null ? undefined : v);
@@ -58,6 +65,9 @@ export default function PropertyForm() {
             name: p.name ?? "",
             location: p.location ?? "",
             asset_class: p.asset_class ?? "",
+            payment_plan: p.payment_plan ?? "",
+            property_type: p.property_type ?? "",
+            ownership_type: p.ownership_type ?? "",
             total_area: p.total_area ?? "",
             completion_date: p.completion_date ? p.completion_date.slice(0, 10) : "",
             min_entry_price: p.min_entry_price ?? "",
@@ -200,6 +210,9 @@ export default function PropertyForm() {
       name: form.name,
       location: str(form.location),
       asset_class: str(form.asset_class),
+      payment_plan: str(form.payment_plan?.trim()),
+      property_type: str(form.property_type),
+      ownership_type: str(form.ownership_type),
       total_area: num(form.total_area),
       completion_date: str(form.completion_date),
       min_entry_price: num(form.min_entry_price),
@@ -319,6 +332,34 @@ export default function PropertyForm() {
             />
             <FormField label="Location" value={form.location} onChange={set("location")} placeholder="Dubai Marina, UAE" />
             <FormField label="Asset class" value={form.asset_class} onChange={set("asset_class")} placeholder="Multi-family" />
+            <FormField
+              label="Property type"
+              type="select"
+              value={form.property_type}
+              onChange={set("property_type")}
+              options={[
+                { value: "", label: "Not set" },
+                ...PROPERTY_TYPES.map((t) => ({ value: t, label: t })),
+              ]}
+              hint="Shown on the app's overview card, and used by the listings filter."
+            />
+            <FormField
+              label="Payment plan"
+              value={form.payment_plan}
+              onChange={set("payment_plan")}
+              placeholder="60/40"
+            />
+            <FormField
+              label="Ownership type"
+              type="select"
+              value={form.ownership_type}
+              onChange={set("ownership_type")}
+              options={[
+                { value: "", label: "Not set" },
+                { value: "Freehold", label: "Freehold" },
+                { value: "Leasehold", label: "Leasehold" },
+              ]}
+            />
             <FormField label="Total area (sq ft)" type="number" value={form.total_area} onChange={set("total_area")} />
             <FormField label="Completion date" type="date" value={form.completion_date} onChange={set("completion_date")} />
             <FormField
@@ -511,7 +552,7 @@ export default function PropertyForm() {
 
         <RowListEditor
           title="Amenities & facilities"
-          hint="Group is the sub-heading the tile sits under, e.g. Building Amenities or Unit Facilities. Icon is an Ionicons name such as water-outline or barbell-outline."
+          hint="Group is the sub-heading the tile sits under, e.g. Building Amenities or Unit Facilities. Icon is an Ionicons name (water-outline), or mci: plus a Material Community Icons name for the Figma glyphs (mci:swim, mci:hanger)."
           emptyText="No amenities yet."
           addLabel="+ Add amenity"
           rows={form.amenities}
@@ -526,7 +567,7 @@ export default function PropertyForm() {
 
         <RowListEditor
           title="Nearby places"
-          hint="Distance drives both the printed figure and the length of the bar, which is scaled against the furthest place on this property."
+          hint="Distance drives both the printed figure and the length of the bar, which is scaled against the furthest place on this property. Icons work as for amenities, e.g. mci:pine-tree."
           emptyText="No nearby places yet."
           addLabel="+ Add place"
           rows={form.nearby_places}
