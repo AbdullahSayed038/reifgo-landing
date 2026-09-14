@@ -1,5 +1,6 @@
 import Icon from "./Icon.jsx";
 import "./Services.css";
+import { Link } from "react-router-dom";
 
 const SERVICES = [
   {
@@ -43,10 +44,10 @@ export default function Services() {
             <p className="eyebrow">What We Do</p>
             <h2 className="heading h2 svc__title">Structural Expertise</h2>
           </div>
-          <a href="#" className="arrow-link">
+          <Link to="/services" className="arrow-link">
             View All Services
             <Icon name="arrowRight" size={14} />
-          </a>
+          </Link>
         </header>
 
         <ul className="svc__grid">

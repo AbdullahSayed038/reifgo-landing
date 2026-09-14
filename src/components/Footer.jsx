@@ -1,4 +1,6 @@
 import "./Footer.css";
+import FooterLink from "./FooterLink.jsx";
+import { SOCIAL_URLS } from "../lib/siteLinks.js";
 
 const COLUMNS = [
   { title: "Platform", links: ["Investments", "Developers", "Advisory"] },
@@ -46,8 +48,15 @@ export default function Footer() {
             intelligence.
           </p>
           <div className="ftr__social">
-            {SOCIAL.map((s) => (
-              <a key={s.label} href="#" aria-label={s.label} className="ftr__social-link">
+            {SOCIAL.filter((s) => SOCIAL_URLS[s.label]).map((s) => (
+              <a
+                key={s.label}
+                href={SOCIAL_URLS[s.label]}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                className="ftr__social-link"
+              >
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                   {s.circle ? (
                     <g fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -68,9 +77,7 @@ export default function Footer() {
             <div className="ftr__col" key={col.title}>
               <h5 className="ftr__col-title">{col.title}</h5>
               {col.links.map((l) => (
-                <a key={l} href="#" className="ftr__link">
-                  {l}
-                </a>
+                <FooterLink key={l} label={l} className="ftr__link" />
               ))}
             </div>
           ))}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "./Logo.jsx";
 import { MobileBurger, MobileDrawer } from "./MobileNavDrawer.jsx";
+import { useLeadModal } from "./LeadModal.jsx";
 import "./Header.css";
 
 // Single source of truth for site navigation — AdvisorHeader imports this too,
@@ -17,6 +18,7 @@ export const LINKS = [
 
 export default function Header({ active = "Platform", cta = "Invest Now" }) {
   const [open, setOpen] = useState(false);
+  const openLead = useLeadModal();
 
   return (
     <>
@@ -40,7 +42,9 @@ export default function Header({ active = "Platform", cta = "Invest Now" }) {
             ))}
           </nav>
 
-          <button className="btn hdr__cta">{cta}</button>
+          <button className="btn hdr__cta" onClick={() => openLead("invest")}>
+            {cta}
+          </button>
         </div>
       </header>
 

@@ -3,6 +3,7 @@ import Icon from "./Icon.jsx";
 import { sendChat } from "../lib/chatApi.js";
 import ChatProperties from "./ChatProperties.jsx";
 import "./AdvisorChat.css";
+import { useLeadModal } from "./LeadModal.jsx";
 
 const CHIPS = ["Market Pulse: London", "Risk Assessment", "Portfolio Rebalance"];
 
@@ -21,6 +22,7 @@ const INITIAL_MESSAGES = [
 ];
 
 export default function AdvisorChat() {
+  const openLead = useLeadModal();
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -124,10 +126,14 @@ export default function AdvisorChat() {
                             <span className="achat__stat-value">$1.2M USD</span>
                           </div>
                         </div>
-                        <a href="#" className="achat__prop-link">
+                        <button
+                          type="button"
+                          className="achat__prop-link"
+                          onClick={() => openLead("advisory_request")}
+                        >
                           View Data Deck
                           <Icon name="chevronRight" size={12} />
-                        </a>
+                        </button>
                       </div>
                     </article>
 

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Icon from "./Icon.jsx";
 import "./Hero.css";
+import { Link } from "react-router-dom";
+import { useLeadModal } from "./LeadModal.jsx";
 
 const NO_MOTION = "(prefers-reduced-motion: reduce)";
 
@@ -9,6 +11,7 @@ const NO_MOTION = "(prefers-reduced-motion: reduce)";
 // If it is ever re-exported, compress it again before committing — the
 // original master was 8.6MB at 7.4Mbps, which is far too heavy for a banner.
 export default function Hero() {
+  const openLead = useLeadModal();
   // The still is painted behind the video (and used as its poster), so the
   // banner still reads correctly whenever the footage isn't shown.
   const [videoFailed, setVideoFailed] = useState(false);
@@ -71,11 +74,13 @@ export default function Hero() {
           </p>
 
           <div className="hero__actions">
-            <button className="btn">Explore Opportunities</button>
-            <button className="btn btn--ghost-dark">
+            <button className="btn" onClick={() => openLead("invest")}>
+              Explore Opportunities
+            </button>
+            <Link className="btn btn--ghost-dark" to="/services">
               Our Methodology
               <Icon name="arrowUpRight" size={14} />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

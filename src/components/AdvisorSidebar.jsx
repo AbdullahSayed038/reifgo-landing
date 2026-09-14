@@ -1,12 +1,17 @@
 import Icon from "./Icon.jsx";
 import "./AdvisorSidebar.css";
 
+// The advisor is the chat itself; the other workspace entries already exist
+// elsewhere — market research on the site, listings and saved assets in the
+// investor app — so each opens that real screen instead of going nowhere.
+const APP_URL = "https://reifgo.expo.app";
+
 const NAV = [
-  { icon: "chat", label: "AI Chat", active: true },
-  { icon: "trendUp", label: "Market Trends" },
-  { icon: "building", label: "Property Match" },
-  { icon: "bookmark", label: "Saved Assets" },
-  { icon: "gear", label: "Settings" },
+  { icon: "chat", label: "AI Chat", active: true, href: "/advisor" },
+  { icon: "trendUp", label: "Market Trends", href: "/insights" },
+  { icon: "building", label: "Property Match", href: `${APP_URL}/listings`, external: true },
+  { icon: "bookmark", label: "Saved Assets", href: `${APP_URL}/saved`, external: true },
+  { icon: "gear", label: "Settings", href: `${APP_URL}/settings`, external: true },
 ];
 
 export default function AdvisorSidebar({ className = "", onClose, onNavigate }) {
@@ -33,7 +38,9 @@ export default function AdvisorSidebar({ className = "", onClose, onNavigate }) 
         {NAV.map((n) => (
           <a
             key={n.label}
-            href="#"
+            href={n.href}
+            {...(n.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            aria-current={n.active ? "page" : undefined}
             onClick={onNavigate}
             className={`ads__link${n.active ? " is-active" : ""}`}
           >

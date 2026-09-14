@@ -1,9 +1,12 @@
 import Icon from "./Icon.jsx";
 import "./DigitalNexus.css";
+import { useLeadModal } from "./LeadModal.jsx";
 
 export default function DigitalNexus() {
+  const openLead = useLeadModal();
+
   return (
-    <section className="dn section">
+    <section id="digital-nexus" className="dn section">
       <div className="dn__grid container">
         <div className="dn__frame" data-reveal>
           <div className="dn__phone">
@@ -34,10 +37,10 @@ export default function DigitalNexus() {
             </div>
           </div>
 
-          <a href="#" className="dn__link">
+          <button type="button" className="dn__link" onClick={() => openLead("waitlist")}>
             Join the Waitlist
             <Icon name="arrowRight" size={15} />
-          </a>
+          </button>
         </div>
       </div>
     </section>

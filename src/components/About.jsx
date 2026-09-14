@@ -10,7 +10,7 @@ const VALUES = [
 
 export default function About() {
   return (
-    <section className="about section" style={{ background: "var(--surface)" }}>
+    <section id="about" className="about section" style={{ background: "var(--surface)" }}>
       <div className="about__inner container">
         <div className="about__intro">
           <div className="about__lead-col" data-reveal>

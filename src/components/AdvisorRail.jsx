@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { useLeadModal } from "./LeadModal.jsx";
 import Icon from "./Icon.jsx";
 import AdvisorFooter from "./AdvisorFooter.jsx";
 import "./AdvisorRail.css";
@@ -9,6 +10,7 @@ const PULSE = [
 ];
 
 const AdvisorRail = forwardRef(function AdvisorRail({ className = "" }, ref) {
+  const openLead = useLeadModal();
   return (
     <aside ref={ref} className={`arail${className ? ` ${className}` : ""}`}>
       <div className="arail__pulse" data-reveal>
@@ -34,7 +36,9 @@ const AdvisorRail = forwardRef(function AdvisorRail({ className = "" }, ref) {
           Leverage 40% LTV on UK Commercial Assets to optimize current tax
           exposure.
         </p>
-        <button className="arail__rec-btn">Action Analysis</button>
+        <button className="arail__rec-btn" onClick={() => openLead("advisory_request")}>
+          Action Analysis
+        </button>
       </div>
 
       <div className="arail__report-wrap" data-reveal style={{ "--reveal-delay": "0.16s" }}>

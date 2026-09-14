@@ -1,6 +1,9 @@
 import "./ServicesCta.css";
+import { useLeadModal } from "./LeadModal.jsx";
 
 export default function ServicesCta() {
+  const openLead = useLeadModal();
+
   return (
     <section className="scta section">
       <div className="scta__box" data-reveal>
@@ -9,7 +12,9 @@ export default function ServicesCta() {
           Connect with our institutional advisory team to design your next phase
           of global growth.
         </p>
-        <button className="btn btn--lg scta__btn">Book a Consultation</button>
+        <button className="btn btn--lg scta__btn" onClick={() => openLead("consultation")}>
+          Book a Consultation
+        </button>
       </div>
     </section>
   );

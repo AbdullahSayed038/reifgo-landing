@@ -1,5 +1,8 @@
 import Icon from "./Icon.jsx";
 import "./ServicesFooter.css";
+import { useState } from "react";
+import FooterLink from "./FooterLink.jsx";
+import { SOCIAL_URLS } from "../lib/siteLinks.js";
 
 const SOCIAL = [
   {
@@ -14,6 +17,7 @@ const SOCIAL = [
 ];
 
 export default function ServicesFooter() {
+  const [newsNotice, setNewsNotice] = useState("");
   return (
     <footer className="sftr">
       <div className="sftr__inner container">
@@ -38,8 +42,15 @@ export default function ServicesFooter() {
               capital through rigorous data and strategic frameworks.
             </p>
             <div className="sftr__social">
-              {SOCIAL.map((s) => (
-                <a key={s.label} href="#" aria-label={s.label} className="sftr__social-link">
+              {SOCIAL.filter((s) => SOCIAL_URLS[s.label]).map((s) => (
+                <a
+                  key={s.label}
+                  href={SOCIAL_URLS[s.label]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="sftr__social-link"
+                >
                   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                     {s.circle ? (
                       <g fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -57,16 +68,16 @@ export default function ServicesFooter() {
 
           <div className="sftr__col sftr__col--platform">
             <h6 className="sftr__col-title">Platform</h6>
-            <a href="#" className="sftr__link">About Us</a>
-            <a href="#" className="sftr__link">Services</a>
-            <a href="#" className="sftr__link">Insights</a>
+            <FooterLink label="About Us" className="sftr__link" />
+            <FooterLink label="Services" className="sftr__link" />
+            <FooterLink label="Insights" className="sftr__link" />
           </div>
 
           <div className="sftr__col sftr__col--legal">
             <h6 className="sftr__col-title">Legal</h6>
-            <a href="#" className="sftr__link">Privacy Policy</a>
-            <a href="#" className="sftr__link">Terms of Service</a>
-            <a href="#" className="sftr__link">Disclaimers</a>
+            <FooterLink label="Privacy Policy" className="sftr__link" />
+            <FooterLink label="Terms of Service" className="sftr__link" />
+            <FooterLink label="Disclaimers" className="sftr__link" />
           </div>
 
           <div className="sftr__news">
@@ -74,9 +85,18 @@ export default function ServicesFooter() {
             <p className="sftr__news-text">
               Strategic market updates delivered to your inbox.
             </p>
-            <form className="sftr__form" onSubmit={(e) => e.preventDefault()}>
+            <form
+              className="sftr__form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                // No newsletter service is connected yet; say so rather than
+                // appear to subscribe and quietly drop the address.
+                setNewsNotice("Newsletter delivery isn't connected yet — no address has been stored.");
+              }}
+            >
               <input
                 type="email"
+                required
                 className="sftr__input"
                 placeholder="Email Address"
                 aria-label="Email Address"
@@ -85,6 +105,11 @@ export default function ServicesFooter() {
                 <Icon name="arrowRight" size={15} />
               </button>
             </form>
+            {newsNotice && (
+              <p className="sftr__news-text" role="status">
+                {newsNotice}
+              </p>
+            )}
           </div>
         </div>
 
@@ -94,8 +119,8 @@ export default function ServicesFooter() {
             Headquarters.
           </p>
           <div className="sftr__legal-links">
-            <a href="#" className="sftr__link">Cookies</a>
-            <a href="#" className="sftr__link">Investment Disclaimer</a>
+            <FooterLink label="Cookies" className="sftr__link" />
+            <FooterLink label="Investment Disclaimer" className="sftr__link" />
           </div>
         </div>
       </div>

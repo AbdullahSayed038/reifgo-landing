@@ -1,6 +1,9 @@
 import "./ServicesHero.css";
+import { useLeadModal } from "./LeadModal.jsx";
 
 export default function ServicesHero() {
+  const openLead = useLeadModal();
+
   return (
     <section className="shero">
       <img className="shero__bg" src="/services-hero-villa.jpg" alt="Modern hillside villa overlooking the city at sunset" />
@@ -20,8 +23,10 @@ export default function ServicesHero() {
             of technology, events, and advisory.
           </p>
           <div className="shero__actions">
-            <button className="btn btn--lg">Explore Services</button>
-            <button className="btn btn--lg btn--ghost">Partner With Us</button>
+            <a className="btn btn--lg" href="#digital-nexus">Explore Services</a>
+            <button className="btn btn--lg btn--ghost" onClick={() => openLead("partner")}>
+              Partner With Us
+            </button>
           </div>
         </div>
       </div>

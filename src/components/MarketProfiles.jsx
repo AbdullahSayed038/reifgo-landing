@@ -15,7 +15,7 @@ const STATS = [
 
 export default function MarketProfiles() {
   return (
-    <section className="mp section" style={{ background: "var(--surface-soft)" }}>
+    <section id="markets" className="mp section" style={{ background: "var(--surface-soft)" }}>
       <div className="mp__grid container">
         {/* ---- For investors ---- */}
         <div className="mp__col" data-reveal>

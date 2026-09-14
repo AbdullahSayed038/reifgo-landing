@@ -1,6 +1,7 @@
 import Icon from "./Icon.jsx";
 import { readPublishedWebsiteInsights } from "../lib/demoStore.js";
 import "./Research.css";
+import { Link } from "react-router-dom";
 
 // Fallback content, shown until the CMS has published its own insights.
 const DEFAULT_REPORTS = [
@@ -58,10 +59,10 @@ export default function Research() {
             <p className="eyebrow rsh__eyebrow">Insights</p>
             <h2 className="rsh__title">Research &amp; Market Intelligence</h2>
           </div>
-          <a href="#" className="arrow-link">
+          <Link to="/insights" className="arrow-link">
             View All Reports
             <Icon name="arrowRight" size={14} />
-          </a>
+          </Link>
         </header>
 
         <ul className="rsh__grid">

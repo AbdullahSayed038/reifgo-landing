@@ -87,6 +87,12 @@
 }
 
 .dn__link {
+  /* A button now (it opens the waitlist form), styled as the text link it was. */
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);

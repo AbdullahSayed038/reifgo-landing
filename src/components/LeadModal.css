@@ -128,6 +128,16 @@
   resize: vertical;
 }
 
+.lm__error {
+  color: #b3372f;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+.lm__submit:disabled {
+  opacity: 0.6;
+}
+
 .lm__submit {
   margin-top: 0.25rem;
   justify-content: center;

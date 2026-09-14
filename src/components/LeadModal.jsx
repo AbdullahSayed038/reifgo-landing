@@ -1,33 +1,75 @@
-import { useEffect, useState } from "react";
-import { addWebsiteLead } from "../lib/demoStore.js";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { sendWebsiteLead } from "../lib/contentApi.js";
 import "./LeadModal.css";
 
 const INTERESTS = ["Residential", "Commercial", "Mixed-use", "General investment"];
 
+// One form, opened from every call to action on the site. The intent decides
+// the wording here and how the lead is labelled in the CMS.
 const COPY = {
   join_network: {
+    eyebrow: "REIFGO Network",
     title: "Join the Network",
     lead: "Tell us a little about yourself and our team will set up your investor access.",
   },
   advisory_request: {
+    eyebrow: "REIFGO Advisory",
     title: "Request Advisory",
     lead: "Share your goals and a REIFGO advisor will reach out within one business day.",
   },
+  invest: {
+    eyebrow: "Invest with REIFGO",
+    title: "Start Investing",
+    lead: "Tell us what you are looking for and an investment advisor will walk you through current opportunities.",
+  },
+  consultation: {
+    eyebrow: "REIFGO Advisory",
+    title: "Book a Consultation",
+    lead: "Leave your details and our institutional advisory team will arrange a time to talk.",
+  },
+  partner: {
+    eyebrow: "For Developers",
+    title: "Partner With Us",
+    lead: "List your projects with REIFGO and reach accredited investors worldwide. Our partnerships team will be in touch.",
+  },
+  waitlist: {
+    eyebrow: "Digital Nexus",
+    title: "Join the Waitlist",
+    lead: "Be first to access the REIFGO digital platform when your region opens.",
+  },
+  contact: {
+    eyebrow: "Contact",
+    title: "Get in Touch",
+    lead: "Send us a message and the right person at REIFGO will reply by email.",
+  },
 };
 
-// Mock lead-capture form: submissions land in the CMS Leads inbox
-// (source: Website). When the backend is live this posts to the API
-// instead of the shared demo store.
+const LeadModalContext = createContext(() => {});
+
+/** Opens the lead form: `const openLead = useLeadModal(); openLead("invest")`. */
+export const useLeadModal = () => useContext(LeadModalContext);
+
+export function LeadModalProvider({ children }) {
+  const [intent, setIntent] = useState(null);
+  const open = useCallback((next) => setIntent(COPY[next] ? next : "contact"), []);
+  const close = useCallback(() => setIntent(null), []);
+
+  return (
+    <LeadModalContext.Provider value={open}>
+      {children}
+      {intent && <LeadModal intent={intent} onClose={close} />}
+    </LeadModalContext.Provider>
+  );
+}
+
+const EMPTY = { name: "", email: "", phone: "", interest: INTERESTS[3], message: "" };
+
 export default function LeadModal({ intent, onClose }) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    interest: INTERESTS[3],
-    message: "",
-  });
+  const [form, setForm] = useState(EMPTY);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-  const copy = COPY[intent];
+  const copy = COPY[intent] ?? COPY.contact;
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -41,10 +83,27 @@ export default function LeadModal({ intent, onClose }) {
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    addWebsiteLead({ ...form, lead_type: intent });
-    setDone(true);
+    if (sending) return;
+    setSending(true);
+    setError("");
+    try {
+      // Used to write to this browser's local storage only, so no request ever
+      // reached the CMS. It now opens a real lead for the REIFGO team.
+      await sendWebsiteLead({
+        intent,
+        full_name: form.name.trim(),
+        email: form.email.trim(),
+        ...(form.phone.trim() && { phone: form.phone.trim() }),
+        ...(intent !== "partner" && intent !== "contact" && { interest: form.interest }),
+        ...(form.message.trim() && { message: form.message.trim() }),
+      });
+      setDone(true);
+    } catch (err) {
+      setError(err.message);
+    }
+    setSending(false);
   };
 
   return (
@@ -72,39 +131,59 @@ export default function LeadModal({ intent, onClose }) {
           </div>
         ) : (
           <>
-            <p className="eyebrow">REIFGO Network</p>
+            <p className="eyebrow">{copy.eyebrow}</p>
             <h3 className="lm__title heading">{copy.title}</h3>
             <p className="lm__lead">{copy.lead}</p>
 
             <form className="lm__form" onSubmit={submit}>
               <label className="lm__field">
-                <span>Full name</span>
-                <input required autoFocus value={form.name} onChange={set("name")} placeholder="Your name" />
+                <span>{intent === "partner" ? "Full name & company" : "Full name"}</span>
+                <input required autoFocus maxLength={120} value={form.name} onChange={set("name")} placeholder="Your name" />
               </label>
               <div className="lm__row">
                 <label className="lm__field">
                   <span>Email</span>
-                  <input type="email" required value={form.email} onChange={set("email")} placeholder="you@company.com" />
+                  <input type="email" required maxLength={200} value={form.email} onChange={set("email")} placeholder="you@company.com" />
                 </label>
                 <label className="lm__field">
                   <span>Phone</span>
-                  <input type="tel" value={form.phone} onChange={set("phone")} placeholder="+971 …" />
+                  <input type="tel" maxLength={40} value={form.phone} onChange={set("phone")} placeholder="+971 …" />
                 </label>
               </div>
+              {intent !== "partner" && intent !== "contact" && (
+                <label className="lm__field">
+                  <span>Area of interest</span>
+                  <select value={form.interest} onChange={set("interest")}>
+                    {INTERESTS.map((i) => (
+                      <option key={i} value={i}>{i}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <label className="lm__field">
-                <span>Area of interest</span>
-                <select value={form.interest} onChange={set("interest")}>
-                  {INTERESTS.map((i) => (
-                    <option key={i} value={i}>{i}</option>
-                  ))}
-                </select>
+                <span>{intent === "contact" ? "Message" : "Anything we should know? (optional)"}</span>
+                <textarea
+                  rows={3}
+                  maxLength={2000}
+                  required={intent === "contact"}
+                  value={form.message}
+                  onChange={set("message")}
+                  placeholder={
+                    intent === "partner"
+                      ? "Projects, markets, delivery timeline…"
+                      : intent === "contact"
+                        ? "How can we help?"
+                        : "Investment size, timeline, markets…"
+                  }
+                />
               </label>
-              <label className="lm__field">
-                <span>Anything we should know? (optional)</span>
-                <textarea rows={3} value={form.message} onChange={set("message")} placeholder="Investment size, timeline, markets…" />
-              </label>
-              <button className="btn lm__submit" type="submit">
-                Submit request
+              {error && (
+                <p className="lm__error" role="alert">
+                  {error}
+                </p>
+              )}
+              <button className="btn lm__submit" type="submit" disabled={sending}>
+                {sending ? "Sending…" : "Submit request"}
               </button>
             </form>
           </>

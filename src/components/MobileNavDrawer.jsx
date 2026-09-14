@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Logo from "./Logo.jsx";
+import { useLeadModal } from "./LeadModal.jsx";
 
 // Shared mobile hamburger button + off-canvas drawer, used by both the
 // marketing header and the AI-advisor app header so the interaction is
@@ -18,6 +19,7 @@ export function MobileBurger({ onOpen }) {
 }
 
 export function MobileDrawer({ open, onClose, links, active, cta }) {
+  const openLead = useLeadModal();
   return (
     <div className={`hdr__drawer${open ? " is-open" : ""}`} aria-hidden={!open}>
       <div className="hdr__scrim" onClick={onClose} />
@@ -45,7 +47,13 @@ export function MobileDrawer({ open, onClose, links, active, cta }) {
         </nav>
 
         {cta && (
-          <button className="btn hdr__drawer-cta" onClick={onClose}>
+          <button
+            className="btn hdr__drawer-cta"
+            onClick={() => {
+              onClose();
+              openLead("invest");
+            }}
+          >
             {cta}
           </button>
         )}

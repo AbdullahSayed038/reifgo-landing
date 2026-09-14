@@ -7,6 +7,8 @@ import Insights from "./pages/Insights.jsx";
 import InsightArticle from "./pages/InsightArticle.jsx";
 import ForumPage from "./pages/ForumPage.jsx";
 import ChatWidget from "./components/ChatWidget.jsx";
+import { LeadModalProvider } from "./components/LeadModal.jsx";
+import LegalPage from "./pages/LegalPage.jsx";
 
 // CMS dashboard — code-split so visitors never download admin JS/CSS.
 const AdminApp = lazy(() => import("./admin/AdminApp.jsx"));
@@ -59,7 +61,7 @@ export default function App() {
   }, [location, pathname, skipAnimation]);
 
   return (
-    <>
+    <LeadModalProvider>
       <div className="route-fade" data-phase={phase}>
         <Routes location={shown}>
           <Route path="/" element={<Home />} />
@@ -68,6 +70,10 @@ export default function App() {
           <Route path="/insights" element={<Insights />} />
           <Route path="/insights/:slug" element={<InsightArticle />} />
           <Route path="/forum" element={<ForumPage />} />
+          <Route path="/privacy" element={<LegalPage doc="privacy" />} />
+          <Route path="/terms" element={<LegalPage doc="terms" />} />
+          <Route path="/disclaimers" element={<LegalPage doc="disclaimers" />} />
+          <Route path="/cookies" element={<LegalPage doc="cookies" />} />
           <Route
             path="/admin/*"
             element={
@@ -82,6 +88,6 @@ export default function App() {
           navigations instead of blinking with the page.
           The Advisor page has its own full-screen chat, and the CMS doesn't need it. */}
       {pathname !== "/advisor" && !pathname.startsWith("/admin") && <ChatWidget />}
-    </>
+    </LeadModalProvider>
   );
 }

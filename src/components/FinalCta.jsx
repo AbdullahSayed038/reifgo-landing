@@ -1,10 +1,8 @@
-import { useState } from "react";
-import LeadModal from "./LeadModal.jsx";
+import { useLeadModal } from "./LeadModal.jsx";
 import "./FinalCta.css";
 
 export default function FinalCta() {
-  // Which lead form is open: "join_network", "advisory_request", or null.
-  const [intent, setIntent] = useState(null);
+  const openLead = useLeadModal();
 
   return (
     <section className="cta section">
@@ -27,16 +25,15 @@ export default function FinalCta() {
       <div className="cta__inner container" data-reveal>
         <h2 className="cta__title heading">Architect Your Portfolio.</h2>
         <div className="cta__actions">
-          <button className="btn cta__primary" onClick={() => setIntent("join_network")}>
+          <button className="btn cta__primary" onClick={() => openLead("join_network")}>
             Join the Network
           </button>
-          <button className="btn btn--ghost-light" onClick={() => setIntent("advisory_request")}>
+          <button className="btn btn--ghost-light" onClick={() => openLead("advisory_request")}>
             Request Advisory
           </button>
         </div>
       </div>
 
-      {intent && <LeadModal intent={intent} onClose={() => setIntent(null)} />}
     </section>
   );
 }
