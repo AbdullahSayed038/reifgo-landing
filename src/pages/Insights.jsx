@@ -5,6 +5,7 @@ import Footer from "../components/Footer.jsx";
 import { fetchCategories, fetchInsights } from "../lib/contentApi.js";
 import { initReveal } from "../lib/reveal.js";
 import useCarousel from "../lib/useCarousel.js";
+import SlowLoadingNote from "../components/SlowLoadingNote.jsx";
 import "./Insights.css";
 
 // ~200 wpm on the body, so an article without one still shows something honest.
@@ -142,6 +143,7 @@ export default function Insights() {
                   <div className="ins-skeleton__row" />
                   <div className="ins-skeleton__row" />
                 </div>
+                <SlowLoadingNote />
               </div>
             )}
 

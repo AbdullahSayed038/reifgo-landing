@@ -63,6 +63,27 @@ button {
 }
 
 /* ---- Layout primitives ---------------------------------------------- */
+/* Footer entries that open the contact form are buttons; they keep the look
+   of the text links beside them. */
+.footer-link-btn,
+button.achat__prop-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Appears under a loading skeleton when the shared backend is slow to wake. */
+.slow-note {
+  grid-column: 1 / -1;
+  margin-top: var(--sp-3);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
 /* Visually hidden but still read by screen readers — form labels whose field
    carries its own placeholder, loading announcements. */
 .sr-only {

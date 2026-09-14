@@ -5,6 +5,7 @@ import Footer from "../components/Footer.jsx";
 import { fetchInsight } from "../lib/contentApi.js";
 import { initReveal } from "../lib/reveal.js";
 import "./InsightArticle.css";
+import SlowLoadingNote from "../components/SlowLoadingNote.jsx";
 
 const fmtDate = (iso) =>
   iso
@@ -60,6 +61,7 @@ export default function InsightArticle() {
             <div className="art-loading__bar art-loading__bar--title" />
             <div className="art-loading__bar" />
             <div className="art-loading__bar art-loading__bar--short" />
+            <SlowLoadingNote />
           </div>
         )}
 

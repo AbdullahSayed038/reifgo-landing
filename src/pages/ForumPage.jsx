@@ -5,6 +5,7 @@ import { fetchSummit, requestInvitation } from "../lib/contentApi.js";
 import { initReveal } from "../lib/reveal.js";
 import SummitIcon from "../components/SummitIcon.jsx";
 import useCarousel from "../lib/useCarousel.js";
+import SlowLoadingNote from "../components/SlowLoadingNote.jsx";
 import "./ForumPage.css";
 
 const EMPTY_FORM = {
@@ -173,6 +174,7 @@ export default function ForumPage() {
           <span className="sr-only">Loading summit details…</span>
           <div className="fm-loading__bar" />
           <div className="fm-loading__bar fm-loading__bar--short" />
+          <SlowLoadingNote />
         </main>
         <Footer />
       </>
