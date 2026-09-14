@@ -1,214 +1,437 @@
 /* =====================================================================
    The Forum — Global Real Estate Investment Forum (annual summit)
-   Same rem-scaling model as the rest of the site; mobile.css handles the
-   reflow below 768px.
+   Figma 198:266 (1280 frame). Sizes are the design's pixels in rem
+   (1rem = 16px); mobile.css handles the reflow below 768px.
    ===================================================================== */
 
-/* ---- Hero ------------------------------------------------------------ */
+/* ---- Shared section primitives -------------------------------------- */
+.fm-section {
+  position: relative;
+  padding: var(--section-y) var(--page-pad);
+}
+
+.fm-wrap {
+  position: relative;
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+}
+
+.fm-head {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Figma 198:296 — 14px, 0.3em tracked, regular weight. */
+.fm-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.fm-eyebrow--dark {
+  color: var(--brand-soft);
+}
+
+.fm-h2 {
+  font-family: var(--font-head);
+  font-size: 3.75rem;
+  line-height: 4.6875rem;
+  font-weight: 700;
+  color: #003c4e;
+}
+
+.fm-h2--tight {
+  line-height: 3.75rem;
+}
+
+.fm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.fm-btn:active {
+  transform: scale(0.97);
+}
+
+.fm-btn--light {
+  padding: 1.5rem 3rem;
+  background: #fff;
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.fm-btn--outline {
+  padding: 1.5rem 3rem;
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+  backdrop-filter: blur(2px);
+}
+
+.fm-btn--solid {
+  padding: 1.5rem 4rem;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+.fm-btn:disabled {
+  opacity: 0.6;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fm-btn--light:hover {
+    background: var(--surface-soft-2);
+  }
+
+  .fm-btn--outline:hover {
+    border-color: #fff;
+  }
+
+  .fm-btn--solid:not(:disabled):hover {
+    background: var(--brand-700);
+  }
+}
+
+/* ---- Hero (198:267) --------------------------------------------------- */
 .fm-hero {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 40rem;
-  padding: var(--sp-8) var(--page-pad);
+  /* 198:267 — 800px tall. */
+  min-height: 50rem;
+  padding: 9rem var(--page-pad);
   overflow: hidden;
   isolation: isolate;
   color: #fff;
 }
 
-/* Matches the Figma's dark-to-light horizontal wash. A CMS hero image is
-   layered over this via an inline background-image when one is set. */
+/* The design's boardroom photo is not in the Figma file, so the CMS hero image
+   fills it; without one, a mid grey keeps the white venue line legible under
+   the same black wash. */
 .fm-hero__media {
   position: absolute;
   inset: 0;
   z-index: -1;
+  background-color: #7a7a7a;
   background-size: cover;
   background-position: center;
-  background-color: #2b2b2b;
-  background-image: linear-gradient(100deg, #232323 0%, #4a4a4a 55%, #d8d8d8 100%);
+}
+
+.fm-hero__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.fm-hero__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  width: 100%;
+  max-width: 56rem;
+  margin-right: auto;
 }
 
 .fm-hero__eyebrow {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 1rem;
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
-  font-weight: 600;
-  letter-spacing: 0.26em;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .fm-hero__rule {
-  width: 3.5rem;
+  flex: none;
+  width: 4rem;
   height: 1px;
   background: rgba(255, 255, 255, 0.6);
 }
 
+.fm-hero__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .fm-hero__title {
-  max-width: 20ch;
-  margin-top: var(--sp-3);
-  font-size: var(--fs-hero);
-  line-height: var(--lh-tight);
-  color: #fff;
+  font-family: var(--font-head);
+  font-size: 5.625rem;
+  line-height: 5.34375rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
   text-transform: uppercase;
+  color: #fff;
+  /* Breaks after "REAL" and keeps "INVESTMENT FORUM" whole, as drawn. */
+  max-width: 54rem;
+}
+
+.fm-hero__line {
+  display: block;
+  white-space: nowrap;
+}
+
+.fm-hero__light {
+  font-weight: 400;
 }
 
 .fm-hero__sub {
-  margin-top: var(--sp-2);
-  font-size: var(--fs-h4);
-  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-head);
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 300;
+  letter-spacing: 0.025em;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .fm-hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
-  margin-top: var(--sp-5);
+  gap: 1.5rem;
+  padding-top: 1.5rem;
 }
 
 .fm-hero__venue {
   position: absolute;
   right: var(--page-pad);
-  bottom: var(--sp-6);
-  padding-left: var(--sp-2);
-  border-left: 1px solid rgba(255, 255, 255, 0.4);
-  text-align: left;
+  bottom: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.40625rem;
+  padding: 0.34375rem 0 0 2.625rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .fm-hero__venue-label {
-  display: block;
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
+  opacity: 0.6;
 }
 
 .fm-hero__venue-name {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: var(--fs-lg);
-  color: #fff;
+  font-family: var(--font-head);
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 400;
 }
 
-/* ---- Highlights + stats ---------------------------------------------- */
+/* ---- Highlights + stats (198:291) ------------------------------------- */
 .fm-highlights {
   background: var(--surface-soft);
 }
 
+/* 410px copy column and 512px stat panel, the 12-column split of the design. */
 .fm-highlights__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-8);
-  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4rem;
+}
+
+.fm-highlights__copy {
+  flex: 0 1 25.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
 }
 
 .fm-highlights__title {
-  margin-top: var(--sp-2);
-  max-width: 12ch;
+  max-width: 7ch;
 }
 
 .fm-highlights__list {
-  margin-top: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
 .fm-highlight {
   display: flex;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-4);
-}
-
-.fm-highlight:last-child {
-  margin-bottom: 0;
+  align-items: flex-start;
+  gap: 2rem;
 }
 
 .fm-highlight__icon {
   flex: none;
   display: grid;
   place-items: center;
-  width: 3rem;
-  height: 3rem;
+  width: 4rem;
+  height: 4rem;
   border-radius: 50%;
   background: var(--surface-chip);
-  color: var(--brand);
+  color: #1b1c1c;
+}
+
+.fm-highlight__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .fm-highlight__title {
-  font-size: var(--fs-h4);
+  font-family: var(--font-head);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: #003c4e;
 }
 
 .fm-highlight p {
-  margin-top: 0.375rem;
-  color: var(--muted);
-  line-height: var(--lh-body);
+  font-size: 1rem;
+  line-height: 1.625rem;
+  color: var(--ink);
 }
 
-/* Offset 2×2 stat grid, mirroring the design's staggered panel. */
 .fm-stats {
+  flex: 0 1 32rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-2);
-  padding: var(--sp-2);
-  background: #e8eef0;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(191, 200, 205, 0.3);
 }
 
 .fm-stat {
-  padding: var(--sp-4) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 14.875rem;
+  padding: 4rem 2.5rem 2rem;
+  border-radius: 8px;
   background: var(--surface);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
-.fm-stat:nth-child(2) {
-  transform: translateY(-1.5rem);
-}
-
-.fm-stat:nth-child(3) {
-  transform: translateY(1.5rem);
-}
-
+/* Figma sets these at 60px, which overruns a 232px card ("$40B+" spills past
+   its edge in the design itself); 48px keeps each figure on one line. */
 .fm-stat__value {
   font-family: var(--font-head);
-  font-size: var(--fs-h2);
+  font-size: 3rem;
+  line-height: 3.75rem;
   font-weight: 800;
-  line-height: 1;
+  white-space: nowrap;
   color: var(--brand);
 }
 
 .fm-stat__label {
-  margin-top: var(--sp-1);
+  max-width: 12ch;
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
+  font-size: 0.75rem;
+  line-height: 1.5rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #656667;
 }
 
-/* ---- Speakers -------------------------------------------------------- */
+/* ---- Speakers (198:356) ----------------------------------------------- */
 .fm-speakers {
   background: var(--surface-soft-2);
+  border-block: 1px solid var(--line);
 }
 
-.fm-speakers__title,
-.fm-agenda__title,
-.fm-awards__title {
-  margin-top: var(--sp-2);
-  max-width: 18ch;
+.fm-speakers__top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
 }
 
-.fm-speakers__grid {
+.fm-speakers__title {
+  max-width: 42rem;
+}
+
+.fm-speakers__nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.fm-round {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--gap);
-  margin-top: var(--sp-6);
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  background: transparent;
+  color: #1b1c1c;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease),
+    opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.fm-round:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.fm-round:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fm-round:not(:disabled):hover {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+  }
+}
+
+/* Four across as drawn; more speakers scroll sideways under the arrows. */
+.fm-speakers__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3 * 2rem) / 4);
+  column-gap: 2rem;
+  margin-top: 6rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.fm-speakers__track::-webkit-scrollbar {
+  display: none;
+}
+
+.fm-speaker {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  scroll-snap-align: start;
 }
 
 .fm-speaker__photo {
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: var(--surface-chip);
+  background: var(--surface);
 }
 
 .fm-speaker__photo img {
@@ -230,47 +453,62 @@
   letter-spacing: 0.05em;
 }
 
+.fm-speaker__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .fm-speaker__name {
-  margin-top: var(--sp-2);
-  font-size: var(--fs-h4);
+  font-family: var(--font-head);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: #003c4e;
 }
 
 .fm-speaker__role {
-  margin-top: 0.25rem;
-  padding-bottom: var(--sp-2);
-  border-bottom: 1px solid var(--line-solid);
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
-  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--brand);
 }
 
 .fm-speaker__topic {
-  margin-top: var(--sp-2);
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
+  padding-top: 1.0625rem;
+  border-top: 1px solid var(--line-solid);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: var(--ink);
 }
 
-/* ---- Agenda verticals ------------------------------------------------ */
+/* ---- Agenda verticals (198:416) --------------------------------------- */
 .fm-agenda {
   background: var(--surface-soft);
 }
 
+.fm-agenda__head {
+  max-width: 48rem;
+}
+
 .fm-agenda__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  margin-top: var(--sp-6);
-  border: 1px solid var(--line-3);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 6rem;
+  border: 1px solid var(--line-solid);
 }
 
 /* Single hairline between columns rather than a border per card, so the row
    reads as one object like the design. */
 .fm-vertical {
-  padding: var(--sp-4) var(--sp-3);
-  border-left: 1px solid var(--line-3);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 4rem;
+  border-left: 1px solid var(--line-solid);
 }
 
 .fm-vertical:first-child {
@@ -279,93 +517,116 @@
 
 .fm-vertical__icon {
   display: block;
+  height: 2.625rem;
   color: var(--brand);
 }
 
 .fm-vertical__title {
-  margin-top: var(--sp-3);
-  font-size: var(--fs-h4);
+  padding-top: 1.5rem;
+  font-family: var(--font-head);
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  color: #003c4e;
 }
 
 .fm-vertical p {
-  margin-top: var(--sp-2);
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
+  font-size: 1rem;
+  line-height: 1.625rem;
+  color: var(--ink);
 }
 
-/* The global `.heading` rule (color: var(--brand)) and `.eyebrow` rule
-   (color: var(--ink)) in base.css load after this file, so on the dark hero and
-   the dark awards section they override the intended light text — the titles end
-   up brand-on-brand and vanish. Re-assert light colours with section-scoped
-   selectors, which out-rank the single-class globals. */
-.fm-hero .heading,
-.fm-awards .heading {
-  color: #fff;
-}
-
-.fm-hero .eyebrow,
-.fm-awards .eyebrow {
-  color: var(--brand-soft);
-}
-
-/* ---- Awards ---------------------------------------------------------- */
+/* ---- Awards (198:451) ------------------------------------------------- */
 .fm-awards {
-  background: var(--brand);
+  overflow: hidden;
+  background: #003c4e;
   color: #fff;
 }
 
-.fm-awards__eyebrow {
-  color: var(--brand-soft);
+/* 198:452 — the skyline fills the right half and fades into the navy. */
+.fm-awards__wash {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 50%;
+  background: url("/forum-awards.png") center / cover no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 55% 50%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 60% at 55% 50%, #000 20%, transparent 75%);
 }
 
-.fm-awards__title {
-  color: #fff;
-}
-
-/* Copy on the left, ceremony photograph on the right — the Figma layout. */
 .fm-awards__inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-8);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 6rem;
   align-items: center;
 }
 
+.fm-awards__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.fm-awards__title {
+  max-width: 9ch;
+  color: #fff;
+}
+
+.fm-awards__sub {
+  max-width: 36rem;
+  padding-top: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.625rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .fm-awards__list {
-  margin-top: var(--sp-5);
-  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .fm-award {
   display: flex;
-  gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  border: 1px solid var(--line-on-dark);
-}
-
-.fm-award + .fm-award {
-  margin-top: var(--sp-2);
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 2.5625rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .fm-award__num {
   flex: none;
   font-family: var(--font-head);
-  font-size: var(--fs-h3);
+  font-size: 2.25rem;
+  line-height: 2.5rem;
   font-weight: 800;
-  line-height: 1.1;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--brand-soft);
+  opacity: 0.4;
+}
+
+.fm-award__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .fm-award__title {
-  font-size: var(--fs-h4);
+  font-family: var(--font-head);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
   color: #fff;
 }
 
 .fm-award p {
-  margin-top: var(--sp-1);
-  color: rgba(255, 255, 255, 0.75);
-  line-height: var(--lh-body);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .fm-awards__media {
@@ -373,31 +634,38 @@
   margin: 0;
 }
 
-.fm-awards__media img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+.fm-awards__frame {
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-/* Overlaps the photo's lower-left corner, as in the design. */
+.fm-awards__frame img {
+  display: block;
+  width: 100%;
+  height: 18rem;
+  object-fit: cover;
+  opacity: 0.8;
+}
+
+/* Hangs 40px off the frame's lower-left corner, as in the design. */
 .fm-awards__badge {
   position: absolute;
-  left: calc(var(--sp-4) * -1);
-  bottom: var(--sp-4);
+  left: -2.5rem;
+  bottom: -2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: var(--sp-3) var(--sp-4);
+  gap: 0.65625rem;
+  padding: 3.0625rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background: var(--brand);
-  border: 1px solid var(--line-on-dark);
-  max-width: 78%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .fm-awards__badge-kicker {
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
-  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--brand-soft);
@@ -405,105 +673,284 @@
 
 .fm-awards__badge-title {
   font-family: var(--font-head);
-  font-size: var(--fs-h4);
-  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  white-space: nowrap;
   color: #fff;
 }
 
-/* Older-Safari fallback — without aspect-ratio the photo box collapses. */
-@supports not (aspect-ratio: 1 / 1) {
-  .fm-awards__media img {
-    height: 26rem;
-  }
-}
-
-/* ---- Invitation request ---------------------------------------------- */
+/* ---- Invitation request (198:492) ------------------------------------- */
 .fm-invite {
-  background: var(--surface);
+  padding-bottom: 20rem;
+  background: var(--surface-soft);
 }
 
+/* 309px copy column, 715px form card. */
 .fm-invite__inner {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: var(--sp-8);
+  grid-template-columns: minmax(0, 19.3rem) minmax(0, 44.7rem);
+  justify-content: space-between;
   align-items: start;
 }
 
+.fm-invite__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
 .fm-invite__title {
-  margin-top: var(--sp-2);
+  font-family: var(--font-head);
+  font-size: 3rem;
+  line-height: 3.75rem;
+  font-weight: 700;
+  color: #003c4e;
 }
 
 .fm-invite__sub {
-  margin-top: var(--sp-2);
-  color: var(--muted);
-  line-height: var(--lh-body);
+  font-size: 1.125rem;
+  line-height: 1.828rem;
+  color: var(--ink);
+}
+
+.fm-invite__points {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fm-invite__points li {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  color: #1b1c1c;
+}
+
+.fm-invite__point-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(0, 85, 108, 0.1);
+  color: var(--brand);
 }
 
 .fm-invite__meta {
-  margin-top: var(--sp-3);
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--brand);
 }
 
+.fm-invite__card {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+  padding: 5.0625rem;
+  border: 1px solid var(--line-solid);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 25px 50px -12px rgba(0, 60, 78, 0.05);
+}
+
+/* 198:516 — three numbered dots on a 2px rail. */
+.fm-steps {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fm-steps::before {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--line-solid);
+}
+
+.fm-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fm-step:first-child {
+  align-items: flex-start;
+}
+
+.fm-step:last-child {
+  align-items: flex-end;
+}
+
+.fm-step__dot {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 2px solid var(--line-solid);
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  color: #656667;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.fm-step__label {
+  font-size: 0.625rem;
+  line-height: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #656667;
+}
+
+.fm-step.is-active .fm-step__dot {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 10px 15px -3px rgba(0, 85, 108, 0.3), 0 4px 6px -4px rgba(0, 85, 108, 0.3);
+}
+
+.fm-step.is-active .fm-step__label {
+  color: var(--brand);
+}
+
 .fm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.fm-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-2);
+  gap: 3rem;
 }
 
 .fm-field {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-}
-
-.fm-field--wide,
-.fm-form__error,
-.fm-form__submit {
-  grid-column: 1 / -1;
+  gap: 0.90625rem;
+  padding-top: 0.40625rem;
 }
 
 .fm-field label {
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
+  font-size: 0.625rem;
+  line-height: 0.9375rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: #656667;
 }
 
 .fm-field input,
-.fm-field textarea {
-  padding: 0.875rem 1rem;
+.fm-field textarea,
+.fm-field select {
+  width: 100%;
+  padding: 1.1875rem 0.8125rem;
   border: 1px solid var(--line-solid);
+  border-radius: 0;
   background: var(--surface);
-  color: var(--ink);
+  color: #1b1c1c;
   font-family: var(--font-body);
-  font-size: var(--fs-md);
-  transition: border-color var(--dur) var(--ease);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.fm-field input::placeholder,
+.fm-field textarea::placeholder {
+  color: rgba(112, 120, 125, 0.4);
 }
 
 .fm-field textarea {
   resize: vertical;
 }
 
+.fm-select {
+  position: relative;
+}
+
+.fm-select select {
+  padding: 1.0625rem 2.5625rem 1.0625rem 0.8125rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.fm-select::after {
+  content: "";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1.5px solid #40484c;
+  border-bottom: 1.5px solid #40484c;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
 .fm-field input:focus-visible,
-.fm-field textarea:focus-visible {
+.fm-field textarea:focus-visible,
+.fm-field select:focus-visible {
   outline: none;
   border-color: var(--brand);
   box-shadow: 0 0 0 2px rgba(0, 85, 108, 0.15);
 }
 
-.fm-form__submit {
-  justify-self: start;
-  margin-top: var(--sp-1);
+.fm-field__hint {
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  color: var(--muted);
 }
 
-.fm-form__submit:disabled {
-  opacity: 0.6;
+.fm-form__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2rem;
+  padding-top: 2.5rem;
+}
+
+.fm-form__back {
+  margin-right: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fm-form__back:hover {
+    color: var(--brand);
+  }
 }
 
 .fm-form__error {
@@ -512,18 +959,22 @@
 }
 
 .fm-invite__done {
-  padding: var(--sp-5);
-  border: 1px solid var(--line-solid);
-  background: var(--surface-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
 }
 
 .fm-invite__done-title {
-  font-size: var(--fs-h3);
+  font-family: var(--font-head);
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  color: #003c4e;
 }
 
 .fm-invite__done p {
-  margin: var(--sp-2) 0 var(--sp-4);
-  color: var(--muted);
+  color: var(--ink);
   line-height: var(--lh-body);
 }
 
@@ -557,11 +1008,14 @@
   .fm-loading__bar {
     animation: none;
   }
+
+  .fm-speakers__track {
+    scroll-behavior: auto;
+  }
 }
 
-/* Older-Safari fallback for the speaker portraits — see the note in
-   Insights.css. Without aspect-ratio the photo box collapses and the image
-   (or the initials placeholder) vanishes. */
+/* Older-Safari fallbacks — without aspect-ratio the photo box collapses and
+   the image (or the initials placeholder) vanishes. */
 @supports not (aspect-ratio: 1 / 1) {
   .fm-speaker__photo {
     position: relative;
@@ -575,5 +1029,67 @@
     left: 0;
     width: 100%;
     height: 100%;
+  }
+}
+
+/* ---- Tablet / small laptop ------------------------------------------- */
+/* The design is drawn at 1280; between phone and that width the fixed type
+   and 64px column padding would overrun, so they step down here. */
+@media (min-width: 769px) and (max-width: 1180px) {
+  .fm-hero__title {
+    font-size: 4.25rem;
+    line-height: 4.125rem;
+  }
+
+  .fm-h2 {
+    font-size: 3rem;
+    line-height: 3.75rem;
+  }
+
+  .fm-highlights__grid {
+    gap: 3rem;
+  }
+
+  .fm-stat {
+    padding: 2.5rem 1.5rem 1.5rem;
+  }
+
+  .fm-stat__value {
+    font-size: 2.25rem;
+    line-height: 3rem;
+  }
+
+  .fm-speakers__track {
+    grid-auto-columns: calc((100% - 2 * 2rem) / 3);
+  }
+
+  .fm-agenda__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fm-vertical {
+    padding: 3rem 2.5rem;
+  }
+
+  .fm-vertical:nth-child(3) {
+    border-left: 0;
+  }
+
+  .fm-vertical:nth-child(n + 3) {
+    border-top: 1px solid var(--line-solid);
+  }
+
+  .fm-awards__inner,
+  .fm-invite__inner {
+    grid-template-columns: 1fr;
+    row-gap: 5rem;
+  }
+
+  .fm-awards__badge {
+    left: 1.5rem;
+  }
+
+  .fm-invite__card {
+    padding: 3rem;
   }
 }

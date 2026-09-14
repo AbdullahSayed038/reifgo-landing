@@ -581,69 +581,183 @@
 
   /* ---- Forum / summit ---- */
   .fm-hero {
-    min-height: 30rem;
-    padding-bottom: var(--sp-8);
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 32rem;
+    padding-block: var(--sp-8);
   }
 
   .fm-hero__title {
-    max-width: none;
+    font-size: var(--fs-hero);
+    line-height: 1.05;
   }
 
-  .fm-hero__actions .btn {
+  /* A 40px line can't hold "INVESTMENT FORUM" on a phone. */
+  .fm-hero__line {
+    white-space: normal;
+  }
+
+  .fm-hero__sub {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  .fm-hero__actions {
+    padding-top: 0;
+  }
+
+  .fm-hero__actions .fm-btn {
     width: 100%;
   }
 
   /* Absolute positioning would overlap the CTAs once the hero shortens. */
   .fm-hero__venue {
     position: static;
-    margin-top: var(--sp-4);
+    align-self: flex-start;
+    margin-top: var(--sp-5);
   }
 
-  .fm-highlights__grid,
-  .fm-invite__inner {
-    grid-template-columns: 1fr;
+  .fm-h2,
+  .fm-invite__title {
+    font-size: var(--fs-h2);
+    line-height: 1.2;
+  }
+
+  .fm-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.24em;
+  }
+
+  .fm-highlights__grid {
+    flex-direction: column;
+    gap: var(--sp-6);
+  }
+
+  .fm-highlights__copy,
+  .fm-stats {
+    flex: none;
+    width: 100%;
+  }
+
+  .fm-highlights__copy {
     gap: var(--sp-5);
   }
 
-  .fm-speakers__grid {
-    grid-template-columns: repeat(2, 1fr);
+  .fm-highlight {
+    gap: 1.25rem;
   }
 
-  .fm-agenda__grid,
-  .fm-awards__inner,
-  .fm-form {
+  .fm-highlight__icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .fm-stat {
+    min-height: 0;
+    padding: 1.5rem 1.25rem;
+  }
+
+  .fm-stat__value {
+    font-size: 2rem;
+    line-height: 2.5rem;
+  }
+
+  .fm-speakers__top {
+    align-items: flex-end;
+  }
+
+  .fm-round {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .fm-speakers__track {
+    grid-auto-columns: 78%;
+    column-gap: var(--gap);
+    margin-top: var(--sp-5);
+  }
+
+  .fm-agenda__grid {
     grid-template-columns: 1fr;
-  }
-
-  /* The badge can't hang off the photo once the column is full-bleed. */
-  .fm-awards__badge {
-    left: 0;
-    max-width: 100%;
+    margin-top: var(--sp-5);
   }
 
   /* The vertical hairline becomes a horizontal one when the row stacks. */
   .fm-vertical {
+    padding: var(--sp-4) var(--sp-3);
     border-left: 0;
-    border-top: 1px solid var(--line-3);
+    border-top: 1px solid var(--line-solid);
   }
 
   .fm-vertical:first-child {
     border-top: 0;
   }
 
-  /* The staggered offset only reads as intentional in a 2×2 grid. */
-  .fm-stat:nth-child(2),
-  .fm-stat:nth-child(3) {
-    transform: none;
+  .fm-awards__wash {
+    left: 0;
+    opacity: 0.35;
+  }
+
+  .fm-awards__inner {
+    grid-template-columns: 1fr;
+    row-gap: var(--sp-8);
+  }
+
+  .fm-award {
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+
+  /* The badge can't hang off the photo once the column is full-bleed. */
+  .fm-awards__badge {
+    left: var(--sp-2);
+    right: var(--sp-2);
+    bottom: calc(var(--sp-4) * -1);
+    padding: 1.5rem;
+  }
+
+  .fm-awards__badge-title {
+    white-space: normal;
+  }
+
+  .fm-invite {
+    padding-bottom: var(--section-y);
+  }
+
+  .fm-invite__inner {
+    grid-template-columns: 1fr;
+    row-gap: var(--sp-6);
+  }
+
+  .fm-invite__card {
+    gap: var(--sp-5);
+    padding: 1.5rem;
+  }
+
+  .fm-form__row {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .fm-form__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--sp-2);
+    padding-top: 0;
+  }
+
+  .fm-form__back {
+    margin-right: 0;
   }
 
   .fm-form__submit {
-    justify-self: stretch;
+    padding-inline: 1.5rem;
+    letter-spacing: 0.2em;
   }
 }
 
 @media (max-width: 480px) {
-  .fm-speakers__grid {
-    grid-template-columns: 1fr;
+  .fm-speakers__track {
+    grid-auto-columns: 86%;
   }
 }
