@@ -228,7 +228,7 @@ export default function DeveloperForm({ selfMode = false }) {
                 <span className="adm-repeater__index">{i + 1}</span>
                 <div className="adm-repeater__fields">
                   <input placeholder="Title" value={v.title} onChange={(e) => setValue(i, "title", e.target.value)} />
-                  <input placeholder="Icon key (optional)" value={v.icon} onChange={(e) => setValue(i, "icon", e.target.value)} />
+                  <input placeholder="Icon, e.g. leaf-outline or mci:math-compass" value={v.icon} onChange={(e) => setValue(i, "icon", e.target.value)} />
                   <input placeholder="Description (optional)" value={v.description} onChange={(e) => setValue(i, "description", e.target.value)} />
                 </div>
                 <div className="adm-repeater__actions">
