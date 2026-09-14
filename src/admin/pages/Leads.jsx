@@ -247,9 +247,15 @@ export default function Leads() {
                   <span>{r.developer_name ?? "Unassigned developer"}</span>
                 </div>
               ) : (
+                // No property: a developer-page enquiry (the developer is set)
+                // or a general enquiry for the REIFGO team.
                 <div className="adm-cell-stack">
-                  <strong>{r.interest ?? "General enquiry"}</strong>
-                  <span>{r.source === "website" ? "Website form" : "App"}</span>
+                  <strong>{r.developer_name ?? r.interest ?? "General enquiry"}</strong>
+                  <span>
+                    {r.developer_name
+                      ? r.interest ?? "Developer enquiry"
+                      : r.source === "website" ? "Website form" : "App"}
+                  </span>
                 </div>
               ),
           },

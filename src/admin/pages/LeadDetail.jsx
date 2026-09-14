@@ -97,7 +97,7 @@ export default function LeadDetail() {
             <span>{lead.user?.full_name || "Enquiry"}</span>
           </nav>
           <h1>{lead.user?.full_name || "Website enquiry"}</h1>
-          <p>{lead.property?.name ?? lead.interest ?? "General enquiry"} · received {timeAgo(lead.created_at)}</p>
+          <p>{lead.property?.name ?? lead.developer_name ?? lead.interest ?? "General enquiry"} · received {timeAgo(lead.created_at)}</p>
         </div>
         <StatusBadge value={lead.status} />
       </header>
@@ -196,11 +196,14 @@ export default function LeadDetail() {
               <dt>Request</dt><dd><StatusBadge value={lead.lead_type} /></dd>
               <dt>Source</dt><dd>{lead.source === "website" ? "Website form" : "App"}</dd>
               {lead.property?.name && (<><dt>Property</dt><dd>{lead.property.name}</dd></>)}
+              {!lead.property && lead.developer_name && (<><dt>Developer</dt><dd>{lead.developer_name}</dd></>)}
+              {lead.interest && (<><dt>Interest</dt><dd>{lead.interest}</dd></>)}
               <dt>Received</dt><dd>{fmtDateTime(lead.created_at)}</dd>
               {lead.response_hours != null && (<><dt>First response</dt><dd>{fmtHours(lead.response_hours)}</dd></>)}
             </dl>
             {lead.message && (
-              <p className="adm-tl__meta" style={{ marginTop: 12 }}>“{lead.message}”</p>
+              // The app sends the inquiry answers one per line.
+              <p className="adm-tl__meta" style={{ marginTop: 12, whiteSpace: "pre-line" }}>{lead.message}</p>
             )}
           </section>
 
