@@ -11,6 +11,7 @@ const EMPTY = {
   location: "",
   type: "in_person",
   pass_type: "",
+  subtitle: "",
   description: "",
   image_url: "",
   entry_fee: "",
@@ -82,6 +83,7 @@ export default function EventForm() {
           location: ev.location ?? "",
           type: ev.type,
           pass_type: ev.pass_type ?? "",
+          subtitle: ev.subtitle ?? "",
           description: ev.description ?? "",
           image_url: ev.image_url ?? "",
           entry_fee: ev.entry_fee ?? "",
@@ -120,6 +122,7 @@ export default function EventForm() {
       location: str(form.location),
       type: form.type,
       pass_type: str(form.pass_type),
+      subtitle: str(form.subtitle?.trim()),
       description: str(form.description),
       image_url: str(form.image_url),
       entry_fee: str(form.entry_fee),
@@ -185,6 +188,14 @@ export default function EventForm() {
             />
             <FormField label="Location" value={form.location} onChange={set("location")} placeholder="Marina Bay Sands, Singapore" />
             <FormField label="Pass type" value={form.pass_type} onChange={set("pass_type")} placeholder="Investor pass" />
+            <FormField
+              label="Subtitle"
+              value={form.subtitle}
+              onChange={set("subtitle")}
+              placeholder="Exclusive presentation of the Ethereal District"
+              hint="One line under the title on the app's event page."
+              span={2}
+            />
             <FormField label="Description" type="textarea" value={form.description} onChange={set("description")} span={2} />
             <FormField
               label="Show in the app"
