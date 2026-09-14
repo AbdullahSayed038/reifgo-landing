@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import { fetchSummit, requestInvitation } from "../lib/contentApi.js";
 import { initReveal } from "../lib/reveal.js";
 import SummitIcon from "../components/SummitIcon.jsx";
+import useCarousel from "../lib/useCarousel.js";
 import "./ForumPage.css";
 
 const EMPTY_FORM = {
@@ -79,43 +80,6 @@ function Arrow({ flip = false }) {
       <path d="M1 7h18M13 1l6 6-6 6" />
     </svg>
   );
-}
-
-/** Speaker row as a snap carousel; the arrows only wake up when it overflows. */
-function useCarousel() {
-  const trackRef = useRef(null);
-  const [edges, setEdges] = useState({ start: true, end: true });
-
-  const measure = useCallback(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    setEdges({
-      start: el.scrollLeft <= 2,
-      end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 2,
-    });
-  }, []);
-
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return undefined;
-    measure();
-    el.addEventListener("scroll", measure, { passive: true });
-    window.addEventListener("resize", measure);
-    return () => {
-      el.removeEventListener("scroll", measure);
-      window.removeEventListener("resize", measure);
-    };
-  }, [measure]);
-
-  const step = (dir) => {
-    const el = trackRef.current;
-    const card = el?.firstElementChild;
-    if (!el || !card) return;
-    const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
-    el.scrollBy({ left: dir * (card.getBoundingClientRect().width + gap), behavior: "smooth" });
-  };
-
-  return { trackRef, edges, step, measure };
 }
 
 export default function ForumPage() {

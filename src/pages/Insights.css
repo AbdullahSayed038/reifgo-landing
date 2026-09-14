@@ -1,91 +1,198 @@
 /* =====================================================================
-   Insights & Research — public page
-   Follows the shared rem-scaling model in tokens.css: every value is in
-   rem so the desktop layout scales proportionally, with mobile.css taking
+   Insights & Research — public page, Figma 198:34 (1280 frame).
+   Sizes are the design's pixels in rem (1rem = 16px); mobile.css takes
    over the reflow below 768px.
    ===================================================================== */
 
-/* ---- Hero ----------------------------------------------------------- */
+.ins-wrap {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+}
+
+/* ---- Hero (198:36) ---------------------------------------------------- */
 .ins-hero {
   position: relative;
   display: flex;
-  align-items: flex-end;
-  min-height: 34rem;
-  padding: var(--sp-8) var(--page-pad);
+  align-items: center;
+  /* 720px in the design, 80px of which sits under its overlaid header. */
+  min-height: 40rem;
+  padding: 6rem var(--page-pad);
   overflow: hidden;
   isolation: isolate;
+  color: #fff;
 }
 
-/* The Figma hero photograph (boardroom over a dusk skyline), with a
-   left-weighted scrim over it so the headline stays legible against the bright
-   window, and the original gradient kept underneath as the fallback for the
-   moment before the image loads — or if it ever 404s. */
+/* The design's lounge photograph under a light petrol wash from the left, with
+   the brand gradient beneath as the fallback before the image loads. */
 .ins-hero__media {
   position: absolute;
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(
-      100deg,
-      rgba(0, 26, 34, 0.92) 0%,
-      rgba(0, 26, 34, 0.74) 38%,
-      rgba(0, 26, 34, 0.4) 68%,
-      rgba(0, 26, 34, 0.28) 100%
-    ),
+    linear-gradient(90deg, rgba(0, 85, 108, 0.4) 0%, rgba(0, 85, 108, 0) 100%),
+    linear-gradient(90deg, rgba(0, 20, 26, 0.35) 0%, rgba(0, 20, 26, 0) 60%),
     url("/insights-hero.jpg") center / cover no-repeat,
     linear-gradient(120deg, #00343f 0%, #00556c 45%, #0b7f92 100%);
 }
 
 .ins-hero__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 48rem;
+  margin-right: auto;
+}
+
+.ins-hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.ins-hero__rule {
+  flex: none;
+  width: 3rem;
+  height: 1px;
+  background: #fff;
+}
+
+.ins-hero__title {
+  font-family: var(--font-head);
+  font-size: 5rem;
+  line-height: 5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
   color: #fff;
 }
 
-/* Scoped so it out-ranks the global `.eyebrow` rule (color: var(--ink)), which
-   would otherwise render this dark on the dark hero. */
-.ins-hero__inner .ins-hero__eyebrow {
-  color: var(--brand-soft);
-}
-
-/* Scoped under the inner wrapper so it out-ranks the global `.heading` rule,
-   which otherwise paints the title in the dark brand colour and makes it blend
-   into the dark hero gradient. */
-.ins-hero__inner .ins-hero__title {
-  margin-top: var(--sp-3);
-  font-size: var(--fs-hero);
-  line-height: var(--lh-tight);
-  color: #fff;
+.ins-hero__light {
+  display: block;
+  font-weight: 400;
 }
 
 .ins-hero__sub {
-  margin-top: var(--sp-2);
-  font-size: var(--fs-lg);
-  color: rgba(255, 255, 255, 0.82);
+  padding-top: 0.5rem;
+  font-size: 1.125rem;
+  line-height: 1.828rem;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .ins-hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
-  margin-top: var(--sp-5);
+  gap: 1.5rem;
+  padding-top: 1rem;
 }
 
-/* ---- Editorial spotlight -------------------------------------------- */
+.ins-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.ins-btn:active {
+  transform: scale(0.97);
+}
+
+.ins-btn--light {
+  background: #fff;
+  color: var(--brand);
+}
+
+.ins-btn--outline {
+  border-color: #fff;
+  color: #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ins-btn--light:hover {
+    background: var(--surface-soft-2);
+  }
+
+  .ins-btn--outline:hover {
+    background: #fff;
+    color: var(--brand);
+  }
+}
+
+/* 198:55 — the scroll cue in the lower-left corner. */
+.ins-hero__scroll {
+  position: absolute;
+  left: var(--page-pad);
+  bottom: 3rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ins-hero__scroll-line {
+  width: 1px;
+  height: 5rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+/* ---- Editorial spotlight (198:59) ------------------------------------- */
 .ins-spotlight {
-  background: var(--surface);
+  padding: var(--section-y) var(--page-pad);
+  background: var(--surface-soft);
 }
 
+.ins-spotlight__label {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* 7 / 5 of a 12-column grid with 32px gutters: 640px lead, 448px column. */
 .ins-spotlight__grid {
   display: grid;
-  /* Deliberately asymmetric: the lead article carries the section. */
-  grid-template-columns: 1.55fr 1fr;
-  gap: var(--sp-8);
-  margin-top: var(--sp-5);
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  column-gap: 2rem;
+  margin-top: 6rem;
   align-items: start;
+}
+
+.ins-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .ins-lead__media {
   position: relative;
-  aspect-ratio: 16 / 10;
+  display: block;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--surface-soft-2);
 }
@@ -94,67 +201,141 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.6s var(--ease-out);
 }
 
-.ins-lead__placeholder,
-.ins-card__placeholder {
+@media (hover: hover) and (pointer: fine) {
+  .ins-lead__media:hover img {
+    transform: scale(1.02);
+  }
+}
+
+.ins-placeholder {
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #123c4c 0%, #00556c 60%, #0b7f92 100%);
 }
 
 .ins-tag {
-  display: inline-block;
-  padding: 0.375rem 0.75rem;
-  background: var(--surface);
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  padding: 0.59375rem 1rem 0.40625rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
   color: var(--brand);
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.ins-tag--onmedia {
-  position: absolute;
-  top: var(--sp-2);
-  left: var(--sp-2);
+.ins-lead__title {
+  padding-top: 0.5rem;
+  font-family: var(--font-head);
+  font-size: 3rem;
+  line-height: 3.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #003c4e;
 }
 
-.ins-lead__title {
-  margin-top: var(--sp-3);
-  font-size: var(--fs-h3);
+.ins-lead__title a {
+  color: inherit;
 }
 
 .ins-lead__excerpt {
-  margin-top: var(--sp-2);
-  color: var(--muted);
-  line-height: var(--lh-body);
+  font-size: 1.125rem;
+  line-height: 1.828rem;
+  color: #656667;
 }
 
-.ins-lead .arrow-link {
-  margin-top: var(--sp-3);
+.ins-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  align-self: flex-start;
+  padding-top: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.ins-link svg {
+  transition: transform var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ins-link:hover svg {
+    transform: translateX(3px);
+  }
 }
 
 .ins-spotlight__side {
   display: flex;
   flex-direction: column;
+  gap: 3rem;
+  padding-left: 3.0625rem;
+  border-left: 1px solid var(--line);
 }
 
 /* Whole card is a link. Anchors are inline and pick up link colouring, so
    both need resetting for the card to lay out as it did as an <article>. */
 .ins-side {
-  display: block;
-  color: inherit;
-  padding-bottom: var(--sp-4);
-  margin-bottom: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 3.21875rem;
   border-bottom: 1px solid var(--line);
+  color: inherit;
+}
+
+.ins-kicker {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--brand-soft);
+}
+
+.ins-side__title {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 600;
+  color: #003c4e;
+  transition: color var(--dur) var(--ease);
+}
+
+.ins-side__excerpt {
+  padding: 0.25rem 0 0.59375rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: #656667;
+}
+
+.ins-meta {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .ins-side:hover .ins-side__title,
   .ins-card:hover .ins-card__title {
-    color: var(--brand-700);
+    color: var(--brand);
   }
 }
 
@@ -164,44 +345,9 @@
   outline-offset: 3px;
 }
 
-.ins-side:last-child {
-  border-bottom: 0;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.ins-kicker {
-  font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.ins-side__title {
-  margin-top: var(--sp-1);
-  font-size: var(--fs-h4);
-}
-
-.ins-side__excerpt {
-  margin-top: var(--sp-1);
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
-}
-
-.ins-meta {
-  margin-top: var(--sp-2);
-  font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* ---- Research hub ---------------------------------------------------- */
+/* ---- Research hub (198:94) -------------------------------------------- */
 .ins-hub {
+  padding: var(--section-y) var(--page-pad);
   background: var(--surface-soft-2);
 }
 
@@ -209,79 +355,137 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.ins-hub__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ins-hub__title {
+  font-family: var(--font-head);
+  font-size: 3rem;
+  line-height: 3.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #003c4e;
 }
 
 .ins-hub__sub {
-  max-width: 34rem;
-  margin-top: var(--sp-2);
-  color: var(--muted);
-  line-height: var(--lh-body);
+  max-width: 32rem;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  color: #656667;
 }
 
+.ins-hub__nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.ins-round {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  background: transparent;
+  color: #1b1c1c;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease),
+    opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.ins-round:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.ins-round:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ins-round:not(:disabled):hover {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: #fff;
+  }
+}
+
+/* The CMS categories stay as a quiet text filter above the cards. */
 .ins-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-1);
+  gap: 0.5rem 2rem;
+  margin-top: 3rem;
 }
 
 .ins-filter {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--line-solid);
-  background: transparent;
-  color: var(--ink);
+  padding: 0 0 0.3125rem;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--muted);
   font-family: var(--font-body);
-  font-size: var(--fs-eyebrow);
+  font-size: 0.75rem;
+  line-height: 1rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* Only colours move between states, so filtering never shifts the layout. */
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
 .ins-filter.is-active {
-  background: var(--brand);
   border-color: var(--brand);
-  color: #fff;
-}
-
-.ins-filter:active {
-  transform: scale(0.97);
+  color: var(--brand);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .ins-filter:not(.is-active):hover {
-    border-color: var(--brand);
     color: var(--brand);
   }
 }
 
-.ins-hub__grid {
+/* 198:109 — three 341px cards 48px apart, the middle one dropped 40px. */
+.ins-hub__track {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--gap);
-  margin-top: var(--sp-5);
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 2 * 3rem) / 3);
+  column-gap: 3rem;
+  align-items: start;
+  margin-top: 3rem;
+  padding-bottom: 2.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.ins-hub__track::-webkit-scrollbar {
+  display: none;
 }
 
 .ins-card {
   display: flex;
   flex-direction: column;
-  color: inherit;
+  gap: 0.5rem;
+  padding: 2.0625rem;
+  border: 1px solid var(--line-solid);
   background: var(--surface);
-  border: 1px solid var(--line-2);
-  transition: transform var(--dur) var(--ease-out);
+  color: inherit;
+  scroll-snap-align: start;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .ins-card:hover {
-    transform: translateY(-4px);
-  }
+.ins-card:nth-child(3n + 2) {
+  margin-top: 2.5rem;
 }
 
 .ins-card__media {
-  aspect-ratio: 4 / 3;
+  height: 16rem;
   overflow: hidden;
   background: var(--surface-soft-2);
 }
@@ -290,40 +494,50 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.6s var(--ease-out);
 }
 
-.ins-card__body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: var(--sp-3);
+@media (hover: hover) and (pointer: fine) {
+  .ins-card:hover .ins-card__media img {
+    transform: scale(1.03);
+  }
+}
+
+.ins-card__kicker {
+  padding-top: 1.5rem;
 }
 
 .ins-card__title {
-  margin-top: var(--sp-1);
-  font-size: var(--fs-h4);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: var(--font-head);
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 600;
+  color: #003c4e;
+  transition: color var(--dur) var(--ease);
 }
 
 .ins-card__excerpt {
-  margin-top: var(--sp-1);
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
+  padding: 1rem 0 1.84375rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: #656667;
 }
 
-/* Pushes the footer to the bottom so cards of differing text length still
-   line their meta rows up across the grid. */
-.ins-card__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  margin-top: auto;
-  padding-top: var(--sp-3);
-}
-
-.ins-card__foot .ins-meta {
-  margin-top: 0;
+.ins-card__link {
+  align-self: flex-start;
+  padding-bottom: 0.3125rem;
+  border-bottom: 1px solid var(--brand);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
 }
 
 /* ---- States ---------------------------------------------------------- */
@@ -340,17 +554,17 @@
 
 .ins-skeleton {
   display: grid;
-  grid-template-columns: 1.55fr 1fr;
-  gap: var(--sp-8);
-  margin-top: var(--sp-5);
+  grid-template-columns: 7fr 5fr;
+  gap: 2rem;
+  margin-top: 6rem;
 }
 
 .ins-skeleton__lead {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
 }
 
 .ins-skeleton__row {
-  height: 6rem;
+  height: 10rem;
   margin-bottom: var(--sp-3);
 }
 
@@ -377,98 +591,163 @@
   }
 }
 
-/* ---- Strategic briefing ---------------------------------------------- */
+/* ---- Strategic briefing (198:143) ------------------------------------- */
 .ins-briefing {
-  padding: var(--section-y) var(--page-pad);
-  background: var(--brand);
+  position: relative;
+  padding: var(--section-y) 12rem;
+  overflow: hidden;
+  background: #003c4e;
   color: #fff;
   text-align: center;
 }
 
+/* 198:144 — a faint blueprint grid. */
+.ins-briefing__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: linear-gradient(90deg, #e3e2e2 1px, transparent 1px),
+    linear-gradient(180deg, #e3e2e2 1px, transparent 1px);
+  background-size: 5rem 5rem;
+}
+
+.ins-briefing__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 56rem;
+  margin-inline: auto;
+}
+
 .ins-briefing__title {
-  font-size: var(--fs-h2);
+  font-family: var(--font-head);
+  font-size: 3rem;
+  line-height: 3.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: #fff;
 }
 
 .ins-briefing__sub {
-  max-width: 40rem;
-  margin: var(--sp-2) auto 0;
+  max-width: 42rem;
+  padding-bottom: 1.5rem;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
   color: rgba(255, 255, 255, 0.8);
-  line-height: var(--lh-body);
 }
 
 .ins-briefing__form {
   display: flex;
-  gap: var(--sp-1);
-  max-width: 34rem;
-  margin: var(--sp-4) auto 0;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 0.5625rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.ins-briefing__form:focus-within {
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .ins-briefing__form input {
   flex: 1;
   min-width: 0;
-  padding: 1.0625rem 1.25rem;
+  padding: 0.5rem 0;
+  border: 0;
   background: transparent;
-  border: 1px solid var(--line-on-dark);
   color: #fff;
   font-family: var(--font-body);
-  font-size: var(--fs-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
+  outline: none;
 }
 
 .ins-briefing__form input::placeholder {
-  color: var(--brand-soft);
-  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.ins-briefing__form input:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
+.ins-briefing__form button {
+  flex: none;
+  padding: 0.5rem 2rem;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity var(--dur) var(--ease);
 }
 
-.ins-briefing__form .btn {
-  --btn-bg: #fff;
-  --btn-fg: var(--brand);
-  white-space: nowrap;
+@media (hover: hover) and (pointer: fine) {
+  .ins-briefing__form button:hover {
+    opacity: 0.75;
+  }
 }
 
 .ins-briefing__notice {
-  margin-top: var(--sp-2);
   color: #ffd9a8;
   font-size: var(--fs-sm);
 }
 
 .ins-briefing__legal {
-  margin-top: var(--sp-2);
-  color: rgba(255, 255, 255, 0.55);
-  font-size: var(--fs-eyebrow);
-  letter-spacing: 0.1em;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ---- Tablet / small laptop ------------------------------------------- */
+@media (min-width: 769px) and (max-width: 1180px) {
+  .ins-hero__title {
+    font-size: 4rem;
+    line-height: 4rem;
+  }
+
+  .ins-lead__title,
+  .ins-hub__title,
+  .ins-briefing__title {
+    font-size: 2.5rem;
+    line-height: 3rem;
+  }
+
+  .ins-side__title,
+  .ins-card__title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .ins-hub__track {
+    grid-auto-columns: calc((100% - 3rem) / 2);
+  }
+
+  .ins-briefing {
+    padding-inline: var(--page-pad);
+  }
 }
 
 /* ---------------------------------------------------------------------
    Older-Safari fallback (iOS < 15 has no aspect-ratio support). Without
-   this the media boxes collapse to zero height and every image/placeholder
-   disappears. Gated by @supports, so modern browsers never see it and keep
-   using the cleaner aspect-ratio rules above.
+   this the lead image box collapses to zero height.
    --------------------------------------------------------------------- */
 @supports not (aspect-ratio: 1 / 1) {
-  .ins-lead__media,
-  .ins-card__media {
-    position: relative;
-    height: 0;
-  }
-
   .ins-lead__media {
-    padding-top: 62.5%; /* 10 / 16 */
+    height: 0;
+    padding-top: 56.25%; /* 9 / 16 */
   }
 
-  .ins-card__media {
-    padding-top: 75%; /* 3 / 4 */
-  }
-
-  .ins-lead__media > *,
-  .ins-card__media > * {
+  .ins-lead__media > img,
+  .ins-lead__media > .ins-placeholder {
     position: absolute;
     top: 0;
     left: 0;

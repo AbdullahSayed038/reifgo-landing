@@ -538,22 +538,71 @@
 @media (max-width: 768px) {
   /* ---- Insights ---- */
   .ins-hero {
-    min-height: 26rem;
+    min-height: 34rem;
+    padding-block: var(--sp-8) 8rem;
+  }
+
+  .ins-hero__title {
+    font-size: var(--fs-hero);
+    line-height: 1.05;
+  }
+
+  .ins-hero__actions .ins-btn {
+    flex: 1 1 auto;
+  }
+
+  .ins-hero__scroll {
+    bottom: var(--sp-4);
+  }
+
+  .ins-hero__scroll-line {
+    height: 3rem;
   }
 
   .ins-spotlight__grid,
   .ins-skeleton {
     grid-template-columns: 1fr;
-    gap: var(--sp-5);
+    row-gap: var(--sp-6);
+    margin-top: var(--sp-5);
   }
 
-  .ins-hub__grid {
-    grid-template-columns: 1fr;
+  .ins-lead__title,
+  .ins-hub__title,
+  .ins-briefing__title {
+    font-size: var(--fs-h2);
+    line-height: 1.2;
+  }
+
+  .ins-lead__excerpt,
+  .ins-hub__sub,
+  .ins-briefing__sub {
+    font-size: 1rem;
+    line-height: 1.625rem;
+  }
+
+  .ins-spotlight__side {
+    gap: var(--sp-4);
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .ins-side {
+    padding-bottom: var(--sp-4);
+  }
+
+  .ins-side__title,
+  .ins-card__title {
+    font-size: 1.5rem;
+    line-height: 2rem;
   }
 
   .ins-hub__head {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
+  }
+
+  .ins-round {
+    width: 3rem;
+    height: 3rem;
   }
 
   /* Filters scroll sideways rather than wrapping into a tall block that
@@ -562,6 +611,7 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     width: 100%;
+    margin-top: var(--sp-4);
     padding-bottom: var(--sp-1);
     -webkit-overflow-scrolling: touch;
   }
@@ -570,13 +620,39 @@
     flex: none;
   }
 
-  .ins-briefing__form {
-    flex-direction: column;
+  .ins-hub__track {
+    grid-auto-columns: 84%;
+    column-gap: var(--gap);
+    margin-top: var(--sp-4);
+    padding-bottom: 0;
   }
 
-  .ins-hero__actions .btn,
-  .ins-briefing__form .btn {
-    width: 100%;
+  /* The stagger only reads as intentional with three cards in view. */
+  .ins-card:nth-child(3n + 2) {
+    margin-top: 0;
+  }
+
+  .ins-card {
+    padding: 1.25rem;
+  }
+
+  .ins-card__media {
+    height: 12rem;
+  }
+
+  .ins-briefing {
+    padding-inline: var(--page-pad);
+  }
+
+  .ins-briefing__form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-2);
+  }
+
+  .ins-briefing__form button {
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
   }
 
   /* ---- Forum / summit ---- */
