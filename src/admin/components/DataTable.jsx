@@ -1,8 +1,9 @@
 import { Fragment, useMemo, useState } from "react";
 
 // columns: [{ key, label, render?(row), width?, sortValue?(row), sortable? }]
-//   Every column with a label sorts: click the header for low → high, again for
-//   high → low, a third time to go back to the page's own order. sortValue says
+//   Every column with a label sorts: click the header for low → high, click
+//   again to flip to high → low, and so on. Only "Reset sort" goes back to the
+//   page's own order. sortValue says
 //   what to compare when the cell is rendered from something other than
 //   row[key]; set sortable: false to opt a column out.
 // searchKeys: row fields (dot paths allowed) matched by the search box.
@@ -62,11 +63,9 @@ export default function DataTable({
   }, [filtered, sort, columns]);
 
   const cycleSort = (key) =>
-    setSort((s) => {
-      if (!s || s.key !== key) return { key, dir: "asc" };
-      if (s.dir === "asc") return { key, dir: "desc" };
-      return null;
-    });
+    setSort((s) =>
+      !s || s.key !== key ? { key, dir: "asc" } : { key, dir: s.dir === "asc" ? "desc" : "asc" },
+    );
 
   // Groups keep first-appearance order, so the table does not reshuffle when a
   // row's status changes. The ungrouped band is forced last.
@@ -114,19 +113,21 @@ export default function DataTable({
         )}
         <div className="adm-table-toolbar__actions">
           {toolbar}
-          {sort && (
-            <button
-              type="button"
-              className="adm-btn adm-btn--ghost adm-btn--sm adm-sort-reset"
-              onClick={() => setSort(null)}
-              title="Back to the default order"
-            >
-              ↺ Reset sort
+          {/* Always there; greyed out until something is sorted. */}
+          <button
+            type="button"
+            className="adm-btn adm-btn--ghost adm-btn--sm adm-sort-reset"
+            onClick={() => setSort(null)}
+            disabled={!sort}
+            title={sort ? "Back to the default order" : "Click a column header to sort"}
+          >
+            ↺ Reset sort
+            {sort && (
               <span className="adm-sort-reset__what">
                 {sortLabel} {sort.dir === "asc" ? "↑" : "↓"}
               </span>
-            </button>
-          )}
+            )}
+          </button>
         </div>
       </div>
 
@@ -147,13 +148,7 @@ export default function DataTable({
                         type="button"
                         className={`adm-th-sort${active ? " is-active" : ""}`}
                         onClick={() => cycleSort(c.key)}
-                        title={
-                          !active
-                            ? "Sort low to high"
-                            : sort.dir === "asc"
-                              ? "Sort high to low"
-                              : "Back to the default order"
-                        }
+                        title={!active || sort.dir === "desc" ? "Sort low to high" : "Sort high to low"}
                       >
                         {c.label}
                         <span className="adm-th-sort__arrow" aria-hidden="true">

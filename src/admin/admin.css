@@ -2690,3 +2690,8 @@
   min-width: 44px;
   width: 44px;
 }
+
+.adm-sort-reset:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
