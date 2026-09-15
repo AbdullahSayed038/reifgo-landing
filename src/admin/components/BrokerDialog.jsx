@@ -1,34 +1,40 @@
 import { useEffect, useState } from "react";
-import { api } from "../api.js";
+import { api, getSession, isReifgoTier, PERMISSION_PRESETS, PERMISSIONS } from "../api.js";
+import { str } from "../contentUtils.js";
 import FormField from "./FormField.jsx";
 import { useToast } from "./Toast.jsx";
 
-const str = (v) => (v === "" || v == null ? undefined : v);
-
 /**
- * Add or edit a broker account.
+ * Add or edit a team account (Sales Manager, Sales Agent, or custom access).
  *
- * The password field is deliberately blank on edit and only sent when filled:
- * an empty box means "leave the password alone", not "clear it". A broker who
- * has never had one set falls back to the shared demo password, so clearing it
- * silently would quietly widen access rather than narrow it.
+ * Access is tick-box permissions with the two job titles as presets. A
+ * developer's new accounts wait for REIFGO before they can sign in. The email
+ * is fixed once the account exists, and only REIFGO sets someone else's
+ * password — everyone can change their own from Account settings.
  */
 export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
   const isNew = !broker?.id;
+  const session = getSession();
+  const reifgo = isReifgoTier(session);
   const [form, setForm] = useState({
     name: broker?.name ?? "",
     email: broker?.email ?? "",
     phone: broker?.phone ?? "",
     position: broker?.position ?? "",
     developer_id: broker?.developer_id ?? "",
+    permissions: broker?.permissions ?? [],
     password: "",
   });
   const [developers, setDevelopers] = useState([]);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
 
-  // Only an admin picks the desk; a developer's brokers are always their own,
-  // and the server enforces that regardless of what is sent.
+  // A team account can only hand out what it has itself.
+  const grantable = (key) =>
+    session?.role !== "broker" || (session.permissions ?? []).includes(key);
+
+  // Only REIFGO picks the desk; a developer's team is always their own, and the
+  // server enforces that regardless of what is sent.
   useEffect(() => {
     if (!isAdmin) return;
     api.get("/admin/developers").then(setDevelopers).catch(() => {});
@@ -41,6 +47,16 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
   }, [onClose]);
 
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
+  const togglePermission = (key) =>
+    setForm((f) => ({
+      ...f,
+      permissions: f.permissions.includes(key)
+        ? f.permissions.filter((p) => p !== key)
+        : [...f.permissions, key],
+    }));
+  const applyPreset = (preset) => setForm((f) => ({ ...f, permissions: [...preset.permissions] }));
+  const samePerms = (list) =>
+    list.length === form.permissions.length && list.every((p) => form.permissions.includes(p));
 
   const submit = async (e) => {
     e.preventDefault();
@@ -57,20 +73,25 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
 
     const payload = {
       name: form.name.trim(),
-      email: form.email.trim(),
+      ...(isNew ? { email: form.email.trim() } : {}),
       phone: str(form.phone),
       position: str(form.position),
-      ...(isAdmin && form.developer_id ? { developer_id: form.developer_id } : {}),
+      permissions: form.permissions,
+      ...(isAdmin && isNew && form.developer_id ? { developer_id: form.developer_id } : {}),
       ...(form.password ? { password: form.password } : {}),
     };
 
     try {
       if (isNew) {
-        await api.post("/admin/brokers", payload);
-        toast.success(`${payload.name} added`);
+        const created = await api.post("/admin/brokers", payload);
+        toast.success(
+          created.approval_status === "pending"
+            ? `${payload.name} added. They can sign in once REIFGO approves the account.`
+            : `${payload.name} added`,
+        );
       } else {
         await api.patch(`/admin/brokers/${broker.id}`, payload);
-        toast.success("Sales Agent saved");
+        toast.success("Team member saved");
       }
       onSaved();
     } catch (err) {
@@ -85,17 +106,30 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
         className="adm-dialog"
         role="dialog"
         aria-modal="true"
-        aria-label={isNew ? "Add Sales Agent" : `Edit ${broker.name}`}
+        aria-label={isNew ? "Add team member" : `Edit ${broker.name}`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <header className="adm-dialog__head">
-          <h2>{isNew ? "Add Sales Agent" : "Edit Sales Agent"}</h2>
+          <h2>{isNew ? "Add team member" : `Edit ${broker.name}`}</h2>
         </header>
 
         <form className="adm-form" onSubmit={submit}>
           <div className="adm-form-grid adm-dialog__body">
+            {broker?.approval_status === "rejected" && (
+              <p className="adm-note adm-note--danger adm-field--span2" style={{ margin: 0 }}>
+                REIFGO declined this account{broker.rejection_reason ? `: ${broker.rejection_reason}` : "."} Saving your changes sends it back for approval.
+              </p>
+            )}
             <FormField label="Name" required value={form.name} onChange={set("name")} />
-            <FormField label="Email" required value={form.email} onChange={set("email")} />
+            {isNew ? (
+              <FormField label="Email" required value={form.email} onChange={set("email")} hint="Their sign-in address. It can't be changed later." />
+            ) : (
+              <label className="adm-field">
+                <span className="adm-field__label">Email</span>
+                <input value={form.email} disabled readOnly />
+                <span className="adm-field__hint">Email addresses can't be changed.</span>
+              </label>
+            )}
             <FormField label="Contact number" value={form.phone} onChange={set("phone")} />
             <FormField
               label="Position"
@@ -103,7 +137,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
               onChange={set("position")}
               placeholder="Senior Sales Consultant"
             />
-            {isAdmin && (
+            {isAdmin && isNew && (
               <FormField
                 label="Developer"
                 type="select"
@@ -119,18 +153,55 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
                 span={2}
               />
             )}
-            <FormField
-              label={isNew ? "Password" : "New password"}
-              type="password"
-              value={form.password}
-              onChange={set("password")}
-              span={2}
-              hint={
-                isNew
-                  ? "At least 8 characters. Leave blank and the account uses the shared demo password until one is set."
-                  : "Leave blank to keep the current password."
-              }
-            />
+
+            <div className="adm-field adm-field--span2">
+              <span className="adm-field__label">Access</span>
+              <div className="adm-perm-presets">
+                {Object.entries(PERMISSION_PRESETS).map(([key, preset]) => (
+                  <button
+                    type="button"
+                    key={key}
+                    className={`adm-chip-btn${samePerms(preset.permissions) ? " is-active" : ""}`}
+                    disabled={!preset.permissions.every(grantable)}
+                    onClick={() => applyPreset(preset)}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              <div className="adm-perm-list">
+                <label className="adm-field--checkbox" style={{ opacity: 0.7 }}>
+                  <input type="checkbox" checked disabled />
+                  <span>Work the leads assigned to them (everyone)</span>
+                </label>
+                {PERMISSIONS.map((p) => (
+                  <label key={p.key} className="adm-field--checkbox">
+                    <input
+                      type="checkbox"
+                      checked={form.permissions.includes(p.key)}
+                      disabled={!grantable(p.key) || (!isNew && broker.id === session?.broker_id)}
+                      onChange={() => togglePermission(p.key)}
+                    />
+                    <span>{p.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {(isNew || reifgo) && (
+              <FormField
+                label={isNew ? "Password" : "Set a new password"}
+                type="password"
+                value={form.password}
+                onChange={set("password")}
+                span={2}
+                hint={
+                  isNew
+                    ? "At least 8 characters. They can change it from Account settings, or with Forgot password."
+                    : "REIFGO only. Leave blank to keep their current password."
+                }
+              />
+            )}
           </div>
 
           <footer className="adm-dialog__actions">
@@ -138,7 +209,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
               Cancel
             </button>
             <button className="adm-btn adm-btn--primary" disabled={busy}>
-              {busy ? "Saving…" : isNew ? "Add Sales Agent" : "Save changes"}
+              {busy ? "Saving…" : isNew ? "Add team member" : "Save changes"}
             </button>
           </footer>
         </form>

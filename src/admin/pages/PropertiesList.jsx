@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { api, can, getSession, isReifgoTier } from "../api.js";
 import ChannelBadges from "../components/ChannelBadges.jsx";
 import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
@@ -14,6 +14,7 @@ export default function PropertiesList() {
   const navigate = useNavigate();
   const toast = useToast();
   const { fmtMoney } = useCurrency();
+  const reifgo = isReifgoTier();
 
   const load = () =>
     api.get("/admin/properties").then(setRows).catch((e) => toast.error(e.message));
@@ -38,12 +39,18 @@ export default function PropertiesList() {
     <>
       <header className="adm-page-head">
         <div>
-          <h1>{getSession()?.role === "developer" ? "My Properties" : "Properties"}</h1>
-          <p>Listings shown in the REIFGO app.</p>
+          <h1>{reifgo ? "Properties" : "My Properties"}</h1>
+          <p>
+            {reifgo
+              ? "Listings shown in the REIFGO app."
+              : "New listings and changes to live ones go to REIFGO for approval before they show in the app."}
+          </p>
         </div>
-        <Link className="adm-btn adm-btn--primary" to="/admin/properties/new">
-          + New property
-        </Link>
+        {can("manage_properties") && (
+          <Link className="adm-btn adm-btn--primary" to="/admin/properties/new">
+            + New property
+          </Link>
+        )}
       </header>
 
       <DataTable
@@ -73,10 +80,25 @@ export default function PropertiesList() {
           { key: "channels", label: "Where", render: (r) => <ChannelBadges channels={r.channels} />, width: 110 },
           { key: "status", label: "Status", render: (r) => <StatusBadge value={r.status} />, width: 120 },
           {
+            key: "approval",
+            label: "Approval",
+            width: 150,
+            render: (r) =>
+              r.approval_status === "pending" ? (
+                <span className="adm-badge adm-badge--pending">Waiting for REIFGO</span>
+              ) : r.approval_status === "rejected" ? (
+                <span className="adm-badge adm-badge--closed" title={r.rejection_reason ?? ""}>Declined</span>
+              ) : r.has_pending_changes ? (
+                <span className="adm-badge adm-badge--assigned">Changes waiting</span>
+              ) : (
+                <span className="adm-badge adm-badge--active">Live</span>
+              ),
+          },
+          {
             key: "actions",
             label: "",
             width: 60,
-            render: (r) => (
+            render: (r) => (reifgo || (can("manage_properties") && r.approval_status !== "approved")) && (
               <button
                 className="adm-icon-btn adm-icon-btn--danger"
                 aria-label={`Delete ${r.name}`}

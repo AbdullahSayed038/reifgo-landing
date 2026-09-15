@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, getSession } from "../api.js";
+import { api, can, getSession, isReifgoTier, permissionTitle } from "../api.js";
+import DistributionPanel from "../components/DistributionPanel.jsx";
 import DataTable from "../components/DataTable.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -13,10 +14,12 @@ export default function Team() {
   const [busyId, setBusyId] = useState(null);
   const toast = useToast();
   const session = getSession();
-  const isAdmin = session?.role === "admin";
-  // Brokers can see their desk but not manage it; the server refuses these
-  // writes either way, this just keeps the controls out of the way.
-  const canManage = session?.role !== "broker";
+  const isAdmin = isReifgoTier(session);
+  // Team accounts without manage_team see the desk but can't change it; the
+  // server refuses these writes either way.
+  const canManage = can("manage_team");
+  const canDistribute = can("assign_leads");
+  const [distDeveloper, setDistDeveloper] = useState("");
 
   const reload = () =>
     api.get("/admin/brokers").then(setBrokers).catch((e) => toast.error(e.message));
@@ -72,32 +75,59 @@ export default function Team() {
       <header className="adm-page-head">
         <div>
           <h1>Team</h1>
-          <p>Your Sales Agents and how they're performing against assigned leads.</p>
+          <p>
+            {isAdmin
+              ? "Every developer's team accounts and how they're performing."
+              : "Your team accounts and how they're performing. New accounts can sign in once REIFGO approves them."}
+          </p>
         </div>
         {canManage && (
           <button className="adm-btn adm-btn--primary" onClick={() => setEditing({})}>
-            + Add Sales Agent
+            + Add team member
           </button>
         )}
       </header>
 
       <div className="adm-stat-grid">
-        <StatCard label="Sales Agents" value={brokers?.length} />
+        <StatCard label="Team members" value={brokers?.length} />
         <StatCard label="Open leads" value={totals.open} />
         <StatCard label="Needs Attention" value={totals.overdue} />
         <StatCard label="Team close rate" value={teamCloseRate == null ? "—" : `${teamCloseRate}%`} />
       </div>
 
+      {canDistribute && (
+        <>
+          {isAdmin && (
+            <div className="adm-filters" style={{ marginBottom: 12 }}>
+              <select
+                className="adm-inline-select"
+                value={distDeveloper}
+                aria-label="Developer for lead distribution"
+                onChange={(e) => setDistDeveloper(e.target.value)}
+              >
+                <option value="">Lead distribution for…</option>
+                {[...new Map((brokers ?? []).map((b) => [b.developer_id, b.developer_name])).entries()].map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {(!isAdmin || distDeveloper) && (
+            <DistributionPanel developerId={isAdmin ? distDeveloper : undefined} onChanged={reload} />
+          )}
+        </>
+      )}
+
       <DataTable
         rows={brokers ?? []}
         searchKeys={["name", "email"]}
-        searchPlaceholder="Search Sales Agents…"
-        emptyText={brokers === null ? "Loading…" : "No Sales Agents yet."}
+        searchPlaceholder="Search the team…"
+        emptyText={brokers === null ? "Loading…" : "No team members yet."}
         groupBy={isAdmin ? (b) => b.developer_name || b.developer_id : undefined}
         columns={[
           {
             key: "name",
-            label: "Sales Agent",
+            label: "Team member",
             render: (b) => (
               <span className="adm-broker-name">
                 <span className={`adm-avatar${b.is_active ? "" : " adm-avatar--off"}`}>
@@ -107,8 +137,18 @@ export default function Team() {
                   <strong>
                     {b.name}
                     {!b.is_active && <span className="adm-badge adm-badge--muted">Deactivated</span>}
+                    {b.approval_status === "pending" && <span className="adm-badge adm-badge--pending">Waiting for REIFGO</span>}
+                    {b.approval_status === "rejected" && (
+                      <span className="adm-badge adm-badge--closed" title={b.rejection_reason ?? ""}>Declined</span>
+                    )}
                   </strong>
-                  <span>{b.position ? `${b.position} · ${b.email}` : b.email}</span>
+                  <span>
+                    {permissionTitle(b.permissions)}
+                    {b.position && b.position !== permissionTitle(b.permissions) ? ` · ${b.position}` : ""} · {b.email}
+                  </span>
+                  {b.approval_status === "rejected" && b.rejection_reason && (
+                    <span>Reason: {b.rejection_reason}</span>
+                  )}
                 </span>
               </span>
             ),

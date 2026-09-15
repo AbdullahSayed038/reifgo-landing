@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { getSession, IS_DEMO, login } from "../api.js";
 import PasswordInput from "../components/PasswordInput.jsx";
 
@@ -37,7 +37,7 @@ export default function Login() {
           autoFocus
           autoCapitalize="none"
           autoComplete="username"
-          placeholder="Username"
+          placeholder="Email or username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
@@ -51,6 +51,7 @@ export default function Login() {
         <button className="adm-btn adm-btn--primary" disabled={busy}>
           {busy ? "Signing in…" : "Sign in"}
         </button>
+        <Link className="adm-login__link" to="/admin/forgot-password">Forgot password?</Link>
         {IS_DEMO && (
           <div className="adm-login__demo">
             <span>Demo accounts (password 123)</span>

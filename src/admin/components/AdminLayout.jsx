@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { getSession, IS_DEMO, logout } from "../api.js";
+import { useEffect, useState } from "react";
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { api, can, getSession, IS_DEMO, isReifgoTier, logout, permissionTitle } from "../api.js";
 import { useCurrency } from "../currency.jsx";
 
 const ADMIN_NAV = [
@@ -13,6 +13,8 @@ const ADMIN_NAV = [
   { to: "/admin/leads", label: "Leads", icon: "◎" },
   { to: "/admin/team", label: "Team", icon: "◍" },
   { to: "/admin/users", label: "Users", icon: "◉" },
+  { to: "/admin/approvals", label: "Approvals", icon: "✓", badge: "approvals" },
+  { to: "/admin/staff", label: "REIFGO Team", icon: "◇" },
 ];
 
 const DEVELOPER_NAV = [
@@ -24,15 +26,31 @@ const DEVELOPER_NAV = [
   { to: "/admin/company", label: "Company Profile", icon: "◈" },
 ];
 
-const BROKER_NAV = [
-  { to: "/admin", label: "Dashboard", icon: "▦", end: true },
-];
+// A team account's menu follows its permissions.
+function teamNav(session) {
+  return [
+    { to: "/admin", label: "Dashboard", icon: "▦", end: true },
+    { to: "/admin/leads", label: can("view_all_leads", session) ? "Leads" : "My Leads", icon: "◎" },
+    ...(can("manage_properties", session) ? [{ to: "/admin/properties", label: "Properties", icon: "◨" }] : []),
+    { to: "/admin/team", label: "Team", icon: "◍" },
+    ...(can("edit_company", session) ? [{ to: "/admin/company", label: "Company Profile", icon: "◈" }] : []),
+  ];
+}
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const { currency, setCurrency } = useCurrency();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [approvals, setApprovals] = useState(0);
+  const location = useLocation();
   const session = getSession();
+  const reifgo = isReifgoTier(session);
+
+  // The Approvals count, refreshed as REIFGO moves around the CMS.
+  useEffect(() => {
+    if (!reifgo || IS_DEMO) return;
+    api.get("/admin/approvals").then((q) => setApprovals(q.total ?? 0)).catch(() => {});
+  }, [reifgo, location.pathname]);
 
   if (!session) {
     return <Navigate to="/admin/login" replace />;
@@ -40,17 +58,19 @@ export default function AdminLayout() {
 
   const isDeveloper = session.role === "developer";
   const isBroker = session.role === "broker";
-  const nav = isBroker ? BROKER_NAV : isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
+  const nav = isBroker ? teamNav(session) : isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
   const portalLabel = isBroker
-    ? "Sales Agent Portal"
+    ? "Sales Portal"
     : isDeveloper
       ? "Developer Portal"
       : "Admin Dashboard";
   const roleLabel = isBroker
-    ? "Sales Agent account"
+    ? permissionTitle(session.permissions)
     : isDeveloper
       ? "Developer account"
-      : "Administrator";
+      : session.role === "regional_admin"
+        ? "Regional admin"
+        : "Administrator";
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -95,17 +115,22 @@ export default function AdminLayout() {
                 {item.icon}
               </span>
               {item.label}
+              {item.badge === "approvals" && approvals > 0 && (
+                <span className="adm-nav-link__badge" aria-label={`${approvals} waiting`}>{approvals}</span>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        <div className="adm-account">
+        {/* Syed: click the name to change your details or password. */}
+        <Link to="/admin/account" className="adm-account adm-account--link" onClick={closeMenu} title="Account settings">
           <span className="adm-account__dot" aria-hidden="true" />
           <div className="adm-account__info">
             <strong>{session.name}</strong>
             <span>{roleLabel}</span>
           </div>
-        </div>
+          <span className="adm-account__chev" aria-hidden="true">›</span>
+        </Link>
 
         <div className="adm-currency" role="group" aria-label="Display currency">
           <span className="adm-currency__label">Currency</span>

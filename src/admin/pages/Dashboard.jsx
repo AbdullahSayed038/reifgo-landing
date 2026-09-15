@@ -22,7 +22,7 @@ const CLOSED = ["closed_won", "closed_lost"];
 export default function Dashboard() {
   const session = getSession();
   const role = session?.role ?? "admin";
-  const isAdmin = role === "admin";
+  const isAdmin = isReifgoTier(session);
   const isDeveloper = role === "developer";
   const isBroker = role === "broker";
 

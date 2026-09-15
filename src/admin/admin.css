@@ -2293,3 +2293,221 @@
     width: 100%;
   }
 }
+
+
+/* ================= Accounts, approvals, distribution (Sept 15) ================= */
+.adm-account--link {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background var(--adm-dur, 0.18s) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .adm-account--link:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+.adm-account__chev {
+  margin-left: auto;
+  opacity: 0.5;
+  font-size: 18px;
+}
+.adm-nav-link__badge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #f5b94a;
+  color: #2b1d00;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.adm-login__link {
+  align-self: center;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--adm-brand-700);
+  text-decoration: none;
+}
+.adm-login__link:hover {
+  text-decoration: underline;
+}
+.adm-login__ok {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--adm-ok);
+}
+
+.adm-perm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adm-perm-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.adm-chip-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--adm-line, #dfe5e8);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--adm-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.adm-chip-btn.is-active {
+  border-color: var(--adm-brand-700);
+  background: var(--adm-brand-050);
+  color: var(--adm-brand-700);
+}
+.adm-chip-btn:active {
+  transform: scale(0.97);
+}
+
+.adm-note {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  background: var(--adm-info-050);
+  color: var(--adm-info);
+  border: 1px solid rgba(43, 93, 140, 0.2);
+  margin-bottom: 16px;
+}
+.adm-note--warn {
+  background: var(--adm-warn-050);
+  color: var(--adm-warn);
+  border-color: rgba(146, 101, 15, 0.28);
+}
+.adm-note--danger {
+  background: var(--adm-danger-050);
+  color: var(--adm-danger);
+  border-color: rgba(179, 55, 47, 0.28);
+}
+
+.adm-review {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--adm-line, #e7ecee);
+}
+.adm-review:first-of-type {
+  border-top: 0;
+}
+.adm-review__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.adm-review__main strong {
+  color: var(--adm-ink);
+  font-size: 14.5px;
+}
+.adm-review__main span {
+  color: var(--adm-muted);
+  font-size: 12.5px;
+}
+.adm-review__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.adm-review__img {
+  width: 64px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--adm-bg);
+}
+.adm-logo-compare {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.adm-logo-compare img {
+  width: 96px;
+  height: 48px;
+  object-fit: contain;
+  padding: 4px;
+  border: 1px solid var(--adm-line, #e7ecee);
+  border-radius: 6px;
+  background: #fff;
+}
+@media (max-width: 720px) {
+  .adm-review {
+    flex-wrap: wrap;
+  }
+  .adm-review__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+.adm-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--adm-bg);
+  gap: 3px;
+}
+.adm-seg button {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--adm-muted);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.adm-seg button.is-active {
+  background: #fff;
+  color: var(--adm-brand-700);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.adm-rotation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+.adm-rotation-list label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+}
+.adm-rotation-list small {
+  color: var(--adm-muted);
+}
+
+.adm-perm-list .adm-field--checkbox,
+.adm-rotation-list label {
+  padding-top: 0;
+}
+.adm-root .adm-note {
+  padding: 12px 14px;
+  margin: 0 0 16px;
+}
+.adm-field input:disabled,
+.adm-field select:disabled {
+  background: var(--adm-bg);
+  color: var(--adm-muted);
+  cursor: not-allowed;
+}

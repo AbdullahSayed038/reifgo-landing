@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, getSession, isReifgoTier } from "../api.js";
+import { api, can, getSession, isReifgoTier } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -31,7 +31,9 @@ export default function Leads() {
   const navigate = useNavigate();
   const toast = useToast();
   const session = getSession();
-  const isBroker = session?.role === "broker";
+  // Someone who only sees their own leads (a Sales Agent).
+  const isBroker = !can("view_all_leads", session);
+  const canAssign = can("assign_leads", session);
 
   // Silent on refresh: a background poll shouldn't pop a toast if the network
   // hiccups, only the initial load should surface an error.
@@ -41,9 +43,9 @@ export default function Leads() {
         .get("/admin/leads")
         .then(setRows)
         .catch((e) => surfaceErrors && toast.error(e.message));
-      if (!isBroker) api.get("/admin/brokers").then(setBrokers).catch(() => {});
+      if (!isBroker || canAssign) api.get("/admin/brokers").then(setBrokers).catch(() => {});
     },
-    [isBroker, toast],
+    [isBroker, canAssign, toast],
   );
 
   useEffect(() => {

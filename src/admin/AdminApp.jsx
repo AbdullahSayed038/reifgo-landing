@@ -21,10 +21,22 @@ import Login from "./pages/Login.jsx";
 import PropertiesList from "./pages/PropertiesList.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
 import Users from "./pages/Users.jsx";
+import Account from "./pages/Account.jsx";
+import Approvals from "./pages/Approvals.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import Staff from "./pages/Staff.jsx";
+import { can } from "./api.js";
 
-// UI-level guard for admin-only sections. Real enforcement is server-side.
+// UI-level guard for REIFGO-only sections. Real enforcement is server-side.
+// (This used to check the shared "admin" login alone, which locked real
+// REIFGO accounts out of Developers, Forum and Users.)
 function AdminOnly({ children }) {
-  return getSession()?.role === "admin" ? children : <Navigate to="/admin" replace />;
+  return isReifgoTier() ? children : <Navigate to="/admin" replace />;
+}
+
+function NeedsPermission({ permission, children }) {
+  return can(permission) ? children : <Navigate to="/admin" replace />;
 }
 
 // REIFGO staff only — the events programme is REIFGO's, not a developer tool.
@@ -45,6 +57,8 @@ export default function AdminApp() {
         <CurrencyProvider>
         <Routes>
           <Route path="login" element={<Login />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
           <Route element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="properties" element={<PropertiesList />} />
@@ -53,7 +67,10 @@ export default function AdminApp() {
             <Route path="developers" element={<AdminOnly><DevelopersList /></AdminOnly>} />
             <Route path="developers/new" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
             <Route path="developers/:id" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
-            <Route path="company" element={<DeveloperForm selfMode />} />
+            <Route path="company" element={<NeedsPermission permission="edit_company"><DeveloperForm selfMode /></NeedsPermission>} />
+            <Route path="account" element={<Account />} />
+            <Route path="approvals" element={<AdminOnly><Approvals /></AdminOnly>} />
+            <Route path="staff" element={<AdminOnly><Staff /></AdminOnly>} />
             {/* Events are REIFGO's own, not a developer tool (September round). */}
             <Route path="events" element={<ReifgoOnly><EventsList /></ReifgoOnly>} />
             <Route path="events/new" element={<ReifgoOnly><EventForm /></ReifgoOnly>} />
@@ -66,7 +83,7 @@ export default function AdminApp() {
             <Route path="summit/invitations" element={<AdminOnly><SummitInvitations /></AdminOnly>} />
             <Route path="leads" element={<Leads />} />
             <Route path="leads/:id" element={<LeadDetail />} />
-            <Route path="team" element={<StaffOnly><Team /></StaffOnly>} />
+            <Route path="team" element={<Team />} />
             <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />
           </Route>
         </Routes>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCurrency } from "../currency.jsx";
 import { Link, useParams } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { api, can, getSession } from "../api.js";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
 import {
@@ -30,11 +30,11 @@ export default function LeadDetail() {
   const { fmtMoney } = useCurrency();
   const session = getSession();
   const isBroker = session?.role === "broker";
-  const canAssign = !isBroker && !!lead?.developer_id;
+  const canAssign = can("assign_leads", session) && !!lead?.developer_id;
 
   useEffect(() => {
     api.get(`/admin/leads/${id}`).then(setLead).catch((e) => toast.error(e.message));
-    if (!isBroker) api.get("/admin/brokers").then(setBrokers).catch(() => {});
+    if (can("assign_leads", session)) api.get("/admin/brokers").then(setBrokers).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -82,7 +82,9 @@ export default function LeadDetail() {
   const category = leadCategory(lead);
   const prop = lead.property;
   const esc = lead.escalation ? ESCALATION[lead.escalation] : null;
-  const brokerOptions = brokers.filter((b) => b.developer_id === lead.developer_id);
+  const brokerOptions = brokers.filter(
+    (b) => b.developer_id === lead.developer_id && b.is_active && (b.approval_status ?? "approved") === "approved",
+  );
 
   // Which status actions to offer given the current state.
   const actions = [];
@@ -221,7 +223,7 @@ export default function LeadDetail() {
                   <a className="adm-btn adm-btn--ghost adm-btn--sm" href={APP_PROPERTY_URL(prop.id)} target="_blank" rel="noopener noreferrer">
                     View listing ↗
                   </a>
-                  {!isBroker && (
+                  {can("manage_properties", session) && (
                     <Link className="adm-btn adm-btn--ghost adm-btn--sm" to={`/admin/properties/${prop.id}`}>
                       Open in CMS
                     </Link>
@@ -277,6 +279,16 @@ export default function LeadDetail() {
               {lead.assigned_at && (
                 <p className="adm-tl__meta" style={{ marginTop: 10 }}>
                   Assigned {timeAgo(lead.assigned_at)}
+                </p>
+              )}
+              {lead.rotation_expires_at && lead.status === "assigned" && (
+                // Auto rotation: the clock the agent is on.
+                <p className="adm-note adm-note--warn" style={{ margin: "10px 0 0" }}>
+                  Auto rotation: moves to the next agent{" "}
+                  {new Date(lead.rotation_expires_at) > new Date()
+                    ? `at ${fmtDateTime(lead.rotation_expires_at)}`
+                    : "now"}{" "}
+                  unless it's marked contacted.
                 </p>
               )}
             </section>

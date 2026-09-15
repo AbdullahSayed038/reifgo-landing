@@ -207,7 +207,49 @@ export async function demoRequest(method, path, body) {
     return { access_token: `demo-${body.username}`, ...account };
   }
 
+  // Password reset has nothing to send in demo mode; it answers like the API.
+  if (key === "POST /admin/auth/forgot-password") return { sent: true };
+  if (key === "POST /admin/auth/reset-password") {
+    throw new ApiError(400, "Password reset isn't available in demo mode");
+  }
+
   const info = sessionInfo();
+
+  // ---- Accounts, approvals, distribution (Sept 15) ----
+  if (key === "GET /admin/me") {
+    return {
+      kind: info.role === "broker" ? "team" : info.role === "developer" ? "developer" : "owner",
+      name: info.name,
+      email: info.role === "admin" ? null : `${(info.name || "demo").toLowerCase().replace(/\s+/g, ".")}@demo.example`,
+      phone: null,
+      position: null,
+      permissions: [],
+      created_at: null,
+      editable: info.role === "broker" ? ["name", "phone", "position"] : [],
+      can_change_password: info.role !== "admin",
+    };
+  }
+  if (key === "PATCH /admin/me" || key === "POST /admin/me/password") {
+    throw new ApiError(400, "Account changes aren't saved in demo mode");
+  }
+  if (key === "GET /admin/approvals") {
+    return { accounts: [], listings: [], logos: [], total: 0 };
+  }
+  if (key === "GET /admin/accounts") return [];
+  if (path.startsWith("/admin/leads/distribution")) {
+    if (method !== "GET") throw new ApiError(400, "Distribution settings aren't saved in demo mode");
+    return {
+      id: info.developer_id ?? "emaar",
+      name: "Demo developer",
+      lead_distribution: "manual",
+      rotation_minutes: 60,
+      working_hours: null,
+      agents: db.brokers
+        .filter((b) => b.developer_id === (info.developer_id ?? "emaar"))
+        .map((b) => ({ id: b.id, name: b.name, position: b.position ?? null, is_active: true, in_rotation: true })),
+      can_edit: info.role !== "broker",
+    };
+  }
   const isAdmin = info.role === "admin";
   const isDev = info.role === "developer";
   const isBroker = info.role === "broker";

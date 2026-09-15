@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, getSession, uploadImage } from "../api.js";
+import { api, getSession, isReifgoTier, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 
@@ -11,6 +11,9 @@ const EMPTY = {
   total_projects: "",
   international_hubs: "",
   hero_image_url: "",
+  logo_url: "",
+  email: "",
+  password: "",
   is_verified: false,
   is_approved: false,
   values: [],
@@ -27,8 +30,9 @@ export default function DeveloperForm({ selfMode = false }) {
   const session = getSession();
   const id = selfMode ? session?.developer_id : params.id;
   const isNew = !id;
-  const canModerate = session?.role === "admin";
+  const canModerate = isReifgoTier(session);
   const [form, setForm] = useState(EMPTY);
+  const [meta, setMeta] = useState(null);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
@@ -37,9 +41,16 @@ export default function DeveloperForm({ selfMode = false }) {
     if (isNew) return;
     api
       .get(`/admin/developers/${id}`)
+      .then((d) => {
+        setMeta({ email: d.email, pending_logo_url: d.pending_logo_url, logo_url: d.logo_url, created_at: d.created_at });
+        return d;
+      })
       .then((d) =>
         setForm({
           name: d.name ?? "",
+          logo_url: d.logo_url ?? "",
+          email: d.email ?? "",
+          password: "",
           tagline: d.tagline ?? "",
           years_in_market: d.years_in_market ?? "",
           total_projects: d.total_projects ?? "",
@@ -62,6 +73,21 @@ export default function DeveloperForm({ selfMode = false }) {
 
   const heroFileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+
+  const logoFileRef = useRef(null);
+  const onLogoPicked = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { url } = await uploadImage(file);
+      setForm((f) => ({ ...f, logo_url: url }));
+    } catch (err) {
+      toast.error(err.message);
+    }
+    setUploading(false);
+  };
 
   const onHeroPicked = async (e) => {
     const file = e.target.files?.[0];
@@ -99,6 +125,10 @@ export default function DeveloperForm({ selfMode = false }) {
       total_projects: num(form.total_projects),
       international_hubs: str(form.international_hubs),
       hero_image_url: str(form.hero_image_url),
+      logo_url: str(form.logo_url),
+      // The sign-in email is set once, by REIFGO; the password only by REIFGO.
+      ...(canModerate && (isNew || !meta?.email) && form.email.trim() ? { email: form.email.trim() } : {}),
+      ...(canModerate && form.password ? { password: form.password } : {}),
       ...(canModerate && {
         is_verified: form.is_verified,
         is_approved: form.is_approved,
@@ -118,8 +148,16 @@ export default function DeveloperForm({ selfMode = false }) {
         await api.post("/admin/developers", payload);
         toast.success("Developer created");
       } else {
-        await api.patch(`/admin/developers/${id}`, payload);
-        toast.success(selfMode ? "Company profile saved" : "Developer saved");
+        const saved = await api.patch(`/admin/developers/${id}`, payload);
+        setMeta((m) => ({ ...m, email: saved.email, pending_logo_url: saved.pending_logo_url, logo_url: saved.logo_url }));
+        toast.success(
+          !canModerate && saved.pending_logo_url && saved.pending_logo_url !== meta?.pending_logo_url
+            ? "Profile saved. The new logo shows once REIFGO approves it."
+            : selfMode
+              ? "Company profile saved"
+              : "Developer saved",
+        );
+        if (!canModerate) setForm((f) => ({ ...f, logo_url: saved.logo_url ?? "" }));
       }
       if (selfMode) {
         setBusy(false);
@@ -203,6 +241,51 @@ export default function DeveloperForm({ selfMode = false }) {
                 )}
               </div>
             </div>
+            <div className="adm-field adm-field--span2">
+              <span className="adm-field__label">Logo</span>
+              <div className="adm-upload-row">
+                {form.logo_url ? (
+                  <img className="adm-thumb adm-thumb--lg" src={form.logo_url} alt="" style={{ objectFit: "contain", background: "#fff" }} />
+                ) : (
+                  <span className="adm-thumb adm-thumb--lg adm-thumb--empty">No logo</span>
+                )}
+                <input ref={logoFileRef} type="file" accept="image/*" hidden onChange={onLogoPicked} />
+                <button type="button" className="adm-btn adm-btn--ghost" disabled={uploading} onClick={() => logoFileRef.current?.click()}>
+                  {uploading ? "Uploading…" : canModerate ? "↑ Upload logo" : "↑ Request a new logo"}
+                </button>
+              </div>
+              {!canModerate && meta?.pending_logo_url && (
+                <span className="adm-field__hint">
+                  A new logo is waiting for REIFGO to approve it. The app keeps showing the current one until then.
+                </span>
+              )}
+              {!canModerate && !meta?.pending_logo_url && (
+                <span className="adm-field__hint">Logo changes are checked by REIFGO before they go live.</span>
+              )}
+            </div>
+            {canModerate && !isNew && (
+              meta?.email ? (
+                <label className="adm-field">
+                  <span className="adm-field__label">Sign-in email</span>
+                  <input value={meta.email} disabled readOnly />
+                  <span className="adm-field__hint">Used to sign in and for Forgot password. It can't be changed.</span>
+                </label>
+              ) : (
+                <FormField label="Sign-in email" value={form.email} onChange={set("email")} hint="Set once. Used to sign in and for Forgot password." />
+              )
+            )}
+            {canModerate && isNew && (
+              <FormField label="Sign-in email" value={form.email} onChange={set("email")} hint="Used to sign in and for Forgot password. It can't be changed later." />
+            )}
+            {canModerate && (
+              <FormField
+                label={isNew ? "Password" : "Set a new password"}
+                type="password"
+                value={form.password}
+                onChange={set("password")}
+                hint={isNew ? "At least 8 characters." : "Leave blank to keep the current password."}
+              />
+            )}
             {canModerate && (
               <>
                 <FormField label="Verified" type="checkbox" value={form.is_verified} onChange={set("is_verified")} />

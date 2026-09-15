@@ -31,6 +31,39 @@ export function isReifgoTier(session = getSession()) {
   return ["admin", "reifgo_admin", "regional_admin"].includes(session?.role);
 }
 
+/**
+ * What a team account may do. REIFGO and the developer's company login can do
+ * everything on their side; a team account only what it was given. The UI
+ * uses this to hide controls; the server enforces the same rules.
+ */
+export const PERMISSIONS = [
+  { key: "view_all_leads", label: "See all the company's leads" },
+  { key: "assign_leads", label: "Hand out leads and set lead distribution" },
+  { key: "manage_properties", label: "Add and edit listings" },
+  { key: "manage_team", label: "Add and manage team accounts" },
+  { key: "edit_company", label: "Edit the company profile" },
+];
+
+export const PERMISSION_PRESETS = {
+  sales_manager: { label: "Sales Manager", permissions: ["view_all_leads", "assign_leads", "manage_team"] },
+  sales_agent: { label: "Sales Agent", permissions: [] },
+};
+
+export function can(permission, session = getSession()) {
+  if (!session) return false;
+  if (isReifgoTier(session) || session.role === "developer") return true;
+  return (session.permissions ?? []).includes(permission);
+}
+
+/** "Sales Manager", "Sales Agent" or "Custom" for a set of permissions. */
+export function permissionTitle(permissions = []) {
+  const same = (a, b) => a.length === b.length && a.every((p) => b.includes(p));
+  for (const preset of Object.values(PERMISSION_PRESETS)) {
+    if (same(permissions, preset.permissions)) return preset.label;
+  }
+  return "Custom access";
+}
+
 export function getToken() {
   return getSession()?.token ?? null;
 }
@@ -68,7 +101,7 @@ async function request(method, path, body) {
     throw new ApiError(0, "Can't reach the API — is the backend running?");
   }
 
-  if (res.status === 401 && path !== "/admin/auth/login") {
+  if (res.status === 401 && !path.startsWith("/admin/auth/")) {
     // Token expired or revoked: force a fresh login.
     clearSession();
     window.location.assign("/admin/login");
@@ -109,10 +142,18 @@ export async function login(username, password) {
     role: data.role ?? "admin",
     developer_id: data.developer_id ?? null,
     broker_id: data.broker_id ?? null,
+    permissions: data.permissions ?? [],
     name: data.name ?? "Admin",
   };
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
+}
+
+/** Keeps the sidebar name in step after it's edited in Account settings. */
+export function updateSessionName(name) {
+  const session = getSession();
+  if (!session) return;
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, name }));
 }
 
 export function logout() {

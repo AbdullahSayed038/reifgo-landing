@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, getSession, uploadImage } from "../api.js";
+import { api, getSession, isReifgoTier, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import RowListEditor from "../components/RowListEditor.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -51,14 +51,24 @@ export default function PropertyForm() {
   const toast = useToast();
   const { currency } = useCurrency();
   const session = getSession();
-  // Developer accounts only ever list under their own company.
-  const isDeveloperAccount = session?.role === "developer";
+  // Developer-side accounts only ever list under their own company, and their
+  // saves go to REIFGO for approval.
+  const isDeveloperAccount = !isReifgoTier(session);
+  const [meta, setMeta] = useState(null);
 
   useEffect(() => {
     api.get("/admin/developers").then(setDevelopers).catch((e) => toast.error(e.message));
     if (!isNew) {
       api
         .get(`/admin/properties/${id}`)
+        .then((p) => {
+          setMeta({
+            approval_status: p.approval_status,
+            has_pending_changes: p.has_pending_changes,
+            rejection_reason: p.rejection_reason,
+          });
+          return p;
+        })
         .then((p) =>
           setForm({
             developer_id: p.developer_id,
@@ -276,10 +286,16 @@ export default function PropertyForm() {
     try {
       if (isNew) {
         await api.post("/admin/properties", payload);
-        toast.success("Property created");
+        toast.success(isDeveloperAccount ? "Listing sent to REIFGO for approval" : "Property created");
       } else {
         await api.patch(`/admin/properties/${id}`, payload);
-        toast.success("Property saved");
+        toast.success(
+          isDeveloperAccount
+            ? meta?.approval_status === "approved"
+              ? "Changes sent to REIFGO. The live listing updates once they're approved."
+              : "Listing updated and sent to REIFGO for approval"
+            : "Property saved",
+        );
       }
       navigate("/admin/properties");
     } catch (err) {
@@ -300,6 +316,28 @@ export default function PropertyForm() {
           <h1>{isNew ? "New property" : form.name || "Edit property"}</h1>
         </div>
       </header>
+
+      {isDeveloperAccount && isNew && (
+        <p className="adm-note">New listings show in the app once REIFGO approves them.</p>
+      )}
+      {meta?.approval_status === "pending" && (
+        <p className="adm-note adm-note--warn">Waiting for REIFGO to approve this listing. It isn't in the app yet.</p>
+      )}
+      {meta?.approval_status === "rejected" && (
+        <p className="adm-note adm-note--danger">
+          REIFGO declined this listing{meta.rejection_reason ? `: ${meta.rejection_reason}` : "."} Fix it and save to send it again.
+        </p>
+      )}
+      {meta?.approval_status === "approved" && meta.has_pending_changes && (
+        <p className="adm-note adm-note--warn">
+          {isDeveloperAccount
+            ? "You're seeing your latest changes. They're waiting for REIFGO; the app still shows the live version until they're approved."
+            : "This listing has changes from the developer waiting in Approvals. Saving here edits the live listing directly."}
+        </p>
+      )}
+      {meta?.approval_status === "approved" && !meta.has_pending_changes && meta.rejection_reason && isDeveloperAccount && (
+        <p className="adm-note adm-note--danger">REIFGO declined your last changes: {meta.rejection_reason}</p>
+      )}
 
       <form className="adm-form" onSubmit={submit}>
         <section className="adm-panel">
