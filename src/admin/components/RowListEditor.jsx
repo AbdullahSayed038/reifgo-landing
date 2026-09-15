@@ -22,9 +22,17 @@ export default function RowListEditor({
   blank,
   columns,
   addLabel = "+ Add row",
+  // { [rowIndex]: { [columnKey]: "what to fix" } }
+  errors = {},
+  name,
 }) {
+  // `key` may be an object to set several fields at once (used by custom cells).
   const update = (index, key, value) =>
-    onChange(rows.map((row, i) => (i === index ? { ...row, [key]: value } : row)));
+    onChange(
+      rows.map((row, i) =>
+        i === index ? { ...row, ...(typeof key === "object" ? key : { [key]: value }) } : row,
+      ),
+    );
 
   const add = () => onChange([...rows, { ...blank }]);
 
@@ -41,7 +49,7 @@ export default function RowListEditor({
   };
 
   return (
-    <section className="adm-panel">
+    <section className={`adm-panel${Object.keys(errors).length ? " adm-panel--error" : ""}`} data-field={name}>
       <header className="adm-panel__head">
         <div>
           <h2>{title}</h2>
@@ -72,11 +80,13 @@ export default function RowListEditor({
                 {columns.map((col) => (
                   <label
                     key={col.key}
-                    className="adm-rowfield"
+                    className={`adm-rowfield${errors[i]?.[col.key] ? " adm-rowfield--error" : ""}`}
                     style={{ flex: col.flex ?? 1, minWidth: col.minWidth ?? 120 }}
                   >
                     <span className="adm-rowfield__label">{col.label}</span>
-                    {col.options ? (
+                    {col.render ? (
+                      col.render(row, (key, value) => update(i, key, value), i)
+                    ) : col.options ? (
                       <select
                         value={row[col.key] ?? ""}
                         onChange={(e) => update(i, col.key, e.target.value)}
@@ -101,6 +111,9 @@ export default function RowListEditor({
                         placeholder={col.placeholder}
                         onChange={(e) => update(i, col.key, e.target.value)}
                       />
+                    )}
+                    {errors[i]?.[col.key] && (
+                      <span className="adm-rowfield__error" role="alert">{errors[i][col.key]}</span>
                     )}
                   </label>
                 ))}

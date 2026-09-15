@@ -88,6 +88,7 @@ export default function InsightsList() {
           },
           {
             key: "tier",
+            sortValue: (r) => r.tier,
             label: "Tier",
             width: 100,
             render: (r) => (
@@ -98,6 +99,7 @@ export default function InsightsList() {
           },
           {
             key: "category",
+            sortValue: (r) => r.category?.name,
             label: "Category",
             width: 130,
             render: (r) => r.category?.name ?? "—",
@@ -106,6 +108,7 @@ export default function InsightsList() {
           { key: "author_name", label: "Author", render: (r) => r.author_name ?? "—" },
           {
             key: "channels",
+            sortValue: (r) => (r.show_on_app ? 2 : 0) + (r.show_on_website ? 1 : 0),
             label: "Where",
             width: 110,
             render: (r) => <ChannelBadges channels={channelsOf(r)} />,
@@ -122,6 +125,7 @@ export default function InsightsList() {
           },
           {
             key: "published_at",
+            sortValue: (r) => r.published_at ?? r.created_at,
             label: "Date",
             width: 110,
             render: (r) => fmtDate(r.published_at ?? r.created_at),

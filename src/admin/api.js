@@ -119,7 +119,10 @@ async function request(method, path, body) {
     const message = Array.isArray(data?.message)
       ? data.message.join(", ")
       : data?.message || `Request failed (${res.status})`;
-    throw new ApiError(res.status, message);
+    const err = new ApiError(res.status, message);
+    // Validation failures come back as a list; forms map them onto fields.
+    err.details = Array.isArray(data?.message) ? data.message : null;
+    throw err;
   }
 
   return data;

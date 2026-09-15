@@ -61,8 +61,8 @@ export default function EventsList() {
           { key: "date", label: "When", render: (r) => fmtDate(r.date) },
           { key: "location", label: "Location", render: (r) => r.location ?? "—" },
           { key: "type", label: "Type", render: (r) => <StatusBadge value={r.type} />, width: 110 },
-          { key: "channels", label: "Where", render: (r) => <ChannelBadges channels={r.channels} />, width: 110 },
-          { key: "registrations", label: "Registered", render: (r) => r._count?.registrations ?? 0, width: 100 },
+          { key: "channels", sortValue: (r) => (r.channels?.app ? 2 : 0) + (r.channels?.website ? 1 : 0), label: "Where", render: (r) => <ChannelBadges channels={r.channels} />, width: 110 },
+          { key: "registrations", sortValue: (r) => r._count?.registrations ?? 0, label: "Registered", render: (r) => r._count?.registrations ?? 0, width: 100 },
           {
             key: "actions",
             label: "",

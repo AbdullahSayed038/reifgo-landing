@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, can, getSession, isReifgoTier } from "../api.js";
-import ChannelBadges from "../components/ChannelBadges.jsx";
 import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -74,13 +73,13 @@ export default function PropertiesList() {
               </div>
             ),
           },
-          { key: "developer", label: "Developer", render: (r) => r.developer?.name ?? "—" },
+          { key: "developer", sortValue: (r) => r.developer?.name, label: "Developer", render: (r) => r.developer?.name ?? "—" },
           { key: "location", label: "Location", render: (r) => r.location ?? "—" },
           { key: "min_entry_price", label: "Min entry", render: (r) => fmtMoney(r.min_entry_price) },
-          { key: "channels", label: "Where", render: (r) => <ChannelBadges channels={r.channels} />, width: 110 },
           { key: "status", label: "Status", render: (r) => <StatusBadge value={r.status} />, width: 120 },
           {
             key: "approval",
+            sortValue: (r) => (r.approval_status === "pending" ? 0 : r.approval_status === "rejected" ? 1 : r.has_pending_changes ? 2 : 3),
             label: "Approval",
             width: 150,
             render: (r) =>

@@ -52,10 +52,11 @@ export default function DevelopersList() {
         columns={[
           { key: "name", label: "Name" },
           { key: "tagline", label: "Tagline", render: (r) => r.tagline ?? "—" },
-          { key: "properties", label: "Properties", render: (r) => r._count?.properties ?? 0, width: 100 },
+          { key: "properties", sortValue: (r) => r._count?.properties ?? 0, label: "Properties", render: (r) => r._count?.properties ?? 0, width: 100 },
           { key: "created_at", label: "Created", render: (r) => fmtDate(r.created_at), width: 120 },
           {
             key: "flags",
+            sortValue: (r) => (r.is_approved ? 2 : 0) + (r.is_verified ? 1 : 0),
             label: "Flags",
             width: 160,
             render: (r) => (

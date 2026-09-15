@@ -46,9 +46,10 @@ export default function Users() {
           { key: "phone", label: "Phone" },
           { key: "city", label: "City", render: (r) => r.city ?? "—" },
           { key: "tier", label: "Tier", render: (r) => <StatusBadge value={r.tier} />, width: 110 },
-          { key: "leads", label: "Leads", render: (r) => r._count?.leads ?? 0, width: 70 },
+          { key: "leads", sortValue: (r) => r._count?.leads ?? 0, label: "Leads", render: (r) => r._count?.leads ?? 0, width: 70 },
           {
             key: "events",
+            sortValue: (r) => r._count?.registered_events ?? r.registered_events?.length ?? 0,
             label: "Events",
             width: 220,
             render: (r) =>

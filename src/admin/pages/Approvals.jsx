@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, PERMISSIONS, permissionTitle } from "../api.js";
 import Modal from "../components/Modal.jsx";
+import FormField from "../components/FormField.jsx";
+import IconPicker from "../components/IconPicker.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtDate } from "../contentUtils.js";
 import { APP_PROPERTY_URL, timeAgo } from "../leadUtils.js";
@@ -42,6 +44,7 @@ export default function Approvals() {
   const [busy, setBusy] = useState(null);
   const [declining, setDeclining] = useState(null); // { kind, id, name }
   const [reason, setReason] = useState("");
+  const [addingAmenity, setAddingAmenity] = useState(null); // { id, label, group_name, icon }
   const toast = useToast();
 
   // Keeps the sidebar badge in step with the queue on this page.
@@ -57,10 +60,10 @@ export default function Approvals() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const decide = async (kind, id, decision, why) => {
+  const decide = async (kind, id, decision, why, extra = {}) => {
     setBusy(`${kind}:${id}`);
     try {
-      const next = await api.post(`/admin/approvals/${kind}/${id}`, { decision, ...(why ? { reason: why } : {}) });
+      const next = await api.post(`/admin/approvals/${kind}/${id}`, { decision, ...(why ? { reason: why } : {}), ...extra });
       show(next);
       toast.success(decision === "approve" ? "Approved" : "Declined");
     } catch (e) {
@@ -97,12 +100,20 @@ export default function Approvals() {
 
   const empty = (text) => <p className="adm-panel__empty">{text}</p>;
 
+  const confirmAmenity = async () => {
+    const a = addingAmenity;
+    if (!a.label.trim()) return toast.error("Give the amenity a name");
+    if (!a.icon) return toast.error("Pick an icon");
+    setAddingAmenity(null);
+    await decide("amenities", a.id, "approve", undefined, { label: a.label.trim(), icon: a.icon, group_name: a.group_name });
+  };
+
   return (
     <>
       <header className="adm-page-head">
         <div>
           <h1>Approvals</h1>
-          <p>New team accounts, listings, listing edits and logo changes from developers wait here until you approve them.</p>
+          <p>New team accounts, listings, listing edits, amenity requests and logo changes from developers wait here until you deal with them.</p>
         </div>
       </header>
 
@@ -177,6 +188,42 @@ export default function Approvals() {
 
           <section className="adm-panel">
             <header className="adm-panel__head">
+              <h2>Amenity requests {queue.amenities?.length > 0 && <span className="adm-tab__count">{queue.amenities.length}</span>}</h2>
+            </header>
+            {!queue.amenities?.length
+              ? empty("No amenity requests.")
+              : queue.amenities.map((r) => (
+                  <div className="adm-review" key={r.id}>
+                    <div className="adm-review__main">
+                      <strong>{r.label}</strong>
+                      <span>
+                        {[r.developer_name, r.property_name].filter(Boolean).join(" · ")}
+                        {r.group_name ? ` · ${r.group_name}` : ""}
+                      </span>
+                      <span>Asked by {r.requested_by ?? "the developer"} {timeAgo(r.created_at)}. Not in the amenity list yet.</span>
+                    </div>
+                    <div className="adm-review__actions">
+                      <button
+                        className="adm-btn adm-btn--ghost adm-btn--sm"
+                        disabled={busy === `amenities:${r.id}`}
+                        onClick={() => decide("amenities", r.id, "reject")}
+                      >
+                        Dismiss
+                      </button>
+                      <button
+                        className="adm-btn adm-btn--primary adm-btn--sm"
+                        disabled={busy === `amenities:${r.id}`}
+                        onClick={() => setAddingAmenity({ id: r.id, label: r.label, group_name: r.group_name || "Building Amenities", icon: "" })}
+                      >
+                        Add to list…
+                      </button>
+                    </div>
+                  </div>
+                ))}
+          </section>
+
+          <section className="adm-panel">
+            <header className="adm-panel__head">
               <h2>Logo changes {queue.logos.length > 0 && <span className="adm-tab__count">{queue.logos.length}</span>}</h2>
             </header>
             {queue.logos.length === 0
@@ -197,6 +244,37 @@ export default function Approvals() {
                 ))}
           </section>
         </>
+      )}
+
+      {addingAmenity && (
+        <Modal
+          title="Add amenity to the list"
+          onClose={() => setAddingAmenity(null)}
+          footer={
+            <>
+              <button className="adm-btn adm-btn--ghost" onClick={() => setAddingAmenity(null)}>Cancel</button>
+              <button className="adm-btn adm-btn--primary" onClick={confirmAmenity}>Add amenity</button>
+            </>
+          }
+        >
+          <p className="adm-tl__meta" style={{ marginBottom: 12 }}>
+            It's added to the list for every developer, and listings that already use it get the icon.
+          </p>
+          <div className="adm-form-grid">
+            <FormField label="Name" value={addingAmenity.label} onChange={(v) => setAddingAmenity((a) => ({ ...a, label: v }))} hint="Fix the spelling here if needed." />
+            <FormField
+              label="Group"
+              type="select"
+              value={addingAmenity.group_name}
+              onChange={(v) => setAddingAmenity((a) => ({ ...a, group_name: v }))}
+              options={[
+                { value: "Building Amenities", label: "Building Amenities" },
+                { value: "Unit Facilities", label: "Unit Facilities" },
+              ]}
+            />
+            <IconPicker value={addingAmenity.icon} onChange={(v) => setAddingAmenity((a) => ({ ...a, icon: v }))} />
+          </div>
+        </Modal>
       )}
 
       {declining && (

@@ -131,6 +131,7 @@ export default function Categories() {
           { key: "display_order", label: "Order", width: 80 },
           {
             key: "usage",
+            sortValue: (r) => usage(r),
             label: "In use by",
             width: 110,
             render: (r) => {

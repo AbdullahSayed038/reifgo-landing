@@ -12,12 +12,20 @@ export default function FormField({
   required,
   placeholder,
   span,
+  error,
+  name,
 }) {
-  const cls = span ? `adm-field adm-field--span${span}` : "adm-field";
+  // `error` turns the field red and says what to fix; `name` lets an error
+  // summary scroll to it.
+  const cls = [
+    "adm-field",
+    span ? `adm-field--span${span}` : "",
+    error ? "adm-field--error" : "",
+  ].filter(Boolean).join(" ");
 
   if (type === "checkbox") {
     return (
-      <label className={`${cls} adm-field--checkbox`}>
+      <label className={`${cls} adm-field--checkbox`} data-field={name}>
         <input
           type="checkbox"
           checked={!!value}
@@ -29,7 +37,7 @@ export default function FormField({
   }
 
   return (
-    <label className={cls}>
+    <label className={cls} data-field={name}>
       <span className="adm-field__label">
         {label}
         {required && <em>*</em>}
@@ -64,7 +72,11 @@ export default function FormField({
           onChange={(e) => onChange(e.target.value)}
         />
       )}
-      {hint && <span className="adm-field__hint">{hint}</span>}
+      {error ? (
+        <span className="adm-field__error" role="alert">{error}</span>
+      ) : (
+        hint && <span className="adm-field__hint">{hint}</span>
+      )}
     </label>
   );
 }

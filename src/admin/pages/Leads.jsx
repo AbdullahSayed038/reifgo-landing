@@ -245,6 +245,7 @@ export default function Leads() {
         columns={[
           {
             key: "user",
+            sortValue: (r) => r.user?.full_name,
             label: "Investor",
             render: (r) => (
               <div className="adm-cell-stack">
@@ -255,6 +256,7 @@ export default function Leads() {
           },
           {
             key: "category",
+            sortValue: (r) => leadCategory(r),
             label: "Type",
             width: 100,
             render: (r) => {
@@ -264,6 +266,7 @@ export default function Leads() {
           },
           {
             key: "property",
+            sortValue: (r) => r.property?.name ?? r.developer_name ?? r.interest,
             label: "Regarding",
             render: (r) =>
               r.property?.name ? (
@@ -288,6 +291,7 @@ export default function Leads() {
           },
           {
             key: "broker",
+            sortValue: (r) => r.broker?.name,
             label: "Sales Agent",
             width: 150,
             render: (r) =>
@@ -302,6 +306,7 @@ export default function Leads() {
           },
           {
             key: "sla",
+            sortValue: (r) => (r.escalation === "reifgo" ? 1e6 : r.escalation ? 1e5 : r.response_hours),
             label: "Response Time",
             width: 130,
             render: (r) => {
@@ -316,7 +321,7 @@ export default function Leads() {
             },
           },
           { key: "created_at", label: "Received", render: (r) => timeAgo(r.created_at), width: 110 },
-          { key: "status", label: "Status", render: (r) => <StatusBadge value={r.status} />, width: 120 },
+          { key: "status", sortValue: (r) => ["new", "assigned", "contacted", "qualified", "closed_won", "closed_lost"].indexOf(r.status), label: "Status", render: (r) => <StatusBadge value={r.status} />, width: 120 },
         ]}
       />
     </>

@@ -95,6 +95,7 @@ export default function SummitInvitations() {
           },
           {
             key: "handled",
+            sortValue: (r) => r.handled,
             label: "Status",
             width: 120,
             render: (r) => (

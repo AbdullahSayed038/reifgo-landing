@@ -7,6 +7,7 @@ import { useCurrency } from "../currency.jsx";
 const ADMIN_NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
   { to: "/admin/properties", label: "Properties", icon: "◨" },
+  { to: "/admin/amenities", label: "Amenities", icon: "✦" },
   { to: "/admin/developers", label: "Developers", icon: "◈" },
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },

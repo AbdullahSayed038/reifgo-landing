@@ -3,6 +3,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, getSession, isReifgoTier, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import RowListEditor from "../components/RowListEditor.jsx";
+import { IconPreview } from "../components/IconPicker.jsx";
+import { mapServerErrors, summarise, validateProperty } from "../propertyValidation.js";
+
+// Shown for an "Other" amenity until REIFGO adds it to the list with an icon.
+const PLACEHOLDER_ICON = "mci:check-circle-outline";
+const AMENITY_GROUPS = ["Building Amenities", "Unit Facilities"];
 import { useToast } from "../components/Toast.jsx";
 import { useCurrency, USD_TO_AED } from "../currency.jsx";
 
@@ -21,7 +27,6 @@ const EMPTY = {
   sustainability_rating: "",
   overview: "",
   status: "active",
-  channels: { app: true, website: true },
   media: [],
   roi: { annual_return: "", capital_appreciation: "", rental_yield: "", exit_horizon: "" },
   construction_progress: "",
@@ -55,6 +60,40 @@ export default function PropertyForm() {
   // saves go to REIFGO for approval.
   const isDeveloperAccount = !isReifgoTier(session);
   const [meta, setMeta] = useState(null);
+  const [amenityOptions, setAmenityOptions] = useState([]);
+  const [errors, setErrors] = useState({ fields: {}, rows: {}, other: [] });
+  const summaryRef = useRef(null);
+
+  useEffect(() => {
+    api.get("/admin/amenities").then(setAmenityOptions).catch(() => {});
+  }, []);
+
+  const fieldError = (key) => errors.fields[key];
+  const rowErrors = (section) => errors.rows[section] ?? {};
+  const errorLines = summarise(errors);
+
+  // Once the list has loaded, anything not in it is an "Other" amenity.
+  useEffect(() => {
+    if (!amenityOptions.length) return;
+    const known = new Set(amenityOptions.map((o) => o.label.toLowerCase()));
+    setForm((f) => ({
+      ...f,
+      amenities: f.amenities.map((a) => ({ ...a, custom: !!a.label && !known.has(a.label.toLowerCase()) })),
+    }));
+  }, [amenityOptions]);
+
+  // Once the red marks are showing, re-check as the form is edited so each one
+  // clears the moment it's fixed.
+  useEffect(() => {
+    if (!errorLines.length || errors.other.length) return;
+    setErrors({ ...validateProperty(form, { needsDeveloper: !isDeveloperAccount }), other: [] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form]);
+
+  const scrollToField = (field) => {
+    const el = field && document.querySelector(`[data-field="${field}"]`);
+    (el ?? summaryRef.current)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   useEffect(() => {
     api.get("/admin/developers").then(setDevelopers).catch((e) => toast.error(e.message));
@@ -84,7 +123,6 @@ export default function PropertyForm() {
             sustainability_rating: p.sustainability_rating ?? "",
             overview: p.overview ?? "",
             status: p.status,
-            channels: { app: p.channels?.app ?? true, website: p.channels?.website ?? true },
             media: (p.media ?? []).map((m) => ({ url: m.url, type: m.type })),
             roi: {
               annual_return: p.roi?.annual_return ?? "",
@@ -113,6 +151,7 @@ export default function PropertyForm() {
               group_name: a.group_name ?? "",
               icon: a.icon ?? "",
               label: a.label ?? "",
+              custom: false,
             })),
             nearby_places: (p.nearby_places ?? []).map((n) => ({
               name: n.name ?? "",
@@ -201,10 +240,18 @@ export default function PropertyForm() {
     const developer_id = isDeveloperAccount
       ? form.developer_id || session.developer_id
       : form.developer_id;
-    if (!developer_id) {
-      toast.error("Pick a developer first");
+
+    // Check everything first and mark each problem in red, rather than
+    // letting the server turn the whole save down with one message.
+    const found = validateProperty(form, { needsDeveloper: !isDeveloperAccount });
+    const lines = summarise(found);
+    if (lines.length) {
+      setErrors({ ...found, other: [] });
+      toast.error(`${lines.length} thing${lines.length === 1 ? "" : "s"} to fix before saving`);
+      requestAnimationFrame(() => scrollToField(lines[0].field));
       return;
     }
+    setErrors({ fields: {}, rows: {}, other: [] });
     setBusy(true);
 
     const roiValues = {
@@ -229,7 +276,6 @@ export default function PropertyForm() {
       sustainability_rating: num(form.sustainability_rating),
       overview: str(form.overview),
       status: form.status,
-      channels: form.channels,
       media: form.media
         .filter((m) => m.url.trim())
         .map((m, i) => ({ url: m.url.trim(), type: m.type || "image", display_order: i })),
@@ -255,11 +301,13 @@ export default function PropertyForm() {
           floor_plan_url: str(u.floor_plan_url?.trim()),
           display_order: i,
         })),
+      // Picked amenities carry the list's icon; an "Other" one goes with a
+      // placeholder icon and is sent to REIFGO to add properly.
       amenities: form.amenities
-        .filter((a) => a.label.trim() && a.icon.trim())
+        .filter((a) => a.label.trim())
         .map((a, i) => ({
-          group_name: str(a.group_name?.trim()) ?? "Amenities",
-          icon: a.icon.trim(),
+          group_name: str(a.group_name?.trim()) ?? "Building Amenities",
+          icon: a.icon?.trim() || PLACEHOLDER_ICON,
           label: a.label.trim(),
           display_order: i,
         })),
@@ -299,10 +347,24 @@ export default function PropertyForm() {
       }
       navigate("/admin/properties");
     } catch (err) {
-      toast.error(err.message);
+      const mapped = mapServerErrors(err.message, err.details);
+      const lines = summarise(mapped);
+      if (lines.length && (Object.keys(mapped.fields).length || Object.keys(mapped.rows).length)) {
+        setErrors(mapped);
+        toast.error("Some fields need fixing. They're marked in red.");
+        requestAnimationFrame(() => scrollToField(lines[0].field));
+      } else {
+        setErrors({ fields: {}, rows: {}, other: [err.message] });
+        toast.error(err.message);
+        requestAnimationFrame(() => scrollToField(null));
+      }
       setBusy(false);
     }
   };
+
+  const amenityOptionsByGroup = AMENITY_GROUPS.concat(
+    [...new Set(amenityOptions.map((o) => o.group_name))].filter((g) => !AMENITY_GROUPS.includes(g)),
+  ).map((group) => [group, amenityOptions.filter((o) => o.group_name === group)]);
 
   return (
     <>
@@ -339,14 +401,37 @@ export default function PropertyForm() {
         <p className="adm-note adm-note--danger">REIFGO declined your last changes: {meta.rejection_reason}</p>
       )}
 
-      <form className="adm-form" onSubmit={submit}>
+      {errorLines.length > 0 && (
+        <div className="adm-error-summary" ref={summaryRef} role="alert">
+          <strong>
+            {errors.other.length && errorLines.length === errors.other.length
+              ? "The listing couldn't be saved:"
+              : `Fix ${errorLines.length === 1 ? "this" : `these ${errorLines.length} things`} to save the listing:`}
+          </strong>
+          <ul>
+            {errorLines.map((line, i) => (
+              <li key={i}>
+                {line.field ? (
+                  <button type="button" onClick={() => scrollToField(line.field)}>{line.text}</button>
+                ) : (
+                  line.text
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <form className="adm-form" onSubmit={submit} noValidate>
         <section className="adm-panel">
           <header className="adm-panel__head"><h2>Details</h2></header>
           <div className="adm-form-grid">
-            <FormField label="Name" required value={form.name} onChange={set("name")} span={2} />
+            <FormField label="Name" name="name" required value={form.name} onChange={set("name")} span={2} error={fieldError("name")} />
             {!isDeveloperAccount && (
               <FormField
                 label="Developer"
+                name="developer_id"
+                error={fieldError("developer_id")}
                 type="select"
                 required
                 value={form.developer_id}
@@ -398,10 +483,12 @@ export default function PropertyForm() {
                 { value: "Leasehold", label: "Leasehold" },
               ]}
             />
-            <FormField label="Total area (sq ft)" type="number" value={form.total_area} onChange={set("total_area")} />
-            <FormField label="Completion date" type="date" value={form.completion_date} onChange={set("completion_date")} />
+            <FormField label="Total area (sq ft)" name="total_area" error={fieldError("total_area")} type="number" value={form.total_area} onChange={set("total_area")} />
+            <FormField label="Completion date" name="completion_date" error={fieldError("completion_date")} type="date" value={form.completion_date} onChange={set("completion_date")} />
             <FormField
               label="Min entry price (USD)"
+              name="min_entry_price"
+              error={fieldError("min_entry_price")}
               type="number"
               value={form.min_entry_price}
               onChange={set("min_entry_price")}
@@ -411,24 +498,12 @@ export default function PropertyForm() {
                   : "Prices are stored in USD"
               }
             />
-            <FormField label="Sustainability rating (0–5)" type="number" value={form.sustainability_rating} onChange={set("sustainability_rating")} />
-            <FormField label="Overview" type="textarea" value={form.overview} onChange={set("overview")} span={2} />
-            <FormField
-              label="Show in the app"
-              type="checkbox"
-              value={form.channels.app}
-              onChange={(v) => setForm((f) => ({ ...f, channels: { ...f.channels, app: v } }))}
-            />
-            <FormField
-              label="Show on the website"
-              type="checkbox"
-              value={form.channels.website}
-              onChange={(v) => setForm((f) => ({ ...f, channels: { ...f.channels, website: v } }))}
-            />
+            <FormField label="Sustainability rating (0–5)" name="sustainability_rating" error={fieldError("sustainability_rating")} type="number" value={form.sustainability_rating} onChange={set("sustainability_rating")} />
+            <FormField label="Overview" name="overview" error={fieldError("overview")} type="textarea" value={form.overview} onChange={set("overview")} span={2} />
           </div>
         </section>
 
-        <section className="adm-panel">
+        <section className={`adm-panel${Object.keys(rowErrors("media")).length ? " adm-panel--error" : ""}`} data-field="media">
           <header className="adm-panel__head">
             <h2>Media</h2>
             <div className="adm-panel__head-actions">
@@ -493,6 +568,7 @@ export default function PropertyForm() {
                   className={[
                     dragFrom === i ? "is-dragging" : "",
                     dragOver === i && dragFrom !== i ? "is-drop-target" : "",
+                    rowErrors("media")[i] ? "adm-media-row--error" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -512,6 +588,9 @@ export default function PropertyForm() {
                     disabled={isUploaded}
                     onChange={(e) => setMedia(i, e.target.value)}
                   />
+                  {rowErrors("media")[i]?.url && (
+                    <span className="adm-rowfield__error" role="alert">{rowErrors("media")[i].url}</span>
+                  )}
                   <div className="adm-repeater__actions">
                     <button type="button" className="adm-icon-btn" aria-label="Move up" disabled={i === 0} onClick={() => moveMedia(i, -1)}>↑</button>
                     <button type="button" className="adm-icon-btn" aria-label="Move down" disabled={i === form.media.length - 1} onClick={() => moveMedia(i, 1)}>↓</button>
@@ -533,6 +612,8 @@ export default function PropertyForm() {
           <div className="adm-form-grid">
             <FormField
               label="Construction progress (%)"
+              name="construction_progress"
+              error={fieldError("construction_progress")}
               type="number"
               value={form.construction_progress}
               onChange={set("construction_progress")}
@@ -561,10 +642,10 @@ export default function PropertyForm() {
 
         <section className="adm-panel">
           <header className="adm-panel__head"><h2>ROI figures</h2></header>
-          <div className="adm-form-grid adm-form-grid--4">
-            <FormField label="Annual return (%)" type="number" value={form.roi.annual_return} onChange={setRoi("annual_return")} />
-            <FormField label="Capital appreciation (%)" type="number" value={form.roi.capital_appreciation} onChange={setRoi("capital_appreciation")} />
-            <FormField label="Rental yield (%)" type="number" value={form.roi.rental_yield} onChange={setRoi("rental_yield")} />
+          <div className="adm-form-grid adm-form-grid--4" data-field="roi">
+            <FormField label="Annual return (%)" error={fieldError("roi.annual_return")} type="number" value={form.roi.annual_return} onChange={setRoi("annual_return")} />
+            <FormField label="Capital appreciation (%)" error={fieldError("roi.capital_appreciation")} type="number" value={form.roi.capital_appreciation} onChange={setRoi("capital_appreciation")} />
+            <FormField label="Rental yield (%)" error={fieldError("roi.rental_yield")} type="number" value={form.roi.rental_yield} onChange={setRoi("rental_yield")} />
             <FormField label="Exit horizon" value={form.roi.exit_horizon} onChange={setRoi("exit_horizon")} placeholder="5 years" />
           </div>
         </section>
@@ -578,6 +659,8 @@ export default function PropertyForm() {
           addLabel="+ Add unit type"
           rows={form.unit_types}
           onChange={set("unit_types")}
+          name="unit_types"
+          errors={rowErrors("unit_types")}
           blank={{ name: "", min_area: "", max_area: "", from_price: "", floor_plan_url: "" }}
           columns={[
             { key: "name", label: "Name", placeholder: "2BHK", flex: 1 },
@@ -590,16 +673,73 @@ export default function PropertyForm() {
 
         <RowListEditor
           title="Amenities & facilities"
-          hint="Group is the sub-heading the tile sits under, e.g. Building Amenities or Unit Facilities. Icon is an Ionicons name (water-outline), or mci: plus a Material Community Icons name for the Figma glyphs (mci:swim, mci:hanger)."
+          hint="Pick from the list. If it isn't there, choose Other and type it: REIFGO is told, adds it with the right icon, and it updates on this listing."
           emptyText="No amenities yet."
           addLabel="+ Add amenity"
           rows={form.amenities}
           onChange={set("amenities")}
-          blank={{ group_name: "Building Amenities", icon: "", label: "" }}
+          name="amenities"
+          errors={rowErrors("amenities")}
+          blank={{ group_name: "Building Amenities", icon: "", label: "", custom: false }}
           columns={[
-            { key: "group_name", label: "Group", placeholder: "Building Amenities", flex: 1.4 },
-            { key: "icon", label: "Icon", placeholder: "water-outline", flex: 1.2 },
-            { key: "label", label: "Label", placeholder: "Swimming Pool", flex: 1.4 },
+            {
+              key: "amenity",
+              label: "Amenity",
+              flex: 3,
+              minWidth: 260,
+              render: (row, update) => (
+                <>
+                  <span className="adm-amenity-cell">
+                    <IconPreview name={row.custom ? PLACEHOLDER_ICON : row.icon} />
+                    <select
+                      value={row.custom ? "__other__" : row.label}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "__other__") {
+                          update({ custom: true, label: "", icon: PLACEHOLDER_ICON });
+                        } else {
+                          const o = amenityOptions.find((x) => x.label === v);
+                          update(o ? { custom: false, label: o.label, icon: o.icon, group_name: o.group_name } : { custom: false, label: "", icon: "" });
+                        }
+                      }}
+                    >
+                      <option value="">Choose an amenity…</option>
+                      {amenityOptionsByGroup.map(([group, opts]) =>
+                        opts.length ? (
+                          <optgroup key={group} label={group}>
+                            {opts.map((o) => (
+                              <option key={o.id} value={o.label}>{o.label}</option>
+                            ))}
+                          </optgroup>
+                        ) : null,
+                      )}
+                      <option value="__other__">Other (not in the list)…</option>
+                    </select>
+                  </span>
+                  {row.custom && (
+                    <span className="adm-amenity-cell" style={{ marginTop: 6 }}>
+                      <input
+                        value={row.label}
+                        placeholder="Type the amenity, e.g. Padel Court"
+                        onChange={(e) => update("label", e.target.value)}
+                      />
+                      <select value={row.group_name || "Building Amenities"} onChange={(e) => update("group_name", e.target.value)}>
+                        {AMENITY_GROUPS.map((g) => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
+                      </select>
+                    </span>
+                  )}
+                  {row.custom && (
+                    <span className="adm-field__hint">
+                      {isDeveloperAccount
+                        ? "REIFGO will be asked to add this with an icon."
+                        : "Add it to the list from Amenities to give it an icon."}
+                    </span>
+                  )}
+                </>
+              ),
+            },
           ]}
         />
 
@@ -610,6 +750,8 @@ export default function PropertyForm() {
           addLabel="+ Add place"
           rows={form.nearby_places}
           onChange={set("nearby_places")}
+          name="nearby_places"
+          errors={rowErrors("nearby_places")}
           blank={{ name: "", icon: "", travel_minutes: "", travel_mode: "drive", distance_km: "" }}
           columns={[
             { key: "name", label: "Name", placeholder: "Marina Mall", flex: 1.6 },
@@ -635,6 +777,8 @@ export default function PropertyForm() {
           addLabel="+ Add question"
           rows={form.faqs}
           onChange={set("faqs")}
+          name="faqs"
+          errors={rowErrors("faqs")}
           blank={{ question: "", answer: "" }}
           columns={[
             { key: "question", label: "Question", placeholder: "What is the payment plan?", flex: 1, minWidth: 200 },

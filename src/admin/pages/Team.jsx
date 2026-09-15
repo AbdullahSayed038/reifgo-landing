@@ -155,9 +155,10 @@ export default function Team() {
           },
           // The developer is the group band now, so it does not also need a
           // column repeating it on every row.
-          { key: "open", label: "Open", width: 70, render: (b) => b.stats.open },
+          { key: "open", sortValue: (b) => b.stats.open, label: "Open", width: 70, render: (b) => b.stats.open },
           {
             key: "overdue",
+            sortValue: (b) => b.stats.overdue,
             label: "Needs Attention",
             width: 90,
             render: (b) =>
@@ -167,11 +168,12 @@ export default function Team() {
                 <span className="use">0</span>
               ),
           },
-          { key: "resp", label: "Avg response", width: 120, render: (b) => fmtHours(b.stats.avg_response_hours) },
+          { key: "resp", sortValue: (b) => b.stats.avg_response_hours, label: "Avg response", width: 120, render: (b) => fmtHours(b.stats.avg_response_hours) },
           {
             key: "close",
+            sortValue: (b) => b.stats.close_rate,
             label: "Close rate",
-            width: 150,
+            width: 120,
             render: (b) =>
               b.stats.close_rate == null ? (
                 <span className="use">—</span>
@@ -182,7 +184,7 @@ export default function Team() {
                 </span>
               ),
           },
-          { key: "created_at", label: "Added", width: 110, render: (b) => fmtDate(b.created_at) },
+          { key: "created_at", label: "Added", width: 105, render: (b) => <span style={{ whiteSpace: "nowrap" }}>{fmtDate(b.created_at)}</span> },
           ...(canManage
             ? [
                 {
