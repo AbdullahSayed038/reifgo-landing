@@ -5,7 +5,7 @@ import DataTable from "../components/DataTable.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { useAutoRefresh } from "../useAutoRefresh.js";
-import { ESCALATION, initials, timeAgo } from "../leadUtils.js";
+import { ESCALATION, LEAD_CATEGORY, initials, leadCategory, timeAgo } from "../leadUtils.js";
 
 const TABS = [
   { key: "all", label: "All", match: () => true },
@@ -22,6 +22,7 @@ export default function Leads() {
   const [brokers, setBrokers] = useState([]);
   const [tab, setTab] = useState("all");
   const [brokerFilter, setBrokerFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   // Syed, September round: filter by developer, property and a date range.
   const [developerFilter, setDeveloperFilter] = useState("all");
   const [propertyFilter, setPropertyFilter] = useState("all");
@@ -88,6 +89,7 @@ export default function Leads() {
     return rows.filter((r) => {
       const created = new Date(r.created_at);
       return (
+        (typeFilter === "all" || leadCategory(r) === typeFilter) &&
         (brokerFilter === "all" || r.assigned_broker_id === brokerFilter) &&
         (developerFilter === "all" || r.developer_id === developerFilter) &&
         (propertyFilter === "all" || r.property_id === propertyFilter) &&
@@ -95,11 +97,12 @@ export default function Leads() {
         (!to || created <= to)
       );
     });
-  }, [rows, brokerFilter, developerFilter, propertyFilter, dateFrom, dateTo]);
+  }, [rows, typeFilter, brokerFilter, developerFilter, propertyFilter, dateFrom, dateTo]);
 
   const visible = useMemo(() => filtered.filter(activeTab.match), [filtered, activeTab]);
 
   const filtersActive =
+    typeFilter !== "all" ||
     brokerFilter !== "all" ||
     developerFilter !== "all" ||
     propertyFilter !== "all" ||
@@ -107,6 +110,7 @@ export default function Leads() {
     !!dateTo;
 
   const clearFilters = () => {
+    setTypeFilter("all");
     setBrokerFilter("all");
     setDeveloperFilter("all");
     setPropertyFilter("all");
@@ -151,6 +155,18 @@ export default function Leads() {
         onRowClick={(row) => navigate(`/admin/leads/${row.id}`)}
         toolbar={
           <div className="adm-filters">
+            <select
+              className="adm-inline-select"
+              value={typeFilter}
+              aria-label="Filter by lead type"
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="all">All lead types</option>
+              {Object.entries(LEAD_CATEGORY).map(([key, label]) => (
+                <option key={key} value={key}>{label} leads</option>
+              ))}
+            </select>
+
             {isAdmin && developerOptions.length > 1 && (
               <select
                 className="adm-inline-select"
@@ -234,6 +250,15 @@ export default function Leads() {
                 <span>{r.user?.phone}</span>
               </div>
             ),
+          },
+          {
+            key: "category",
+            label: "Type",
+            width: 100,
+            render: (r) => {
+              const c = leadCategory(r);
+              return <span className={`adm-badge adm-badge--lead-${c}`}>{LEAD_CATEGORY[c]}</span>;
+            },
           },
           {
             key: "property",

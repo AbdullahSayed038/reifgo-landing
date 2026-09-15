@@ -821,6 +821,20 @@
   background: var(--adm-danger-050);
   color: var(--adm-danger);
 }
+/* Lead type */
+.adm-badge--lead-property {
+  background: var(--adm-brand-050);
+  color: var(--adm-brand-700);
+}
+.adm-badge--lead-developer {
+  background: var(--adm-info-050);
+  color: var(--adm-info);
+}
+.adm-badge--lead-general {
+  background: var(--adm-bg);
+  color: var(--adm-muted);
+}
+
 /* Escalation */
 .adm-badge--esc-developer {
   background: var(--adm-warn-050);
@@ -864,6 +878,38 @@
   background: var(--adm-danger-050);
   color: var(--adm-danger);
   border: 1px solid rgba(179, 55, 47, 0.28);
+}
+
+/* Linked property (lead detail) */
+.adm-linked-prop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.adm-linked-prop__img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--adm-bg);
+}
+.adm-linked-prop__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.adm-linked-prop__head strong {
+  font-size: 15px;
+  color: var(--adm-ink);
+}
+.adm-linked-prop__head span {
+  font-size: 12.5px;
+  color: var(--adm-muted);
+}
+.adm-linked-prop__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* Key/value contact block */

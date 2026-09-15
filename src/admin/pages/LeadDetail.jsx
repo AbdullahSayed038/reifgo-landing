@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
+import { useCurrency } from "../currency.jsx";
 import { Link, useParams } from "react-router-dom";
 import { api, getSession } from "../api.js";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
 import {
+  APP_PROPERTY_URL,
   ESCALATION,
+  LEAD_CATEGORY,
   LIFECYCLE,
   STEP_LABEL,
   fmtDateTime,
   fmtHours,
   initials,
+  leadCategory,
   stepIndex,
   timeAgo,
 } from "../leadUtils.js";
@@ -23,6 +27,7 @@ export default function LeadDetail() {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const toast = useToast();
+  const { fmtMoney } = useCurrency();
   const session = getSession();
   const isBroker = session?.role === "broker";
   const canAssign = !isBroker && !!lead?.developer_id;
@@ -74,6 +79,8 @@ export default function LeadDetail() {
   }
 
   const idx = stepIndex(lead.status);
+  const category = leadCategory(lead);
+  const prop = lead.property;
   const esc = lead.escalation ? ESCALATION[lead.escalation] : null;
   const brokerOptions = brokers.filter((b) => b.developer_id === lead.developer_id);
 
@@ -188,14 +195,50 @@ export default function LeadDetail() {
 
         {/* Side column */}
         <div>
+          {prop && (
+            // Syed: an agent opening a lead should see which listing it is
+            // about without hunting for it.
+            <section className="adm-panel">
+              <header className="adm-panel__head"><h2>Linked property</h2></header>
+              <div className="adm-linked-prop">
+                {prop.media?.[0]?.url && (
+                  <img className="adm-linked-prop__img" src={prop.media[0].url} alt="" loading="lazy" />
+                )}
+                <div className="adm-linked-prop__head">
+                  <strong>{prop.name}</strong>
+                  <span>{[lead.developer_name, prop.location].filter(Boolean).join(" · ")}</span>
+                </div>
+                {(prop.property_type || prop.min_entry_price != null || prop.payment_plan || prop.handover || prop.status) && (
+                <dl className="adm-kv">
+                  {prop.property_type && (<><dt>Type</dt><dd>{prop.property_type}</dd></>)}
+                  {prop.min_entry_price != null && (<><dt>From</dt><dd>{fmtMoney(prop.min_entry_price)}</dd></>)}
+                  {prop.payment_plan && (<><dt>Payment plan</dt><dd>{prop.payment_plan}</dd></>)}
+                  {prop.handover && (<><dt>Handover</dt><dd>{prop.handover}</dd></>)}
+                  {prop.status && (<><dt>Status</dt><dd><StatusBadge value={prop.status} /></dd></>)}
+                </dl>
+                )}
+                <div className="adm-linked-prop__actions">
+                  <a className="adm-btn adm-btn--ghost adm-btn--sm" href={APP_PROPERTY_URL(prop.id)} target="_blank" rel="noopener noreferrer">
+                    View listing ↗
+                  </a>
+                  {!isBroker && (
+                    <Link className="adm-btn adm-btn--ghost adm-btn--sm" to={`/admin/properties/${prop.id}`}>
+                      Open in CMS
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
           <section className="adm-panel">
             <header className="adm-panel__head"><h2>Contact</h2></header>
             <dl className="adm-kv">
               <dt>Phone</dt><dd>{lead.user?.phone ?? "—"}</dd>
               <dt>Email</dt><dd>{lead.user?.email ?? "—"}</dd>
+              <dt>Lead type</dt><dd><span className={`adm-badge adm-badge--lead-${category}`}>{LEAD_CATEGORY[category]}</span></dd>
               <dt>Request</dt><dd><StatusBadge value={lead.lead_type} /></dd>
               <dt>Source</dt><dd>{lead.source === "website" ? "Website form" : "App"}</dd>
-              {lead.property?.name && (<><dt>Property</dt><dd>{lead.property.name}</dd></>)}
               {!lead.property && lead.developer_name && (<><dt>Developer</dt><dd>{lead.developer_name}</dd></>)}
               {lead.interest && (<><dt>Interest</dt><dd>{lead.interest}</dd></>)}
               <dt>Received</dt><dd>{fmtDateTime(lead.created_at)}</dd>

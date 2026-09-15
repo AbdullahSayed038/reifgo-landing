@@ -4,6 +4,7 @@ import { api } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import Modal from "../components/Modal.jsx";
 import { useToast } from "../components/Toast.jsx";
+import { fmtDate } from "../contentUtils.js";
 
 export default function DevelopersList() {
   const [rows, setRows] = useState(null);
@@ -52,6 +53,7 @@ export default function DevelopersList() {
           { key: "name", label: "Name" },
           { key: "tagline", label: "Tagline", render: (r) => r.tagline ?? "—" },
           { key: "properties", label: "Properties", render: (r) => r._count?.properties ?? 0, width: 100 },
+          { key: "created_at", label: "Created", render: (r) => fmtDate(r.created_at), width: 120 },
           {
             key: "flags",
             label: "Flags",

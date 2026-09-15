@@ -19,6 +19,24 @@ export function stepIndex(status) {
   return i === -1 ? 0 : i;
 }
 
+// What a lead is about. The server sends `category`; older payloads (the demo
+// API) are worked out the same way from what the lead is linked to.
+export const LEAD_CATEGORY = {
+  property: "Property",
+  developer: "Developer",
+  general: "General",
+};
+
+export function leadCategory(lead) {
+  if (lead?.category) return lead.category;
+  if (lead?.property_id || lead?.property) return "property";
+  if (lead?.developer_id) return "developer";
+  return "general";
+}
+
+// The public listing in the app's web build, for the Linked property panel.
+export const APP_PROPERTY_URL = (id) => `https://reifgo.expo.app/property/${id}`;
+
 export const ESCALATION = {
   developer: { label: "Escalated to you", tone: "developer" },
   reifgo: { label: "Escalated to REIFGO", tone: "reifgo" },

@@ -5,6 +5,7 @@ import StatCard from "../components/StatCard.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtHours, initials } from "../leadUtils.js";
 import BrokerDialog from "../components/BrokerDialog.jsx";
+import { fmtDate } from "../contentUtils.js";
 
 export default function Team() {
   const [brokers, setBrokers] = useState(null);
@@ -75,7 +76,7 @@ export default function Team() {
         </div>
         {canManage && (
           <button className="adm-btn adm-btn--primary" onClick={() => setEditing({})}>
-            + Add broker
+            + Add Sales Agent
           </button>
         )}
       </header>
@@ -141,6 +142,7 @@ export default function Team() {
                 </span>
               ),
           },
+          { key: "created_at", label: "Added", width: 110, render: (b) => fmtDate(b.created_at) },
           ...(canManage
             ? [
                 {
