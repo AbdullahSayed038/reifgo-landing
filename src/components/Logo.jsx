@@ -1,5 +1,5 @@
 // REIFGO logo — vectors extracted directly from Figma.
-//  - Wordmark  : node 43:2318 / 61:503 (header), 99 x 16.2875
+//  - Wordmark  : node 43:2318 / 61:503 (header), 99 x 16.2875 (+0.5 padding)
 //  - Mark      : node 43:2284 (footer), 27.8403 x 34.8564
 // Both inherit color via `currentColor`.
 
@@ -19,11 +19,14 @@ export function LogoMark({ className = "" }) {
   );
 }
 
+// Half a unit of room on every side of the viewBox: the G and O touch the
+// drawn 99 x 16.29 box, and browsers clipped their curves at the edge.
 export default function Logo({ className = "" }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 99 16.2875"
+      viewBox="-0.5 -0.5 100 17.2875"
+      overflow="visible"
       fill="currentColor"
       role="img"
       aria-label="REIFGO"

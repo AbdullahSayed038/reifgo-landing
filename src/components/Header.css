@@ -40,7 +40,9 @@
 
 .hdr__wordmark {
   display: block;
-  height: 1.018rem; /* 16.288px — Figma */
+  /* Letters stay 16.288px tall (Figma); the box is taller by the viewBox's
+     half-unit padding (17.2875 / 16.2875). */
+  height: 1.0805rem;
   width: auto;
 }
 
