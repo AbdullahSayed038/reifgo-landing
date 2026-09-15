@@ -1,6 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-14.09 0 140 140">
-  <!-- REIFGO mark, Figma node 662:744. Square viewBox so the tab icon isn't squashed. -->
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M19.97 22.8L0 35.29V58.06L74.77 101.64H111.82V76.34L19.97 22.8Z" fill="#00566D"/>
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M74.26 118.27L0 74.98V96.72L74.26 140V118.27Z" fill="#00566D"/>
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M111.82 59.41V35.29L56.4402 0L33.9902 14.04L111.82 59.41Z" fill="#00566D"/>
+  <!-- REIFGO mark. Light mode: Figma 662:744. Dark mode: Figma 662:731.
+       Square viewBox so the tab icon isn't squashed. -->
+  <style>
+    path { fill: #00566D; }
+    @media (prefers-color-scheme: dark) {
+      path { fill: #B3CACB; }
+    }
+  </style>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M19.97 22.8L0 35.29V58.06L74.77 101.64H111.82V76.34L19.97 22.8Z"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M74.26 118.27L0 74.98V96.72L74.26 140V118.27Z"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M111.82 59.41V35.29L56.4402 0L33.9902 14.04L111.82 59.41Z"/>
 </svg>
