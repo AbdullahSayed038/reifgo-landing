@@ -44,7 +44,13 @@ export default function Approvals() {
   const [reason, setReason] = useState("");
   const toast = useToast();
 
-  const load = () => api.get("/admin/approvals").then(setQueue).catch((e) => toast.error(e.message));
+  // Keeps the sidebar badge in step with the queue on this page.
+  const show = (q) => {
+    setQueue(q);
+    window.dispatchEvent(new CustomEvent("reifgo:approvals", { detail: q.total ?? 0 }));
+  };
+
+  const load = () => api.get("/admin/approvals").then(show).catch((e) => toast.error(e.message));
 
   useEffect(() => {
     load();
@@ -55,7 +61,7 @@ export default function Approvals() {
     setBusy(`${kind}:${id}`);
     try {
       const next = await api.post(`/admin/approvals/${kind}/${id}`, { decision, ...(why ? { reason: why } : {}) });
-      setQueue(next);
+      show(next);
       toast.success(decision === "approve" ? "Approved" : "Declined");
     } catch (e) {
       toast.error(e.message);

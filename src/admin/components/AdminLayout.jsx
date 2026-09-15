@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useAutoRefresh } from "../useAutoRefresh.js";
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api, can, getSession, IS_DEMO, isReifgoTier, logout, permissionTitle } from "../api.js";
 import { useCurrency } from "../currency.jsx";
@@ -46,11 +47,21 @@ export default function AdminLayout() {
   const session = getSession();
   const reifgo = isReifgoTier(session);
 
-  // The Approvals count, refreshed as REIFGO moves around the CMS.
-  useEffect(() => {
+  // The Approvals count: fetched on each page change and every 20s, and set
+  // straight away when the Approvals page approves or declines something.
+  const loadApprovals = useCallback(() => {
     if (!reifgo || IS_DEMO) return;
     api.get("/admin/approvals").then((q) => setApprovals(q.total ?? 0)).catch(() => {});
-  }, [reifgo, location.pathname]);
+  }, [reifgo]);
+  useEffect(() => {
+    loadApprovals();
+  }, [loadApprovals, location.pathname]);
+  useAutoRefresh(loadApprovals);
+  useEffect(() => {
+    const onCount = (e) => setApprovals(e.detail ?? 0);
+    window.addEventListener("reifgo:approvals", onCount);
+    return () => window.removeEventListener("reifgo:approvals", onCount);
+  }, []);
 
   if (!session) {
     return <Navigate to="/admin/login" replace />;
