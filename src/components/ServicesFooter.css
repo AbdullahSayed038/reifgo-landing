@@ -84,7 +84,7 @@
 .sftr__col-title {
   margin: 0 0 var(--sp-1);
   font-size: var(--fs-md);
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   color: var(--brand);
 }
@@ -179,4 +179,47 @@
   display: flex;
   gap: var(--sp-3);
   white-space: nowrap;
+}
+
+/* ---- Dark tone (Forum, Figma 198:713) ----
+   Teal ground, white copy. Figma draws the column titles teal on teal; they
+   use the sage label colour here so they can be read. */
+.sftr--dark {
+  background: var(--brand);
+  border-top-color: var(--line-on-dark);
+}
+.sftr--dark .sftr__logo,
+.sftr--dark .sftr__about,
+.sftr--dark .sftr__link,
+.sftr--dark .sftr__news-text,
+.sftr--dark .sftr__copy,
+.sftr--dark .sftr__send,
+.sftr--dark .sftr__social-link {
+  color: #fff;
+}
+.sftr--dark .sftr__col-title {
+  color: var(--brand-soft);
+}
+.sftr--dark .sftr__input {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.sftr--dark .sftr__input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+.sftr--dark .sftr__input:focus {
+  border-color: #fff;
+}
+.sftr--dark .sftr__social-link {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.sftr--dark .sftr__bottom {
+  border-top-color: var(--line-on-dark);
+}
+@media (hover: hover) and (pointer: fine) {
+  .sftr--dark .sftr__link:hover,
+  .sftr--dark .sftr__social-link:hover {
+    color: var(--brand-soft);
+    border-color: var(--brand-soft);
+  }
 }

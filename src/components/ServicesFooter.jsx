@@ -16,10 +16,11 @@ const SOCIAL = [
   { label: "Website", circle: true },
 ];
 
-export default function ServicesFooter() {
+// tone="dark" is the teal footer the Forum frame uses (Figma 198:713).
+export default function ServicesFooter({ tone = "light" }) {
   const [newsNotice, setNewsNotice] = useState("");
   return (
-    <footer className="sftr">
+    <footer className={`sftr${tone === "dark" ? " sftr--dark" : ""}`}>
       <div className="sftr__inner container">
         <div className="sftr__cols">
           <div className="sftr__brand">

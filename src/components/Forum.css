@@ -40,6 +40,7 @@
   font-family: var(--font-head);
   font-weight: 600;
   font-size: var(--fs-h3);
+  line-height: 1.25; /* 40px */
   color: var(--brand);
 }
 
@@ -69,7 +70,7 @@
 }
 
 .forum__item-title {
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-md);
   color: var(--brand);
   margin-bottom: var(--sp-1);
@@ -129,6 +130,7 @@
 .forum__caption-title {
   margin-top: var(--sp-1);
   font-family: var(--font-head);
+  font-weight: 600;
   font-size: var(--fs-md);
   color: #fff;
 }

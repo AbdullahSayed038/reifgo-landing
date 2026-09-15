@@ -79,6 +79,7 @@
   margin: 0 0 var(--sp-1);
   font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1.3333;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--brand);
@@ -87,6 +88,7 @@
 .ftr__link {
   font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1.3333;
   letter-spacing: 0.05em;
   color: var(--ink);
   white-space: nowrap;
@@ -123,6 +125,7 @@
   gap: var(--sp-3);
   font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1.3333;
   letter-spacing: 0.05em;
   color: var(--ink);
   white-space: nowrap;
@@ -131,6 +134,7 @@
 .ftr__cities b {
   color: var(--muted);
   font-weight: 600;
+  text-transform: uppercase; /* Figma 1:396 */
 }
 
 .ftr__cities i {

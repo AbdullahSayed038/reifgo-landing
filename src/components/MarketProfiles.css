@@ -14,9 +14,9 @@
   padding-top: 8rem; /* 128px — developer column starts lower */
 }
 
+/* No character cap: Figma sets each title on two lines across the column. */
 .mp__title {
   margin-top: var(--sp-3);
-  max-width: 14ch;
 }
 
 .mp__visual {
@@ -85,6 +85,7 @@
   font-family: var(--font-head);
   font-weight: 600;
   font-size: var(--fs-h3);
+  line-height: 1.25; /* 40px */
   color: #fff;
 }
 
@@ -113,12 +114,14 @@
   font-family: var(--font-head);
   font-weight: 800;
   font-size: var(--fs-h3);
+  line-height: 1.25;
   color: #fff;
 }
 
 .mp__stat-label {
   font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1.3333;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--brand-soft);

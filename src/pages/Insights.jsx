@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header.jsx";
-import Footer from "../components/Footer.jsx";
+// The Insights and Forum frames in Figma (198:191, 198:713) use the
+// Services footer with the newsletter column.
+import Footer from "../components/ServicesFooter.jsx";
 import { fetchCategories, fetchInsights } from "../lib/contentApi.js";
 import { initReveal } from "../lib/reveal.js";
 import useCarousel from "../lib/useCarousel.js";

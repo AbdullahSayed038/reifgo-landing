@@ -1,17 +1,17 @@
 /* =====================================================================
    REIFGO — Design tokens
-   UNIFORM SCALING MODEL: the root font-size is the only viewport-driven
-   value. It is 16px at the 1280px Figma width and scales linearly down
-   with the viewport (floored so phones stay legible). Every other token
-   below is in rem, so the entire page zooms proportionally — the layout
-   stays pixel-identical to Figma, just smaller, at every width.
-       1280px viewport -> 1rem = 16px  (exact Figma sizing)
-        640px viewport -> 1rem = 8px   (everything half-size, same layout)
-        <480px         -> held at 6px  (readable floor)
+   FLUID MODEL: 1rem is always 16px, so body copy, labels and buttons keep
+   their Figma size on every screen. Only the big things flex — side
+   padding, section spacing and headline sizes run in a straight line from
+   the phone frame (390px, Figma 107:912) to the desktop frame (1280px,
+   Figma 1:2), and stop at the desktop value on wider screens:
+       fluid(a, b) = clamp(a, a + (100vw - 390px) * (b - a) / 890, b)
+   (The page used to shrink its whole rem with the viewport, which put
+   tablets and small laptops on 10–13px text.)
    ===================================================================== */
 
 :root {
-  font-size: clamp(6px, 1.25vw, 16px);
+  font-size: 16px;
 
   /* ---- Brand palette (from Figma) ---- */
   --brand: #00556c; /* deep petrol — headings, buttons, accents */
@@ -39,10 +39,10 @@
   --font-body: "Inter", system-ui, sans-serif;
 
   /* ---- Type scale (rem = Figma px ÷ 16) ---- */
-  --fs-hero: 5rem; /* 80 */
-  --fs-h2: 3rem; /* 48 */
-  --fs-h2-sm: 2.625rem; /* 42 — About heading */
-  --fs-h3: 2rem; /* 32 */
+  --fs-hero: clamp(2.5rem, calc(2.5rem + (100vw - 24.375rem) * 0.04494), 5rem); /* 40 → 80 */
+  --fs-h2: clamp(2rem, calc(2rem + (100vw - 24.375rem) * 0.01798), 3rem); /* 32 → 48 */
+  --fs-h2-sm: clamp(2rem, calc(2rem + (100vw - 24.375rem) * 0.01124), 2.625rem); /* 32 → 42 — About heading */
+  --fs-h3: clamp(1.5rem, calc(1.5rem + (100vw - 24.375rem) * 0.00899), 2rem); /* 24 → 32 */
   --fs-h4: 1.25rem; /* 20 */
   --fs-lg: 1.125rem; /* 18 */
   --fs-md: 1rem; /* 16 */
@@ -61,11 +61,11 @@
   --sp-5: 2.5rem;
   --sp-6: 3rem;
   --sp-8: 4rem;
-  --gap: 2rem; /* 32 — grid gutter */
+  --gap: clamp(1.25rem, calc(1.25rem + (100vw - 24.375rem) * 0.01348), 2rem); /* 20 → 32 — grid gutter */
 
   /* ---- Layout rhythm ---- */
-  --page-pad: 5rem; /* 80 — section side padding */
-  --section-y: 10rem; /* 160 — section top/bottom padding */
+  --page-pad: clamp(1.5rem, calc(1.5rem + (100vw - 24.375rem) * 0.06292), 5rem); /* 24 → 80 — section side padding */
+  --section-y: clamp(6rem, calc(6rem + (100vw - 24.375rem) * 0.07191), 10rem); /* 96 → 160 — section top/bottom padding */
   --container: 70rem; /* 1120 — Figma content width */
 
   /* ---- Motion ---- */

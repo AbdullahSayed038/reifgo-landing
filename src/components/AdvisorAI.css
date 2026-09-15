@@ -28,7 +28,7 @@
 .ai__lead {
   margin-top: var(--sp-3);
   font-size: var(--fs-lg);
-  line-height: 1.62;
+  line-height: 1.5556; /* 28px */
   color: var(--brand-soft);
   max-width: 42ch;
 }
@@ -100,6 +100,7 @@
 .ai__version {
   font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1.3333;
   letter-spacing: 0.05em;
   color: var(--brand-soft);
 }
@@ -122,6 +123,7 @@
   margin: var(--sp-1) 0 0 var(--sp-1);
   font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1.3333;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--brand-soft);
@@ -138,5 +140,5 @@
   gap: var(--sp-2);
   padding: 1.1875rem 0.8125rem;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.3);
 }

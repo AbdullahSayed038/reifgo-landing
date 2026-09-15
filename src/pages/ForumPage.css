@@ -200,7 +200,7 @@
   font-family: var(--font-head);
   font-size: 1.875rem;
   line-height: 2.25rem;
-  font-weight: 300;
+  font-weight: 400; /* Figma 198:285: Manrope Regular */
   letter-spacing: 0.025em;
   color: rgba(255, 255, 255, 0.9);
 }

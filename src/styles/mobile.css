@@ -1,26 +1,12 @@
 /* =====================================================================
    REIFGO — Mobile / responsive layer
-   The base design uses a uniform "shrink everything" rem model
-   (:root font-size: clamp(6px, 1.25vw, 16px)) that keeps the desktop layout
-   pixel-proportional at every width — but on a phone that means 6px text.
-   Below 768px we switch to a fixed readable base, tighter spacing, a
-   scaled-down type scale, and single-column reflows of every multi-column
-   grid, so the same desktop content and design language works cleanly on
-   a phone. Loaded last so these rules win over component styles.
+   Sizes, padding and section spacing already flex between the phone and
+   desktop frames (see tokens.css). This layer only changes layout: below
+   768px every multi-column grid reflows to one column, the nav becomes a
+   drawer, and a few pieces tighten. Loaded last so these rules win over
+   component styles.
    ===================================================================== */
 @media (max-width: 768px) {
-  :root {
-    font-size: 16px; /* stop the vw shrink — readable base */
-    --page-pad: 1.5rem; /* 24px side padding */
-    --section-y: 4rem; /* 64px — tighter mobile sections */
-    --gap: 1.25rem;
-    /* Scaled-down type scale for phones */
-    --fs-hero: 2.5rem; /* 40 */
-    --fs-h2: 1.875rem; /* 30 */
-    --fs-h2-sm: 1.75rem; /* 28 */
-    --fs-h3: 1.5rem; /* 24 */
-  }
-
   .container {
     max-width: 100%;
   }
@@ -835,5 +821,69 @@
 @media (max-width: 480px) {
   .fm-speakers__track {
     grid-auto-columns: 86%;
+  }
+}
+
+/* =====================================================================
+   Tablet and small laptop (769–1180px), matching the Forum and Insights
+   pages' tablet range. Text stays full size here, so the 3- and 4-up rows
+   drop to two columns instead of squeezing, and the big fixed gaps ease.
+   ===================================================================== */
+@media (min-width: 769px) and (max-width: 1180px) {
+  /* ---- Home ---- */
+  .about__inner {
+    gap: 5rem;
+  }
+  .about__values,
+  .svc__grid,
+  .rsh__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ai__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4rem;
+  }
+  .mp__col--offset {
+    padding-top: 4rem;
+  }
+  .forum__grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 2.5rem;
+  }
+  .forum__media {
+    grid-column: auto;
+  }
+  .ftr__top {
+    gap: 3rem;
+  }
+  .ftr__cols {
+    gap: 2.5rem;
+  }
+
+  /* ---- Services ---- */
+  /* The 640px copy block covers most of the width here, so the fade holds
+     further across the photo to keep the text and ghost button readable. */
+  .shero {
+    padding-block: 9rem;
+  }
+  .shero__scrim {
+    background: linear-gradient(
+      to right,
+      #f9f9f9 0%,
+      rgba(249, 249, 249, 0.85) 55%,
+      rgba(249, 249, 249, 0.2) 100%
+    );
+  }
+  .eng__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* ---- Services-style footer (Services, Insights, Forum) ---- */
+  .sftr__bottom {
+    flex-wrap: wrap;
+    padding-top: 3rem;
+  }
+  .sftr__copy {
+    white-space: normal;
   }
 }

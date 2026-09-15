@@ -47,7 +47,6 @@
   color: var(--brand);
   font-size: var(--fs-md);
   line-height: 1.5;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 

@@ -28,7 +28,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding: 2.5625rem 2.5625rem 3.25rem; /* 41px, extra bottom (52px) for breathing room */
+  /* 41px, with Figma's deeper bottom (81px) so the row keeps its air when
+     the copy is short. */
+  padding: 2.5625rem 2.5625rem 5.0625rem;
   background: var(--surface);
   border: 1px solid var(--line-3);
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
@@ -50,9 +52,8 @@
   font-family: var(--font-head);
   font-weight: 800;
   font-size: var(--fs-h3);
-  line-height: 1.2;
+  line-height: 1.25; /* 40px */
   color: var(--brand);
-  max-width: 12ch;
 }
 
 .svc__card-body {

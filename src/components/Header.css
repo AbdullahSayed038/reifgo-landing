@@ -3,8 +3,10 @@
    One treatment used across every page so navigation feels continuous:
    - marketing pages (Home, Services) use `.hdr`
    - the AI-advisor app shell uses `.hdr hdr--app` (same look, static, +icons)
-   Spec extracted from Figma TopNavBar (nodes 37:2219 and 61:479):
-   80px tall · wordmark · 16px Inter nav · teal active underline · brand CTA
+   Spec from the Home frame's TopAppBar (Figma 1:405), which the Insights
+   and Forum frames share: 68px tall · wordmark · 12px Inter SemiBold nav ·
+   teal active underline · brand CTA. (The older Services/Advisor frames
+   still show a 16px nav.)
    ===================================================================== */
 .hdr {
   position: sticky;
@@ -28,7 +30,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-3);
-  min-height: 5rem; /* 80px — Figma */
+  min-height: 4.25rem; /* 68px — Figma 1:406 */
 }
 
 /* ---- Logo (wordmark vector) ---- */
@@ -55,9 +57,10 @@
 
 .hdr__link {
   font-family: var(--font-body);
-  font-weight: 400;
-  font-size: var(--fs-md); /* 16px */
-  line-height: 1.5; /* 24px */
+  font-weight: 600;
+  font-size: var(--fs-eyebrow); /* 12px */
+  line-height: 1.3333; /* 16px */
+  letter-spacing: 0.05em; /* 0.6px */
   color: var(--ink); /* #40484c */
   padding-bottom: 0.375rem; /* 6px */
   border-bottom: 2px solid transparent;
@@ -120,14 +123,15 @@
 }
 
 /* ---- CTA button ----
-   Figma: bg brand, px24 py8, 16px Inter, uppercase, 0.05em tracking, white.
-   Scoped to beat the base .btn padding regardless of CSS order. */
+   Figma 1:422: bg brand, px24 py10, 12px Inter SemiBold, uppercase, 1.2px
+   tracking, white. Scoped to beat the base .btn padding regardless of CSS
+   order. */
 .hdr .hdr__cta {
-  padding: 0.5rem 1.5rem; /* 8 / 24 */
-  font-size: var(--fs-md); /* 16px */
-  font-weight: 400;
-  line-height: 1.5;
-  letter-spacing: 0.05em;
+  padding: 0.625rem 1.5rem; /* 10 / 24 */
+  font-size: var(--fs-eyebrow); /* 12px */
+  font-weight: 600;
+  line-height: 1.3333;
+  letter-spacing: 0.1em;
   white-space: nowrap;
 }
 

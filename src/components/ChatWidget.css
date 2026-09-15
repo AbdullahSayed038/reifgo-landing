@@ -18,7 +18,9 @@
   justify-content: center;
   width: 56px;
   height: 56px;
-  border: 1px solid var(--brand);
+  /* White ring so the button still reads over the teal Forum footer and
+     other dark bands it floats across. */
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   background: var(--brand);
   color: #fff;

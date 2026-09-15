@@ -17,8 +17,9 @@
   gap: var(--sp-3);
 }
 
-.about__title {
+.about .about__title { /* beats the shared .heading line-height */
   font-size: var(--fs-h2-sm); /* 42px */
+  line-height: 1.3333; /* 56px */
   max-width: 20ch; /* fits "Architecting the Global" on line 1 like Figma (2 lines) */
 }
 
@@ -40,6 +41,7 @@
 .about__label {
   font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1.3333;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -64,8 +66,8 @@
 .about__card {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1); /* tighter words/icon spacing */
-  padding: 1.5rem; /* 24px — more compact than before (was 33px) */
+  gap: var(--sp-2); /* 16px — Figma */
+  padding: 2.0625rem; /* 33px — Figma */
   border: 1px solid var(--line);
   background: var(--surface);
   transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
@@ -80,13 +82,13 @@
 
 .about__icon {
   color: var(--brand);
-  margin-bottom: 0.25rem;
 }
 
 .about__card-title {
   font-family: var(--font-head);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.25rem;
+  line-height: 1.4; /* 28px */
   color: var(--brand);
 }
 

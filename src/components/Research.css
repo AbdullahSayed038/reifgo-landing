@@ -20,6 +20,7 @@
   font-family: var(--font-head);
   font-weight: 600;
   font-size: var(--fs-h2);
+  line-height: 1.1667; /* 56px */
   letter-spacing: -0.02em;
   color: var(--brand);
 }
@@ -80,7 +81,7 @@
 }
 
 .rsh__card-title {
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-md);
   color: var(--brand);
 }

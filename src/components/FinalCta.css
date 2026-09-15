@@ -27,6 +27,7 @@
 
 .cta .cta__title {
   font-size: var(--fs-hero);
+  font-weight: 700;
   line-height: 1.125; /* 90px on 80px */
   letter-spacing: -0.03em;
 }

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Header from "../components/Header.jsx";
-import Footer from "../components/Footer.jsx";
+// The Insights and Forum frames in Figma (198:191, 198:713) use the
+// Services footer with the newsletter column.
+import Footer from "../components/ServicesFooter.jsx";
 import { fetchSummit, requestInvitation } from "../lib/contentApi.js";
 import { initReveal } from "../lib/reveal.js";
 import SummitIcon from "../components/SummitIcon.jsx";
@@ -161,7 +163,7 @@ export default function ForumPage() {
         <main className="section container">
           <p className="fm-error">{error}</p>
         </main>
-        <Footer />
+        <Footer tone="dark" />
       </>
     );
   }
@@ -176,7 +178,7 @@ export default function ForumPage() {
           <div className="fm-loading__bar fm-loading__bar--short" />
           <SlowLoadingNote />
         </main>
-        <Footer />
+        <Footer tone="dark" />
       </>
     );
   }
@@ -613,7 +615,7 @@ export default function ForumPage() {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer tone="dark" />
     </>
   );
 }
