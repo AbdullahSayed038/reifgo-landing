@@ -22,7 +22,6 @@ import PropertiesList from "./pages/PropertiesList.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
 import Users from "./pages/Users.jsx";
 import Account from "./pages/Account.jsx";
-import Amenities from "./pages/Amenities.jsx";
 import Approvals from "./pages/Approvals.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
@@ -71,7 +70,7 @@ export default function AdminApp() {
             <Route path="company" element={<NeedsPermission permission="edit_company"><DeveloperForm selfMode /></NeedsPermission>} />
             <Route path="account" element={<Account />} />
             <Route path="approvals" element={<AdminOnly><Approvals /></AdminOnly>} />
-            <Route path="amenities" element={<AdminOnly><Amenities /></AdminOnly>} />
+            <Route path="amenities" element={<Navigate to="/admin/developers" replace />} />
             <Route path="staff" element={<AdminOnly><Staff /></AdminOnly>} />
             {/* Events are REIFGO's own, not a developer tool (September round). */}
             <Route path="events" element={<ReifgoOnly><EventsList /></ReifgoOnly>} />

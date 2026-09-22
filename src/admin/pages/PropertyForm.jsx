@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, getSession, isReifgoTier, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import RowListEditor from "../components/RowListEditor.jsx";
-import { IconPreview } from "../components/IconPicker.jsx";
+import IconPicker, { IconPreview } from "../components/IconPicker.jsx";
+import Modal from "../components/Modal.jsx";
 import { mapServerErrors, summarise, validateProperty } from "../propertyValidation.js";
 
 // Shown for an "Other" amenity until REIFGO adds it to the list with an icon.
@@ -49,7 +50,12 @@ const str = (v) => (v === "" || v == null ? undefined : v);
 export default function PropertyForm() {
   const { id } = useParams();
   const isNew = !id;
-  const [form, setForm] = useState(EMPTY);
+  // Opened from a developer's Properties tab: ?developer=<id>.
+  const [search] = useSearchParams();
+  const fromDeveloper = search.get("developer");
+  const [form, setForm] = useState(() => ({ ...EMPTY, developer_id: fromDeveloper ?? "" }));
+  // REIFGO adds or re-icons an amenity right from the picker (no separate page).
+  const [amenityEdit, setAmenityEdit] = useState(null); // { rowIndex, id?, label, group_name, icon }
   const [developers, setDevelopers] = useState([]);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
@@ -345,7 +351,7 @@ export default function PropertyForm() {
             : "Property saved",
         );
       }
-      navigate("/admin/properties");
+      navigate(backTo);
     } catch (err) {
       const mapped = mapServerErrors(err.message, err.details);
       const lines = summarise(mapped);
@@ -362,6 +368,37 @@ export default function PropertyForm() {
     }
   };
 
+  // Where "Cancel", the breadcrumb and saving go back to.
+  const backTo = isDeveloperAccount
+    ? "/admin/properties"
+    : form.developer_id
+      ? `/admin/developers/${form.developer_id}?tab=properties`
+      : "/admin/developers";
+  const developerName = (developers.find((d) => d.id === form.developer_id)?.name ?? "").replace(/\s+/g, " ");
+  const rowIndexOf = (row) => form.amenities.indexOf(row);
+
+  const saveAmenity = async () => {
+    const a = amenityEdit;
+    if (!a.label.trim()) return toast.error("Give the amenity a name");
+    if (!a.icon) return toast.error("Pick an icon");
+    try {
+      const body = { label: a.label.trim(), icon: a.icon, group_name: a.group_name };
+      const saved = a.id ? await api.patch(`/admin/amenities/${a.id}`, body) : await api.post("/admin/amenities", body);
+      const options = await api.get("/admin/amenities");
+      setAmenityOptions(options);
+      setForm((f) => ({
+        ...f,
+        amenities: f.amenities.map((row, i) =>
+          i === a.rowIndex ? { ...row, custom: false, label: saved.label, icon: saved.icon, group_name: saved.group_name } : row,
+        ),
+      }));
+      toast.success(a.id ? "Amenity updated for every listing that uses it" : `${saved.label} added to the amenity list`);
+      setAmenityEdit(null);
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
+
   const amenityOptionsByGroup = AMENITY_GROUPS.concat(
     [...new Set(amenityOptions.map((o) => o.group_name))].filter((g) => !AMENITY_GROUPS.includes(g)),
   ).map((group) => [group, amenityOptions.filter((o) => o.group_name === group)]);
@@ -371,11 +408,19 @@ export default function PropertyForm() {
       <header className="adm-page-head">
         <div>
           <nav className="adm-crumbs">
-            <Link to="/admin/properties">Properties</Link>
+            {isDeveloperAccount ? (
+              <Link to="/admin/properties">Properties</Link>
+            ) : (
+              <>
+                <Link to="/admin/developers">Developers</Link>
+                <span>/</span>
+                <Link to={backTo}>{developerName || "Developer"}</Link>
+              </>
+            )}
             <span>/</span>
-            <span>{isNew ? "New" : form.name || "Edit"}</span>
+            <span>{isNew ? "New listing" : form.name || "Edit"}</span>
           </nav>
-          <h1>{isNew ? "New property" : form.name || "Edit property"}</h1>
+          <h1>{isNew ? "New listing" : form.name || "Edit listing"}</h1>
         </div>
       </header>
 
@@ -730,12 +775,33 @@ export default function PropertyForm() {
                       </select>
                     </span>
                   )}
-                  {row.custom && (
-                    <span className="adm-field__hint">
-                      {isDeveloperAccount
-                        ? "REIFGO will be asked to add this with an icon."
-                        : "Add it to the list from Amenities to give it an icon."}
-                    </span>
+                  {row.custom && isDeveloperAccount && (
+                    <span className="adm-field__hint">REIFGO will be asked to add this with an icon.</span>
+                  )}
+                  {/* REIFGO manages the amenity list right here. */}
+                  {!isDeveloperAccount && row.custom && (
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn--ghost adm-btn--sm"
+                      style={{ marginTop: 6, alignSelf: "flex-start" }}
+                      disabled={!row.label.trim()}
+                      onClick={() => setAmenityEdit({ rowIndex: rowIndexOf(row), label: row.label.trim(), group_name: row.group_name || "Building Amenities", icon: "" })}
+                    >
+                      + Add "{row.label.trim() || "…"}" to the list with an icon
+                    </button>
+                  )}
+                  {!isDeveloperAccount && !row.custom && row.label && (
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn--ghost adm-btn--sm"
+                      style={{ marginTop: 6, alignSelf: "flex-start" }}
+                      onClick={() => {
+                        const o = amenityOptions.find((x) => x.label === row.label);
+                        if (o) setAmenityEdit({ rowIndex: rowIndexOf(row), id: o.id, label: o.label, group_name: o.group_name, icon: o.icon });
+                      }}
+                    >
+                      Change icon or name
+                    </button>
                   )}
                 </>
               ),
@@ -787,12 +853,43 @@ export default function PropertyForm() {
         />
 
         <footer className="adm-form-actions">
-          <Link className="adm-btn adm-btn--ghost" to="/admin/properties">Cancel</Link>
+          <Link className="adm-btn adm-btn--ghost" to={backTo}>Cancel</Link>
           <button className="adm-btn adm-btn--primary" disabled={busy}>
             {busy ? "Saving…" : isNew ? "Create property" : "Save changes"}
           </button>
         </footer>
       </form>
+      {amenityEdit && (
+        <Modal
+          title={amenityEdit.id ? `Edit ${amenityEdit.label}` : "Add to the amenity list"}
+          onClose={() => setAmenityEdit(null)}
+          footer={
+            <>
+              <button className="adm-btn adm-btn--ghost" onClick={() => setAmenityEdit(null)}>Cancel</button>
+              <button className="adm-btn adm-btn--primary" onClick={saveAmenity}>
+                {amenityEdit.id ? "Save for every listing" : "Add amenity"}
+              </button>
+            </>
+          }
+        >
+          <p className="adm-tl__meta" style={{ marginBottom: 12 }}>
+            {amenityEdit.id
+              ? "Changes here apply to every listing that has this amenity."
+              : "It joins the list every developer picks from."}
+          </p>
+          <div className="adm-form-grid">
+            <FormField label="Name" value={amenityEdit.label} onChange={(v) => setAmenityEdit((x) => ({ ...x, label: v }))} />
+            <FormField
+              label="Group"
+              type="select"
+              value={amenityEdit.group_name}
+              onChange={(v) => setAmenityEdit((x) => ({ ...x, group_name: v }))}
+              options={AMENITY_GROUPS.map((g) => ({ value: g, label: g }))}
+            />
+            <IconPicker value={amenityEdit.icon} onChange={(v) => setAmenityEdit((x) => ({ ...x, icon: v }))} />
+          </div>
+        </Modal>
+      )}
     </>
   );
 }

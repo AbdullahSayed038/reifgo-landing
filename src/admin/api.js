@@ -64,6 +64,24 @@ export function permissionTitle(permissions = []) {
   return "Custom access";
 }
 
+/** A main REIFGO admin (not a regional one): can change people's emails. */
+export function isReifgoAdmin(session = getSession()) {
+  return ["admin", "reifgo_admin"].includes(session?.role);
+}
+
+/** "+971 50 123 4567" -> "+971 50 ••• ••67" for lists; the full number shows once a lead is opened. */
+export function maskPhone(phone) {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 6) return "•••";
+  const keepStart = phone.trim().startsWith("+") ? Math.min(5, digits.length - 4) : 3;
+  let seen = 0;
+  return phone.replace(/\d/g, (d) => {
+    seen += 1;
+    return seen <= keepStart || seen > digits.length - 2 ? d : "•";
+  });
+}
+
 export function getToken() {
   return getSession()?.token ?? null;
 }

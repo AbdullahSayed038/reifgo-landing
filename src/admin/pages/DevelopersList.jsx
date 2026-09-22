@@ -36,7 +36,7 @@ export default function DevelopersList() {
       <header className="adm-page-head">
         <div>
           <h1>Developers</h1>
-          <p>Development companies featured in the app.</p>
+          <p>Development companies in the app. Open one to see its profile, listings and sales team.</p>
         </div>
         <Link className="adm-btn adm-btn--primary" to="/admin/developers/new">
           + New developer
@@ -51,8 +51,9 @@ export default function DevelopersList() {
         onRowClick={(row) => navigate(`/admin/developers/${row.id}`)}
         columns={[
           { key: "name", label: "Name" },
-          { key: "tagline", label: "Tagline", render: (r) => r.tagline ?? "—" },
-          { key: "properties", sortValue: (r) => r._count?.properties ?? 0, label: "Properties", render: (r) => r._count?.properties ?? 0, width: 100 },
+          { key: "sales_manager", label: "Sales Manager", sortValue: (r) => r.sales_manager?.name, render: (r) => r.sales_manager?.name ?? <span className="adm-muted">Not set</span> },
+          { key: "properties", sortValue: (r) => r._count?.properties ?? 0, label: "Listings", render: (r) => r._count?.properties ?? 0, width: 90 },
+          { key: "team", sortValue: (r) => r._count?.brokers ?? 0, label: "Team", render: (r) => r._count?.brokers ?? 0, width: 80 },
           { key: "created_at", label: "Created", render: (r) => fmtDate(r.created_at), width: 120 },
           {
             key: "flags",

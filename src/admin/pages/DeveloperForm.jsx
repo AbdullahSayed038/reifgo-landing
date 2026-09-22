@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, getSession, isReifgoTier, uploadImage } from "../api.js";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { DeveloperListings, DeveloperTeam } from "../components/DeveloperTabs.jsx";
+import { api, getSession, isReifgoAdmin, isReifgoTier, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 
@@ -33,6 +34,12 @@ export default function DeveloperForm({ selfMode = false }) {
   const canModerate = isReifgoTier(session);
   const [form, setForm] = useState(EMPTY);
   const [meta, setMeta] = useState(null);
+  // REIFGO sees a developer's listings and sales team as tabs on its page
+  // (Syed, Sept 22), instead of a separate Properties page.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get("tab") ?? "profile";
+  const showTabs = !isNew && !selfMode;
+  const [devRow, setDevRow] = useState(null);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
@@ -42,6 +49,7 @@ export default function DeveloperForm({ selfMode = false }) {
     api
       .get(`/admin/developers/${id}`)
       .then((d) => {
+        setDevRow(d);
         setMeta({ email: d.email, pending_logo_url: d.pending_logo_url, logo_url: d.logo_url, created_at: d.created_at });
         return d;
       })
@@ -127,7 +135,7 @@ export default function DeveloperForm({ selfMode = false }) {
       hero_image_url: str(form.hero_image_url),
       logo_url: str(form.logo_url),
       // The sign-in email is set once, by REIFGO; the password only by REIFGO.
-      ...(canModerate && (isNew || !meta?.email) && form.email.trim() ? { email: form.email.trim() } : {}),
+      ...(canModerate && (isNew || !meta?.email || isReifgoAdmin(session)) && form.email.trim() ? { email: form.email.trim() } : {}),
       ...(canModerate && form.password ? { password: form.password } : {}),
       ...(canModerate && {
         is_verified: form.is_verified,
@@ -192,6 +200,31 @@ export default function DeveloperForm({ selfMode = false }) {
         </div>
       </header>
 
+      {showTabs && (
+        <div className="adm-tabs">
+          {[
+            ["profile", "Profile"],
+            ["properties", `Listings${devRow?._count?.properties != null ? ` (${devRow._count.properties})` : ""}`],
+            ["team", `Sales team${devRow?._count?.brokers != null ? ` (${devRow._count.brokers})` : ""}`],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              className={`adm-tab${tab === key ? " is-active" : ""}`}
+              onClick={() => setSearchParams(key === "profile" ? {} : { tab: key }, { replace: true })}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {showTabs && tab === "properties" && <DeveloperListings developerId={id} />}
+      {showTabs && tab === "team" && devRow && (
+        <DeveloperTeam developer={devRow} onDeveloperChange={(d) => setDevRow(d)} />
+      )}
+
+      {(!showTabs || tab === "profile") && (
       <form className="adm-form" onSubmit={submit}>
         <section className="adm-panel">
           <header className="adm-panel__head"><h2>Details</h2></header>
@@ -264,12 +297,14 @@ export default function DeveloperForm({ selfMode = false }) {
               )}
             </div>
             {canModerate && !isNew && (
-              meta?.email ? (
+              meta?.email && !isReifgoAdmin(session) ? (
                 <label className="adm-field">
                   <span className="adm-field__label">Sign-in email</span>
                   <input value={meta.email} disabled readOnly />
-                  <span className="adm-field__hint">Used to sign in and for Forgot password. It can't be changed.</span>
+                  <span className="adm-field__hint">Used to sign in and for Forgot password. Only a REIFGO admin can change it.</span>
                 </label>
+              ) : meta?.email ? (
+                <FormField label="Sign-in email" value={form.email} onChange={set("email")} hint="Used to sign in and for Forgot password. The developer can't change it themselves." />
               ) : (
                 <FormField label="Sign-in email" value={form.email} onChange={set("email")} hint="Set once. Used to sign in and for Forgot password." />
               )
@@ -331,6 +366,7 @@ export default function DeveloperForm({ selfMode = false }) {
           </button>
         </footer>
       </form>
+      )}
     </>
   );
 }

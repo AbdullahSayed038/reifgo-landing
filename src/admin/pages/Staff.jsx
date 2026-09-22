@@ -19,6 +19,10 @@ export default function Staff() {
   const toast = useToast();
   const session = getSession();
   const canManage = session?.role === "admin" || session?.role === "reifgo_admin";
+  const [mine, setMine] = useState(null);
+  useEffect(() => {
+    api.get("/admin/me").then((m) => setMine(m.email ?? null)).catch(() => {});
+  }, []);
 
   const load = () => api.get("/admin/accounts").then(setRows).catch((e) => toast.error(e.message));
   useEffect(() => {
@@ -42,7 +46,8 @@ export default function Staff() {
       name: form.name.trim(),
       role: form.role,
       ...(form.role === "regional_admin" ? { region: form.region.trim() } : {}),
-      ...(isNew ? { email: form.email.trim() } : {}),
+      // A REIFGO admin can change someone else's email, never their own.
+      ...(isNew || editing.email !== mine ? { email: form.email.trim() } : {}),
       ...(form.password ? { password: form.password } : {}),
     };
     try {
@@ -135,11 +140,11 @@ export default function Staff() {
         >
           <div className="adm-form-grid">
             <FormField label="Name" required value={form.name} onChange={set("name")} span={2} />
-            {editing.id ? (
+            {editing.id && editing.email === mine ? (
               <label className="adm-field adm-field--span2">
                 <span className="adm-field__label">Email</span>
                 <input value={form.email} disabled readOnly />
-                <span className="adm-field__hint">Email addresses can't be changed.</span>
+                <span className="adm-field__hint">You can't change your own email. Another REIFGO admin can.</span>
               </label>
             ) : (
               <FormField label="Email" required value={form.email} onChange={set("email")} span={2} />

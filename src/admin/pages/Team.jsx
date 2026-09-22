@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, can, getSession, isReifgoTier, permissionTitle } from "../api.js";
 import DistributionPanel from "../components/DistributionPanel.jsx";
+import SalesManagerPicker from "../components/SalesManagerPicker.jsx";
 import DataTable from "../components/DataTable.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -20,6 +21,13 @@ export default function Team() {
   const canManage = can("manage_team");
   const canDistribute = can("assign_leads");
   const [distDeveloper, setDistDeveloper] = useState("");
+  // A developer's own team page shows who their Sales Manager is.
+  const [myDeveloper, setMyDeveloper] = useState(null);
+  useEffect(() => {
+    if (isAdmin || !session?.developer_id) return;
+    api.get(`/admin/developers/${session.developer_id}`).then(setMyDeveloper).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const reload = () =>
     api.get("/admin/brokers").then(setBrokers).catch((e) => toast.error(e.message));
@@ -74,10 +82,10 @@ export default function Team() {
     <>
       <header className="adm-page-head">
         <div>
-          <h1>Team</h1>
+          <h1>{isAdmin ? "Sales Teams" : "Team"}</h1>
           <p>
             {isAdmin
-              ? "Every developer's team accounts and how they're performing."
+              ? "Developers' sales staff (Sales Managers and Sales Agents) who log in to the CMS to work leads. People who use the app are under App Users."
               : "Your team accounts and how they're performing. New accounts can sign in once REIFGO approves them."}
           </p>
         </div>
@@ -94,6 +102,10 @@ export default function Team() {
         <StatCard label="Needs Attention" value={totals.overdue} />
         <StatCard label="Team close rate" value={teamCloseRate == null ? "—" : `${teamCloseRate}%`} />
       </div>
+
+      {!isAdmin && myDeveloper && (
+        <SalesManagerPicker developer={myDeveloper} team={brokers} onChanged={setMyDeveloper} />
+      )}
 
       {canDistribute && (
         <>

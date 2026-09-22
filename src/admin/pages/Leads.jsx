@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, can, getSession, isReifgoTier } from "../api.js";
+import { api, can, getSession, isReifgoTier, maskPhone } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
+import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { useAutoRefresh } from "../useAutoRefresh.js";
-import { ESCALATION, LEAD_CATEGORY, initials, leadCategory, timeAgo } from "../leadUtils.js";
+import { ESCALATION, LEAD_CATEGORY, fmtHours, initials, leadCategory, timeAgo } from "../leadUtils.js";
 
 const TABS = [
   { key: "all", label: "All", match: () => true },
@@ -133,6 +134,27 @@ export default function Leads() {
         </div>
       </header>
 
+      {/* Syed: the Leads page gets its own numbers, like Sales Teams. They
+          follow the filters below. */}
+      {rows && (() => {
+        const won = filtered.filter((r) => r.status === "closed_won").length;
+        const closed = filtered.filter((r) => r.status?.startsWith("closed")).length;
+        const resp = filtered.map((r) => r.response_hours).filter((h) => h != null);
+        const avg = resp.length ? resp.reduce((a, b) => a + b, 0) / resp.length : null;
+        const unassigned = filtered.filter((r) => !r.assigned_broker_id && !r.status?.startsWith("closed")).length;
+        const attention = filtered.filter((r) => r.escalation).length;
+        return (
+          <div className="adm-stat-grid adm-stat-grid--6">
+            <StatCard label="Total leads" value={filtered.length} onClick={() => setTab("all")} />
+            <StatCard label="New / unassigned" value={unassigned} accent={unassigned > 0} onClick={() => setTab("new")} />
+            <StatCard label="Needs attention" value={attention} accent={attention > 0} onClick={() => setTab("overdue")} />
+            <StatCard label="In progress" value={filtered.filter((r) => ["assigned", "contacted", "qualified"].includes(r.status)).length} />
+            <StatCard label="Won" value={won} onClick={() => setTab("closed")} />
+            <StatCard label="Avg response" value={avg == null ? "—" : fmtHours(avg)} hint={closed ? `Close rate ${Math.round((won / closed) * 100)}%` : undefined} />
+          </div>
+        );
+      })()}
+
       <div className="adm-tabs">
         {TABS.map((t) => (
           <button
@@ -250,7 +272,8 @@ export default function Leads() {
             render: (r) => (
               <div className="adm-cell-stack">
                 <strong>{r.user?.full_name || "Unnamed"}</strong>
-                <span>{r.user?.phone}</span>
+                {/* Masked in the list; the full number is on the lead's own page. */}
+                <span>{maskPhone(r.user?.phone)}</span>
               </div>
             ),
           },

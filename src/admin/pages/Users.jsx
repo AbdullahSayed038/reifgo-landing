@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api.js";
+import { api, maskPhone } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -21,8 +21,11 @@ export default function Users() {
     <>
       <header className="adm-page-head">
         <div>
-          <h1>Users</h1>
-          <p>People registered in the REIFGO app. Read-only.</p>
+          <h1>App Users</h1>
+          <p>
+            Investors who signed up in the REIFGO app. Not staff: developers' sales staff are under
+            Sales Teams, REIFGO's own staff under REIFGO Team. Read-only.
+          </p>
         </div>
       </header>
 
@@ -43,7 +46,8 @@ export default function Users() {
               </div>
             ),
           },
-          { key: "phone", label: "Phone" },
+          // Masked in the list; click a row to see the full number.
+          { key: "phone", label: "Phone", render: (r) => (expanded === r.id ? r.phone : maskPhone(r.phone)) },
           { key: "city", label: "City", render: (r) => r.city ?? "—" },
           { key: "tier", label: "Tier", render: (r) => <StatusBadge value={r.tier} />, width: 110 },
           { key: "leads", sortValue: (r) => r._count?.leads ?? 0, label: "Leads", render: (r) => r._count?.leads ?? 0, width: 70 },

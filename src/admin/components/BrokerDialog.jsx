@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, getSession, isReifgoTier, PERMISSION_PRESETS, PERMISSIONS } from "../api.js";
+import { api, getSession, isReifgoAdmin, isReifgoTier, PERMISSION_PRESETS, PERMISSIONS } from "../api.js";
 import { str } from "../contentUtils.js";
 import FormField from "./FormField.jsx";
 import { useToast } from "./Toast.jsx";
@@ -73,11 +73,13 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
 
     const payload = {
       name: form.name.trim(),
-      ...(isNew ? { email: form.email.trim() } : {}),
+      ...(isNew || isReifgoAdmin(session) ? { email: form.email.trim() } : {}),
       phone: str(form.phone),
       position: str(form.position),
       permissions: form.permissions,
-      ...(isAdmin && isNew && form.developer_id ? { developer_id: form.developer_id } : {}),
+      // REIFGO picks the developer (or it's preset from the developer's page);
+      // for a developer's own team the server uses their company regardless.
+      ...(isNew && form.developer_id ? { developer_id: form.developer_id } : {}),
       ...(form.password ? { password: form.password } : {}),
     };
 
@@ -121,13 +123,19 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
               </p>
             )}
             <FormField label="Name" required value={form.name} onChange={set("name")} />
-            {isNew ? (
-              <FormField label="Email" required value={form.email} onChange={set("email")} hint="Their sign-in address. It can't be changed later." />
+            {isNew || isReifgoAdmin(session) ? (
+              <FormField
+                label="Email"
+                required
+                value={form.email}
+                onChange={set("email")}
+                hint={isNew ? "Their sign-in address. Only REIFGO can change it later." : "Their sign-in address. Only REIFGO admins can change it."}
+              />
             ) : (
               <label className="adm-field">
                 <span className="adm-field__label">Email</span>
                 <input value={form.email} disabled readOnly />
-                <span className="adm-field__hint">Email addresses can't be changed.</span>
+                <span className="adm-field__hint">Only REIFGO can change an email address.</span>
               </label>
             )}
             <FormField label="Contact number" value={form.phone} onChange={set("phone")} />

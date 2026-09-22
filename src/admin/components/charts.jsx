@@ -39,7 +39,14 @@ export function DonutChart({ data, centerLabel }) {
   return (
     <div className="adm-chart-donut">
       <svg viewBox="0 0 140 140" role="img" aria-label={centerLabel}>
-        {segments.map((s) => (
+        {segments.map((s) =>
+          // One status holding everything is a full ring: an arc that starts
+          // and ends on the same point draws nothing but its rounded cap.
+          s.sweep >= 359.9 ? (
+            <circle key={s.label} cx="70" cy="70" r={R} fill="none" stroke={s.color} strokeWidth={STROKE}>
+              <title>{`${s.label}: ${s.value}`}</title>
+            </circle>
+          ) : (
           <path
             key={s.label}
             d={arc(s.start, s.sweep)}
@@ -50,7 +57,8 @@ export function DonutChart({ data, centerLabel }) {
           >
             <title>{`${s.label}: ${s.value}`}</title>
           </path>
-        ))}
+          ),
+        )}
         {total === 0 && (
           <circle cx="70" cy="70" r={R} fill="none" stroke="#e3e8ea" strokeWidth={STROKE} />
         )}

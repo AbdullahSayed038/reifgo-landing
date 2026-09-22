@@ -6,15 +6,15 @@ import { useCurrency } from "../currency.jsx";
 
 const ADMIN_NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
-  { to: "/admin/properties", label: "Properties", icon: "◨" },
-  { to: "/admin/amenities", label: "Amenities", icon: "✦" },
-  { to: "/admin/developers", label: "Developers", icon: "◈" },
+  // Listings live inside each developer's page (Syed, Sept 22).
+  { to: "/admin/developers", label: "Developers & Listings", icon: "◈" },
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },
   { to: "/admin/summit", label: "Forum", icon: "◫" },
   { to: "/admin/leads", label: "Leads", icon: "◎" },
-  { to: "/admin/team", label: "Team", icon: "◍" },
-  { to: "/admin/users", label: "Users", icon: "◉" },
+  // Syed asked what the difference was: developers' sales staff vs people in the app.
+  { to: "/admin/team", label: "Sales Teams", icon: "◍" },
+  { to: "/admin/users", label: "App Users", icon: "◉" },
   { to: "/admin/approvals", label: "Approvals", icon: "✓", badge: "approvals" },
   { to: "/admin/staff", label: "REIFGO Team", icon: "◇" },
 ];

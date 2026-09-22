@@ -2695,3 +2695,171 @@
   opacity: 0.45;
   cursor: default;
 }
+
+/* Approvals: open-to-view and the edit diff */
+.adm-review--link {
+  cursor: pointer;
+  border-radius: 8px;
+  padding-left: 6px;
+  padding-right: 6px;
+  margin: 0 -6px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .adm-review--link:hover {
+    background: var(--adm-brand-050);
+  }
+}
+.adm-modal:has(.adm-approval-view) {
+  width: min(920px, 96vw);
+  max-width: 96vw;
+}
+.adm-approval-view {
+  max-height: 68vh;
+  overflow-y: auto;
+}
+.adm-muted {
+  color: var(--adm-muted);
+}
+.adm-kv--left dd {
+  text-align: left;
+}
+.adm-diff {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.adm-diff th,
+.adm-diff td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--adm-line);
+  vertical-align: top;
+  text-align: left;
+}
+.adm-diff thead th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--adm-muted);
+}
+.adm-diff tbody th {
+  width: 170px;
+  color: var(--adm-muted);
+  font-weight: 600;
+}
+.adm-diff tr.is-changed {
+  background: #fff6dc;
+}
+.adm-diff tr.is-changed td:last-child {
+  background: #ffe9a8;
+  font-weight: 600;
+}
+.adm-diff-flag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--adm-warn);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.adm-root .adm-diff-list {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+.adm-diff-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-diff-thumbs img {
+  width: 72px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.adm-diff-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-diff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid var(--adm-line);
+  border-radius: 999px;
+  background: #fff;
+}
+.adm-diff-chip .adm-icon-preview {
+  width: 16px;
+  height: 16px;
+}
+.adm-logo-compare--lg {
+  gap: 18px;
+  font-size: 22px;
+}
+.adm-logo-compare--lg figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--adm-muted);
+}
+.adm-logo-compare--lg img {
+  width: 220px;
+  height: 110px;
+}
+.adm-logo-compare--lg figure.is-changed img {
+  border-color: var(--adm-warn);
+  box-shadow: 0 0 0 3px #ffe9a8;
+}
+
+button.adm-stat {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--adm-line);
+}
+.adm-stat__hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--adm-muted);
+}
+
+/* Dashboard / Leads stat rows: even columns so no card is left on its own. */
+.adm-stat-grid--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.adm-stat-grid--6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.adm-chart-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 1100px) {
+  .adm-stat-grid--6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  .adm-stat-grid--4,
+  .adm-stat-grid--6,
+  .adm-chart-grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .adm-chart-grid--2 {
+    grid-template-columns: 1fr;
+  }
+}
+.adm-stat-grid + .adm-stat-grid {
+  margin-top: -12px;
+}
