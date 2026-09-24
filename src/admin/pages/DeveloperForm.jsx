@@ -7,6 +7,7 @@ import { IconSelect } from "../components/IconPicker.jsx";
 import Switch from "../components/Switch.jsx";
 import Presence from "../components/Presence.jsx";
 import { REGIONS } from "../regions.js";
+import { COUNTRIES, countryName } from "../countries.js";
 import { credentialErrors, emailIsChanging } from "../credentials.js";
 import { useToast } from "../components/Toast.jsx";
 
@@ -25,6 +26,7 @@ const EMPTY = {
   is_verified: false,
   is_approved: false,
   region: "",
+  countries: [],
   account_manager_id: "",
   values: [],
 };
@@ -87,6 +89,7 @@ export default function DeveloperForm({ selfMode = false }) {
           is_verified: d.is_verified,
           is_approved: d.is_approved,
           region: d.region ?? "",
+          countries: d.countries ?? [],
           account_manager_id: d.account_manager?.id ?? "",
           values: (d.values ?? []).map((v) => ({
             icon: v.icon ?? "",
@@ -184,6 +187,7 @@ export default function DeveloperForm({ selfMode = false }) {
       ...(canModerate && {
         is_verified: form.is_verified,
         is_approved: form.is_approved,
+        countries: form.countries,
       }),
       // Region and account manager are the main admins' call.
       ...(mainAdmin && !selfMode && {
@@ -428,6 +432,20 @@ export default function DeveloperForm({ selfMode = false }) {
           </div>
         </section>
 
+        {selfMode && form.countries.length > 0 && (
+          <section className="adm-panel">
+            <header className="adm-panel__head">
+              <div>
+                <h2>Countries you build in</h2>
+                <p className="adm-panel__note">Your listings can be in these countries, priced in each country's currency. Ask REIFGO to add another.</p>
+              </div>
+            </header>
+            <div className="adm-country-chips adm-panel__pad">
+              {form.countries.map((c) => <span key={c} className="adm-chip-btn">{countryName(c)}</span>)}
+            </div>
+          </section>
+        )}
+
         {canModerate && !selfMode && (
           <section className="adm-panel">
             <header className="adm-panel__head">
@@ -474,6 +492,13 @@ export default function DeveloperForm({ selfMode = false }) {
                   </label>
                 </>
               )}
+              <div className="adm-field adm-field--span2">
+                <span className="adm-field__label">Countries they build in</span>
+                <CountryPicker value={form.countries} onChange={set("countries")} />
+                <span className="adm-field__hint">
+                  Their listings can only be in these countries, and each listing is priced in its country's currency. Leave empty to allow any country.
+                </span>
+              </div>
               {!isNew && (
                 <label className="adm-field">
                   <span className="adm-field__label">Company login</span>
@@ -524,5 +549,36 @@ export default function DeveloperForm({ selfMode = false }) {
       </form>
       )}
     </>
+  );
+}
+
+/** Chosen countries as chips, plus a dropdown to add one. */
+function CountryPicker({ value, onChange }) {
+  const left = COUNTRIES.filter((c) => !value.includes(c.code));
+  return (
+    <div className="adm-country-chips">
+      {value.map((code) => (
+        <button
+          key={code}
+          type="button"
+          className="adm-chip-btn is-active"
+          aria-label={`Remove ${countryName(code)}`}
+          onClick={() => onChange(value.filter((c) => c !== code))}
+        >
+          {countryName(code)} <span aria-hidden="true">✕</span>
+        </button>
+      ))}
+      <select
+        className="adm-inline-select"
+        value=""
+        aria-label="Add a country"
+        onChange={(e) => e.target.value && onChange([...value, e.target.value])}
+      >
+        <option value="">{value.length ? "+ Add a country" : "Any country (add one to limit)"}</option>
+        {left.map((c) => (
+          <option key={c.code} value={c.code}>{c.name} ({c.currency})</option>
+        ))}
+      </select>
+    </div>
   );
 }

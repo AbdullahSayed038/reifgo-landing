@@ -4,6 +4,9 @@
 export const FIELD_LABEL = {
   name: "Name",
   developer_id: "Developer",
+  country: "Country",
+  city: "City",
+  district: "Area",
   location: "Location",
   asset_class: "Asset class",
   payment_plan: "Payment plan",
@@ -49,6 +52,7 @@ export function validateProperty(form, { needsDeveloper }) {
 
   if (blank(form.name)) fields.name = "Give the listing a name";
   if (needsDeveloper && blank(form.developer_id)) fields.developer_id = "Pick the developer";
+  if (blank(form.country)) fields.country = "Choose the country";
 
   const nonNegative = (key, label) => {
     if (blank(form[key])) return;

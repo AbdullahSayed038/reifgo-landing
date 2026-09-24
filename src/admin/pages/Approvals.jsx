@@ -7,6 +7,7 @@ import Modal from "../components/Modal.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtDate } from "../contentUtils.js";
 import { useCurrency } from "../currency.jsx";
+import { countryName, currencyFor } from "../countries.js";
 import { APP_PROPERTY_URL, timeAgo } from "../leadUtils.js";
 
 const SECTIONS = [
@@ -22,7 +23,10 @@ const SECTIONS = [
 const LISTING_FIELDS = [
   ["name", "Name"],
   ["status", "Status"],
-  ["location", "Location"],
+  ["country", "Country"],
+  ["city", "City"],
+  ["district", "Area"],
+  ["location", "Location line"],
   ["asset_class", "Asset class"],
   ["property_type", "Property type"],
   ["ownership_type", "Ownership"],
@@ -66,7 +70,7 @@ function fingerprint(key, v) {
   return String(v);
 }
 
-function FieldValue({ field, value, fmtMoney }) {
+function FieldValue({ field, value, fmtMoney, currency }) {
   if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) {
     return <span className="adm-muted">—</span>;
   }
@@ -74,7 +78,9 @@ function FieldValue({ field, value, fmtMoney }) {
     case "status":
       return STATUS_LABEL[value] ?? value;
     case "min_entry_price":
-      return fmtMoney(Number(value));
+      return fmtMoney(Number(value), currency);
+    case "country":
+      return `${countryName(value)} (${currencyFor(value) ?? "?"})`;
     case "completion_date":
     case "progress_verified_at":
       return fmtDate(value);
@@ -104,7 +110,7 @@ function FieldValue({ field, value, fmtMoney }) {
             <li key={i}>
               {u.name}
               {(u.min_area || u.max_area) && ` · ${u.min_area ?? "?"}–${u.max_area ?? "?"} sq ft`}
-              {u.from_price != null && ` · from ${fmtMoney(Number(u.from_price))}`}
+              {u.from_price != null && ` · from ${fmtMoney(Number(u.from_price), currency)}`}
             </li>
           ))}
         </ul>
@@ -490,7 +496,7 @@ export default function Approvals() {
                     {LISTING_FIELDS.map(([key, label]) => (
                       <tr key={key}>
                         <th>{label}</th>
-                        <td><FieldValue field={key} value={viewing.detail[key]} fmtMoney={fmtMoney} /></td>
+                        <td><FieldValue field={key} value={viewing.detail[key]} fmtMoney={fmtMoney} currency={viewing.detail.currency} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -499,6 +505,8 @@ export default function Approvals() {
                 (() => {
                   const live = viewing.detail;
                   const proposed = live.pending_changes ?? {};
+                  // A new country brings its own currency with it.
+                  const nextCurrency = ("country" in proposed && currencyFor(proposed.country)) || live.currency;
                   const rows = LISTING_FIELDS.map(([key, label]) => {
                     const touched = key in proposed;
                     const changed = touched && fingerprint(key, proposed[key]) !== fingerprint(key, live[key]);
@@ -520,8 +528,8 @@ export default function Approvals() {
                           {rows.map((r) => (
                             <tr key={r.key} className={r.changed ? "is-changed" : ""}>
                               <th>{r.label}{r.changed && <span className="adm-diff-flag">Changed</span>}</th>
-                              <td><FieldValue field={r.key} value={r.current} fmtMoney={fmtMoney} /></td>
-                              <td><FieldValue field={r.key} value={r.next} fmtMoney={fmtMoney} /></td>
+                              <td><FieldValue field={r.key} value={r.current} fmtMoney={fmtMoney} currency={live.currency} /></td>
+                              <td><FieldValue field={r.key} value={r.next} fmtMoney={fmtMoney} currency={nextCurrency} /></td>
                             </tr>
                           ))}
                         </tbody>

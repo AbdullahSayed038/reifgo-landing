@@ -6,16 +6,23 @@ import RowListEditor from "../components/RowListEditor.jsx";
 import IconPicker, { IconPreview, IconSelect } from "../components/IconPicker.jsx";
 import Modal from "../components/Modal.jsx";
 import { mapServerErrors, summarise, validateProperty } from "../propertyValidation.js";
+import { APP_PROPERTY_URL } from "../leadUtils.js";
 
 // Shown for an "Other" amenity until REIFGO adds it to the list with an icon.
 const PLACEHOLDER_ICON = "mci:check-circle-outline";
 const AMENITY_GROUPS = ["Building Amenities", "Unit Facilities"];
 import { useToast } from "../components/Toast.jsx";
-import { useCurrency } from "../currency.jsx";
+import { formatIn, useCurrency } from "../currency.jsx";
+import { COUNTRIES, countryName, currencyFor, isUae } from "../countries.js";
 
 const EMPTY = {
   developer_id: "",
   name: "",
+  // Syed, Sept 24: the country sets the currency every price is in.
+  country: "",
+  city: "",
+  district: "",
+  // Older listings only have the free-text line; shown until a country is set.
   location: "",
   asset_class: "",
   // The app's overview card (Figma 722:115).
@@ -60,7 +67,7 @@ export default function PropertyForm() {
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
-  const { shownCurrency, fmtMoney, approximate } = useCurrency();
+  const { fmtMoney, converting } = useCurrency();
   const session = getSession();
   // Developer-side accounts only ever list under their own company, and their
   // saves go to REIFGO for approval.
@@ -69,6 +76,7 @@ export default function PropertyForm() {
   const [amenityOptions, setAmenityOptions] = useState([]);
   const [errors, setErrors] = useState({ fields: {}, rows: {}, other: [] });
   const summaryRef = useRef(null);
+  const uae = isUae(form.country);
 
   useEffect(() => {
     api.get("/admin/amenities").then(setAmenityOptions).catch(() => {});
@@ -118,6 +126,9 @@ export default function PropertyForm() {
           setForm({
             developer_id: p.developer_id,
             name: p.name ?? "",
+            country: p.country ?? "",
+            city: p.city ?? "",
+            district: p.district ?? "",
             location: p.location ?? "",
             asset_class: p.asset_class ?? "",
             payment_plan: p.payment_plan ?? "",
@@ -271,7 +282,10 @@ export default function PropertyForm() {
     const payload = {
       developer_id,
       name: form.name,
-      location: str(form.location),
+      // The server builds the location line and the currency from these.
+      country: form.country,
+      city: form.city.trim(),
+      district: form.district.trim(),
       asset_class: str(form.asset_class),
       payment_plan: str(form.payment_plan?.trim()),
       property_type: str(form.property_type),
@@ -285,15 +299,18 @@ export default function PropertyForm() {
       media: form.media
         .filter((m) => m.url.trim())
         .map((m, i) => ({ url: m.url.trim(), type: m.type || "image", display_order: i })),
-      construction_progress: num(form.construction_progress),
-      progress_verified_at: form.progress_verified_at
-        ? new Date(form.progress_verified_at).toISOString()
-        : undefined,
+      // RERA only covers UAE listings; elsewhere these stay off the listing.
+      ...(uae && {
+        construction_progress: num(form.construction_progress),
+        progress_verified_at: form.progress_verified_at
+          ? new Date(form.progress_verified_at).toISOString()
+          : undefined,
+        permits: form.permits
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean),
+      }),
       handover: str(form.handover),
-      permits: form.permits
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean),
       // Rows are ordered by their position in the list, so display_order is
       // written from the index and never edited by hand. Blank rows are dropped
       // rather than saved as empty tiles.
@@ -378,7 +395,22 @@ export default function PropertyForm() {
     : form.developer_id
       ? `/admin/developers/${form.developer_id}?tab=properties`
       : "/admin/developers";
-  const developerName = (developers.find((d) => d.id === form.developer_id)?.name ?? "").replace(/\s+/g, " ");
+  const developer = developers.find((d) => d.id === (form.developer_id || (isDeveloperAccount ? session.developer_id : "")));
+  const developerName = (developer?.name ?? "").replace(/\s+/g, " ");
+  // The countries this developer builds in, when REIFGO has set them; the
+  // listing's current country stays pickable so an old one isn't lost.
+  const devCountries = developer?.countries ?? [];
+  const countryOptions = devCountries.length
+    ? COUNTRIES.filter((c) => devCountries.includes(c.code) || c.code === form.country)
+    : COUNTRIES;
+  const currency = currencyFor(form.country);
+  const priceHint = (amount) => {
+    if (!currency) return "Choose the country first: prices are in its currency.";
+    const converted = converting && amount ? fmtMoney(amount, currency) : null;
+    return converted && converted !== formatIn(amount, currency)
+      ? `${converted} in your display currency. Enter it in ${currency}.`
+      : `In ${currency}, the currency of ${countryName(form.country)}.`;
+  };
   const rowIndexOf = (row) => form.amenities.indexOf(row);
 
   const saveAmenity = async () => {
@@ -426,6 +458,11 @@ export default function PropertyForm() {
           </nav>
           <h1>{isNew ? "New listing" : form.name || "Edit listing"}</h1>
         </div>
+        {meta?.approval_status === "approved" && (
+          <a className="adm-btn adm-btn--ghost" href={APP_PROPERTY_URL(id)} target="_blank" rel="noopener noreferrer">
+            View live listing ↗
+          </a>
+        )}
       </header>
 
       {isDeveloperAccount && isNew && (
@@ -502,7 +539,28 @@ export default function PropertyForm() {
                 { value: "sold_out", label: "Sold out" },
               ]}
             />
-            <FormField label="Location" value={form.location} onChange={set("location")} placeholder="Dubai Marina, UAE" />
+            <FormField
+              label="Country"
+              name="country"
+              error={fieldError("country")}
+              type="select"
+              required
+              value={form.country}
+              onChange={set("country")}
+              options={[
+                { value: "", label: "Choose the country…" },
+                ...countryOptions.map((c) => ({ value: c.code, label: `${c.name} (${c.currency})` })),
+              ]}
+              hint={
+                !form.country && form.location
+                  ? `Was "${form.location}". Pick the country to set the currency.`
+                  : devCountries.length
+                    ? "The countries this developer builds in. REIFGO adds more on the developer's profile."
+                    : "Prices are in this country's currency."
+              }
+            />
+            <FormField label="City" value={form.city} onChange={set("city")} placeholder={uae || !form.country ? "Dubai" : "City"} />
+            <FormField label="Area" value={form.district} onChange={set("district")} placeholder={uae || !form.country ? "Dubai Marina" : "Neighbourhood or district"} />
             <FormField label="Asset class" value={form.asset_class} onChange={set("asset_class")} placeholder="Multi-family" />
             <FormField
               label="Property type"
@@ -535,17 +593,13 @@ export default function PropertyForm() {
             <FormField label="Total area (sq ft)" name="total_area" error={fieldError("total_area")} type="number" value={form.total_area} onChange={set("total_area")} />
             <FormField label="Completion date" name="completion_date" error={fieldError("completion_date")} type="date" value={form.completion_date} onChange={set("completion_date")} />
             <FormField
-              label="Min entry price (USD)"
+              label={`Min entry price${currency ? ` (${currency})` : ""}`}
               name="min_entry_price"
               error={fieldError("min_entry_price")}
               type="number"
               value={form.min_entry_price}
               onChange={set("min_entry_price")}
-              hint={
-                shownCurrency !== "USD" && form.min_entry_price
-                  ? `≈ ${fmtMoney(form.min_entry_price)}${approximate ? " at today's rate" : ""}. Prices are entered in USD.`
-                  : "Prices are entered in USD"
-              }
+              hint={priceHint(form.min_entry_price)}
             />
             <FormField label="Sustainability rating (0–5)" name="sustainability_rating" error={fieldError("sustainability_rating")} type="number" value={form.sustainability_rating} onChange={set("sustainability_rating")} />
             <FormField label="Overview" name="overview" error={fieldError("overview")} type="textarea" value={form.overview} onChange={set("overview")} span={2} />
@@ -653,12 +707,17 @@ export default function PropertyForm() {
 
         <section className="adm-panel">
           <header className="adm-panel__head">
-            <h2>RERA verification</h2>
+            <h2>{uae ? "RERA verification" : "Handover"}</h2>
             <p className="adm-panel__note">
-              Leave the progress blank to hide the verification panel on the app.
+              {uae
+                ? "Leave the progress blank to hide the verification panel on the app."
+                : form.country
+                  ? "RERA verification only applies to UAE listings, so the app doesn't show it for this one."
+                  : "RERA verification shows here for UAE listings."}
             </p>
           </header>
           <div className="adm-form-grid">
+            {uae && (
             <FormField
               label="Construction progress (%)"
               name="construction_progress"
@@ -668,24 +727,29 @@ export default function PropertyForm() {
               onChange={set("construction_progress")}
               placeholder="65"
             />
+            )}
+            {uae && (
             <FormField
               label="Progress verified on"
               type="date"
               value={form.progress_verified_at}
               onChange={set("progress_verified_at")}
             />
+            )}
             <FormField
               label="Handover"
               value={form.handover}
               onChange={set("handover")}
               placeholder="Q4 2026"
             />
+            {uae && (
             <FormField
               label="Permits held"
               value={form.permits}
               onChange={set("permits")}
               placeholder="Building Permit, Land Title, Environmental"
             />
+            )}
           </div>
         </section>
 
@@ -715,7 +779,7 @@ export default function PropertyForm() {
             { key: "name", label: "Name", placeholder: "2BHK", flex: 1 },
             { key: "min_area", label: "Min sqft", type: "number", placeholder: "850", flex: 1 },
             { key: "max_area", label: "Max sqft", type: "number", placeholder: "920", flex: 1 },
-            { key: "from_price", label: "From price", type: "number", placeholder: "550000", flex: 1 },
+            { key: "from_price", label: `From price${currency ? ` (${currency})` : ""}`, type: "number", placeholder: "550000", flex: 1 },
             { key: "floor_plan_url", label: "Floor plan URL", placeholder: "https://…", flex: 2, minWidth: 200 },
           ]}
         />

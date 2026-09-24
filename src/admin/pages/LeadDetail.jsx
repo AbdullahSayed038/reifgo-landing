@@ -214,7 +214,7 @@ export default function LeadDetail() {
                 {(prop.property_type || prop.min_entry_price != null || prop.payment_plan || prop.handover || prop.status) && (
                 <dl className="adm-kv">
                   {prop.property_type && (<><dt>Type</dt><dd>{prop.property_type}</dd></>)}
-                  {prop.min_entry_price != null && (<><dt>From</dt><dd>{fmtMoney(prop.min_entry_price)}</dd></>)}
+                  {prop.min_entry_price != null && (<><dt>From</dt><dd>{fmtMoney(prop.min_entry_price, prop.currency)}</dd></>)}
                   {prop.payment_plan && (<><dt>Payment plan</dt><dd>{prop.payment_plan}</dd></>)}
                   {prop.handover && (<><dt>Handover</dt><dd>{prop.handover}</dd></>)}
                   {prop.status && (<><dt>Status</dt><dd><StatusBadge value={prop.status} /></dd></>)}

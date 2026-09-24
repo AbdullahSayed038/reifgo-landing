@@ -4,7 +4,7 @@ import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtDate } from "../contentUtils.js";
 import { timeAgo } from "../leadUtils.js";
-import { COMMON_CURRENCIES, currencyName, useCurrency } from "../currency.jsx";
+import { COMMON_CURRENCIES, currencyName, ORIGINAL, useCurrency } from "../currency.jsx";
 
 // Account settings: reached by clicking your name in the sidebar.
 export default function Account() {
@@ -145,7 +145,7 @@ export default function Account() {
           <div>
             <h2>Display currency</h2>
             <p className="adm-panel__note">
-              How prices and figures show for you in the CMS. It doesn't change any listing's price.
+              How prices show for you in the CMS. It doesn't change any listing's price.
             </p>
           </div>
         </header>
@@ -156,10 +156,15 @@ export default function Account() {
               value={currency}
               onChange={(e) => {
                 setCurrency(e.target.value);
-                toast.success(`Prices now show in ${currencyName(e.target.value)}`);
+                toast.success(
+                  e.target.value === ORIGINAL
+                    ? "Prices now show in each listing's own currency"
+                    : `Prices now show in ${currencyName(e.target.value)}`,
+                );
               }}
             >
-              <optgroup label="Most used">
+              <option value={ORIGINAL}>Each listing's own currency</option>
+              <optgroup label="Convert to">
                 {common.map((c) => <option key={c} value={c}>{c} · {currencyName(c)}</option>)}
               </optgroup>
               {others.length > 0 && (
@@ -169,9 +174,9 @@ export default function Account() {
               )}
             </select>
             <span className="adm-field__hint">
-              {currency === "USD" || currency === "AED"
-                ? "Listing prices are entered in USD. AED uses the fixed dollar peg."
-                : `Converted from USD at today's rate, so figures are approximate${ratesUpdatedAt ? ` (rates updated ${timeAgo(ratesUpdatedAt)})` : ""}.`}
+              {currency === ORIGINAL
+                ? "Each listing is priced in its country's currency, e.g. AED in the UAE and GBP in the UK."
+                : `Other currencies are converted at today's rate and marked ≈${ratesUpdatedAt ? ` (rates updated ${timeAgo(ratesUpdatedAt)})` : ""}.`}
             </span>
           </label>
         </div>

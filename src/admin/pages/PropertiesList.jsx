@@ -75,7 +75,7 @@ export default function PropertiesList() {
           },
           { key: "developer", sortValue: (r) => r.developer?.name, label: "Developer", render: (r) => r.developer?.name ?? "—" },
           { key: "location", label: "Location", render: (r) => r.location ?? "—" },
-          { key: "min_entry_price", label: "Min entry", render: (r) => fmtMoney(r.min_entry_price) },
+          { key: "min_entry_price", label: "Min entry", render: (r) => fmtMoney(r.min_entry_price, r.currency) },
           { key: "status", label: "Status", render: (r) => <StatusBadge value={r.status} />, width: 120 },
           {
             key: "approval",

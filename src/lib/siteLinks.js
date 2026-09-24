@@ -25,3 +25,7 @@ export const FOOTER_TARGETS = {
   "Investment Disclaimer": { to: "/disclaimers" },
   Cookies: { to: "/cookies" },
 };
+
+// The app's web build: "Open in the REIFGO app" on a listing page links to
+// `${APP_WEB_URL}/property/<id>`.
+export const APP_WEB_URL = "https://reifgo.expo.app";

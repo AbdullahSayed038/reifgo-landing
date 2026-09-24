@@ -35,7 +35,9 @@ export function leadCategory(lead) {
 }
 
 // The public listing in the app's web build, for the Linked property panel.
-export const APP_PROPERTY_URL = (id) => `https://reifgo.expo.app/property/${id}`;
+// The listing as investors see it, on this website (Syed, Sept 24), so a Sales
+// Agent can open or share it without the app. Only live listings load there.
+export const APP_PROPERTY_URL = (id) => `${window.location.origin}/property/${id}`;
 
 export const ESCALATION = {
   developer: { label: "Escalated to you", tone: "developer" },

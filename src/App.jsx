@@ -9,6 +9,7 @@ import ForumPage from "./pages/ForumPage.jsx";
 import ChatWidget from "./components/ChatWidget.jsx";
 import { LeadModalProvider } from "./components/LeadModal.jsx";
 import LegalPage from "./pages/LegalPage.jsx";
+import PropertyPage from "./pages/PropertyPage.jsx";
 
 // CMS dashboard — code-split so visitors never download admin JS/CSS.
 const AdminApp = lazy(() => import("./admin/AdminApp.jsx"));
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/insights" element={<Insights />} />
           <Route path="/insights/:slug" element={<InsightArticle />} />
           <Route path="/forum" element={<ForumPage />} />
+          <Route path="/property/:id" element={<PropertyPage />} />
           <Route path="/privacy" element={<LegalPage doc="privacy" />} />
           <Route path="/terms" element={<LegalPage doc="terms" />} />
           <Route path="/disclaimers" element={<LegalPage doc="disclaimers" />} />

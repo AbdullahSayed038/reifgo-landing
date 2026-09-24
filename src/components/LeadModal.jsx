@@ -42,29 +42,44 @@ const COPY = {
     title: "Get in Touch",
     lead: "Send us a message and the right person at REIFGO will reply by email.",
   },
+  // The public listing page: the lead goes to that developer's sales team.
+  listing: {
+    eyebrow: "Enquire",
+    title: "Ask about this property",
+    lead: "Leave your details and a property consultant will be in touch about availability, pricing and the payment plan.",
+  },
 };
 
 const LeadModalContext = createContext(() => {});
 
-/** Opens the lead form: `const openLead = useLeadModal(); openLead("invest")`. */
+/**
+ * Opens the lead form: `const openLead = useLeadModal(); openLead("invest")`.
+ * A listing enquiry passes the property: `openLead("listing", { property })`.
+ */
 export const useLeadModal = () => useContext(LeadModalContext);
 
 export function LeadModalProvider({ children }) {
-  const [intent, setIntent] = useState(null);
-  const open = useCallback((next) => setIntent(COPY[next] ? next : "contact"), []);
-  const close = useCallback(() => setIntent(null), []);
+  const [state, setState] = useState(null);
+  const open = useCallback(
+    (next, context = {}) => setState({ intent: COPY[next] ? next : "contact", ...context }),
+    [],
+  );
+  const close = useCallback(() => setState(null), []);
 
   return (
     <LeadModalContext.Provider value={open}>
       {children}
-      {intent && <LeadModal intent={intent} onClose={close} />}
+      {state && <LeadModal intent={state.intent} property={state.property} onClose={close} />}
     </LeadModalContext.Provider>
   );
 }
 
 const EMPTY = { name: "", email: "", phone: "", interest: INTERESTS[3], message: "" };
 
-export default function LeadModal({ intent, onClose }) {
+// The partner, contact and listing forms don't ask for an area of interest.
+const asksInterest = (intent) => !["partner", "contact", "listing"].includes(intent);
+
+export default function LeadModal({ intent, property, onClose }) {
   const [form, setForm] = useState(EMPTY);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -82,6 +97,7 @@ export default function LeadModal({ intent, onClose }) {
   }, [onClose]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const lead = property ? `${copy.lead.replace(/\.$/, "")} for ${property.name}.` : copy.lead;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -96,7 +112,8 @@ export default function LeadModal({ intent, onClose }) {
         full_name: form.name.trim(),
         email: form.email.trim(),
         ...(form.phone.trim() && { phone: form.phone.trim() }),
-        ...(intent !== "partner" && intent !== "contact" && { interest: form.interest }),
+        ...(property && { property_id: property.id }),
+        ...(!asksInterest(intent) ? {} : { interest: form.interest }),
         ...(form.message.trim() && { message: form.message.trim() }),
       });
       setDone(true);
@@ -133,7 +150,7 @@ export default function LeadModal({ intent, onClose }) {
           <>
             <p className="eyebrow">{copy.eyebrow}</p>
             <h3 className="lm__title heading">{copy.title}</h3>
-            <p className="lm__lead">{copy.lead}</p>
+            <p className="lm__lead">{lead}</p>
 
             <form className="lm__form" onSubmit={submit}>
               <label className="lm__field">
@@ -150,7 +167,7 @@ export default function LeadModal({ intent, onClose }) {
                   <input type="tel" maxLength={40} value={form.phone} onChange={set("phone")} placeholder="+971 …" />
                 </label>
               </div>
-              {intent !== "partner" && intent !== "contact" && (
+              {asksInterest(intent) && (
                 <label className="lm__field">
                   <span>Area of interest</span>
                   <select value={form.interest} onChange={set("interest")}>
@@ -161,7 +178,7 @@ export default function LeadModal({ intent, onClose }) {
                 </label>
               )}
               <label className="lm__field">
-                <span>{intent === "contact" ? "Message" : "Anything we should know? (optional)"}</span>
+                <span>{intent === "contact" ? "Message" : intent === "listing" ? "Your question (optional)" : "Anything we should know? (optional)"}</span>
                 <textarea
                   rows={3}
                   maxLength={2000}
@@ -171,6 +188,8 @@ export default function LeadModal({ intent, onClose }) {
                   placeholder={
                     intent === "partner"
                       ? "Projects, markets, delivery timeline…"
+                      : intent === "listing"
+                        ? "Unit type, budget, when you'd like to buy…"
                       : intent === "contact"
                         ? "How can we help?"
                         : "Investment size, timeline, markets…"

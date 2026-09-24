@@ -3284,3 +3284,15 @@ button.adm-stat {
     justify-self: start;
   }
 }
+
+/* Developer profile: the countries they build in. */
+.adm-country-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.adm-country-chips .adm-chip-btn span {
+  margin-left: 4px;
+  opacity: 0.6;
+}

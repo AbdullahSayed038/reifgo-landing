@@ -59,7 +59,7 @@ export function DeveloperListings({ developerId }) {
             ),
           },
           { key: "location", label: "Location", render: (r) => r.location ?? "—" },
-          { key: "min_entry_price", label: "From", render: (r) => fmtMoney(r.min_entry_price) },
+          { key: "min_entry_price", label: "From", render: (r) => fmtMoney(r.min_entry_price, r.currency) },
           { key: "status", label: "Status", width: 120, render: (r) => <StatusBadge value={r.status} /> },
           {
             key: "approval",
