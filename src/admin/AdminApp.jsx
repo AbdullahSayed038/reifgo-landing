@@ -8,6 +8,9 @@ import Categories from "./pages/Categories.jsx";
 import Summit from "./pages/Summit.jsx";
 import SummitInvitations from "./pages/SummitInvitations.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import DashboardV2 from "./pages/DashboardV2.jsx";
+import LeadsV2 from "./pages/LeadsV2.jsx";
+import { DesignProvider, Versioned } from "./design.jsx";
 import DeveloperForm from "./pages/DeveloperForm.jsx";
 import DevelopersList from "./pages/DevelopersList.jsx";
 import EventForm from "./pages/EventForm.jsx";
@@ -62,12 +65,14 @@ export default function AdminApp() {
     <div className="adm-root">
       <ToastProvider>
         <CurrencyProvider>
+        <DesignProvider>
         <Routes>
           <Route path="login" element={<Login />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           <Route element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
+            {/* V1 / V2: the sidebar switch (Syed, Sept 24). V1 stays as it was. */}
+            <Route index element={<Versioned v1={<Dashboard />} v2={<DashboardV2 />} />} />
             <Route path="properties" element={<PropertiesList />} />
             <Route path="properties/new" element={<PropertyForm />} />
             <Route path="properties/:id" element={<PropertyForm />} />
@@ -90,13 +95,14 @@ export default function AdminApp() {
             <Route path="categories" element={<StaffOnly><Categories /></StaffOnly>} />
             <Route path="summit" element={<AdminOnly><Summit /></AdminOnly>} />
             <Route path="summit/invitations" element={<AdminOnly><SummitInvitations /></AdminOnly>} />
-            <Route path="leads" element={<Leads />} />
+            <Route path="leads" element={<Versioned v1={<Leads />} v2={<LeadsV2 />} />} />
             <Route path="leads/:id" element={<LeadDetail />} />
             <Route path="team" element={<Team />} />
             <Route path="users" element={<InvestorsOnly><Users /></InvestorsOnly>} />
             <Route path="users/:id" element={<InvestorsOnly><InvestorDetail /></InvestorsOnly>} />
           </Route>
         </Routes>
+        </DesignProvider>
         </CurrencyProvider>
       </ToastProvider>
     </div>

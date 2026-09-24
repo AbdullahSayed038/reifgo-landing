@@ -135,3 +135,54 @@ export function BarChart({ data, color, valueFormat }) {
     </svg>
   );
 }
+
+// ---- Columns over time (e.g. leads received per day) ----
+
+/**
+ * data: [{ label, value, title }]. Labels are thinned out so they never
+ * collide; every column still has its own tooltip.
+ */
+export function ColumnChart({ data, color = "#00556c", height = 150 }) {
+  const W = 1000;
+  const H = height;
+  const AXIS = 18;
+  const TOP = 14;
+  const max = Math.max(...data.map((d) => d.value), 1);
+  const slot = W / Math.max(data.length, 1);
+  const barW = Math.max(3, Math.min(28, slot * 0.62));
+  const every = Math.ceil(data.length / 10);
+
+  const colPath = (x, h) => {
+    const r = Math.min(3, barW / 2, h);
+    const y = H - AXIS - h;
+    return `M ${x} ${H - AXIS} V ${y + r} A ${r} ${r} 0 0 1 ${x + r} ${y} H ${x + barW - r} A ${r} ${r} 0 0 1 ${x + barW} ${y + r} V ${H - AXIS} Z`;
+  };
+
+  return (
+    <svg className="adm-chart-columns" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Column chart">
+      <line x1="0" x2={W} y1={H - AXIS + 0.5} y2={H - AXIS + 0.5} stroke="#e3e8ea" />
+      {data.map((d, i) => {
+        const h = d.value ? Math.max(2, (d.value / max) * (H - AXIS - TOP)) : 0;
+        const x = i * slot + (slot - barW) / 2;
+        return (
+          <g key={i}>
+            <title>{d.title ?? `${d.label}: ${d.value}`}</title>
+            {/* A full-height hit area so thin columns are easy to hover. */}
+            <rect x={i * slot} y="0" width={slot} height={H - AXIS} fill="transparent" />
+            {h > 0 && <path d={colPath(x, h)} fill={color} />}
+            {d.value > 0 && data.length <= 31 && (
+              <text x={x + barW / 2} y={H - AXIS - h - 4} textAnchor="middle" fontSize="9.5" fontWeight="700" fill={INK}>
+                {d.value}
+              </text>
+            )}
+            {i % every === 0 && (
+              <text x={x + barW / 2} y={H - 5} textAnchor="middle" fontSize="9.5" fill={MUTED}>
+                {d.label}
+              </text>
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}

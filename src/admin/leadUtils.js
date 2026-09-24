@@ -74,3 +74,84 @@ export function fmtHours(h) {
   if (h < 48) return `${Math.round(h * 10) / 10}h`;
   return `${Math.round((h / 24) * 10) / 10}d`;
 }
+
+// ── Leads V2: urgency ────────────────────────────────────────────────────
+// Matches the server's escalation clock: an agent has 24h to reply before a
+// lead escalates to the developer, 48h before it goes to REIFGO.
+export const REPLY_WINDOW_H = 24;
+const HOUR = 3_600_000;
+
+/** "45m", "5h", "2d 3h", for a span in milliseconds. */
+export function fmtSpan(ms) {
+  const m = Math.max(0, Math.round(Math.abs(ms) / 60000));
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 48) return m % 60 && h < 10 ? `${h}h ${m % 60}m` : `${h}h`;
+  const d = Math.floor(h / 24);
+  return h % 24 ? `${d}d ${h % 24}h` : `${d}d`;
+}
+
+/** "24 Sept, 14:05" (with the year when it isn't this year). */
+export function exactTime(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * How urgent a lead is right now, for the V2 queue.
+ * level: critical | high | medium | normal | hot | done
+ * rank sorts the queue (lower first); label is the headline, detail the clock.
+ */
+export function urgencyOf(lead, now = Date.now()) {
+  const since = (iso) => (iso ? now - new Date(iso).getTime() : 0);
+  if (lead.status === "closed_won") return { level: "done", rank: 9, label: "Won", detail: null };
+  if (lead.status === "closed_lost") return { level: "done", rank: 9, label: "Lost", detail: null };
+
+  if (lead.escalation === "reifgo") {
+    return { level: "critical", rank: 0, label: "Escalated to REIFGO", detail: `No reply for ${fmtSpan(since(lead.assigned_at))}` };
+  }
+  if (!lead.assigned_broker_id) {
+    const waited = since(lead.created_at);
+    return {
+      level: waited >= 4 * HOUR ? "critical" : "high",
+      rank: waited >= 4 * HOUR ? 1 : 2,
+      label: "Needs an agent",
+      detail: `Waiting ${fmtSpan(waited)}`,
+    };
+  }
+  if (lead.escalation === "developer") {
+    return { level: "critical", rank: 1, label: "Overdue", detail: `No reply for ${fmtSpan(since(lead.assigned_at))}` };
+  }
+  if (lead.status === "assigned" && !lead.first_response_at) {
+    if (lead.rotation_expires_at) {
+      const left = new Date(lead.rotation_expires_at).getTime() - now;
+      return {
+        level: left < HOUR ? "high" : "medium",
+        rank: left < HOUR ? 2 : 3,
+        label: left > 0 ? `Moves on in ${fmtSpan(left)}` : "Moving to the next agent",
+        detail: "Auto rotation",
+      };
+    }
+    const left = REPLY_WINDOW_H * HOUR - since(lead.assigned_at);
+    return {
+      level: left < 6 * HOUR ? "high" : "medium",
+      rank: left < 6 * HOUR ? 2 : 3,
+      label: `Reply due in ${fmtSpan(left)}`,
+      detail: `Assigned ${fmtSpan(since(lead.assigned_at))} ago`,
+    };
+  }
+  if (lead.status === "qualified") {
+    return { level: "hot", rank: 4, label: "Qualified", detail: "Follow up to close" };
+  }
+  return { level: "normal", rank: 5, label: lead.status === "contacted" ? "Contacted" : "In progress", detail: null };
+}
+
+/** The last thing that happened on a lead (activity is newest first). */
+export const lastTouch = (lead) => lead.activity?.[0]?.at ?? lead.created_at;

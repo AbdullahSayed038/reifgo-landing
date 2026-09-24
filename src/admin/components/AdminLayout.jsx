@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAutoRefresh } from "../useAutoRefresh.js";
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api, can, getSession, IS_DEMO, isReifgoTier, isSupport, logout, permissionTitle } from "../api.js";
+import { DesignSwitch } from "../design.jsx";
 
 const ADMIN_NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
@@ -157,6 +158,9 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Syed, Sept 24: V1 / V2 above the account name. Support has no V2 pages. */}
+        {!support && <DesignSwitch />}
 
         {/* Syed: click the name to change your details or password. */}
         <Link to="/admin/account" className="adm-account adm-account--link" onClick={closeMenu} title="Account settings">
