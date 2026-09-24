@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { api, getSession, isReifgoTier, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import RowListEditor from "../components/RowListEditor.jsx";
-import IconPicker, { IconPreview } from "../components/IconPicker.jsx";
+import IconPicker, { IconPreview, IconSelect } from "../components/IconPicker.jsx";
 import Modal from "../components/Modal.jsx";
 import { mapServerErrors, summarise, validateProperty } from "../propertyValidation.js";
 
@@ -11,7 +11,7 @@ import { mapServerErrors, summarise, validateProperty } from "../propertyValidat
 const PLACEHOLDER_ICON = "mci:check-circle-outline";
 const AMENITY_GROUPS = ["Building Amenities", "Unit Facilities"];
 import { useToast } from "../components/Toast.jsx";
-import { useCurrency, USD_TO_AED } from "../currency.jsx";
+import { useCurrency } from "../currency.jsx";
 
 const EMPTY = {
   developer_id: "",
@@ -60,7 +60,7 @@ export default function PropertyForm() {
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
-  const { currency } = useCurrency();
+  const { shownCurrency, fmtMoney, approximate } = useCurrency();
   const session = getSession();
   // Developer-side accounts only ever list under their own company, and their
   // saves go to REIFGO for approval.
@@ -342,13 +342,17 @@ export default function PropertyForm() {
         await api.post("/admin/properties", payload);
         toast.success(isDeveloperAccount ? "Listing sent to REIFGO for approval" : "Property created");
       } else {
-        await api.patch(`/admin/properties/${id}`, payload);
+        const saved = await api.patch(`/admin/properties/${id}`, payload);
         toast.success(
-          isDeveloperAccount
-            ? meta?.approval_status === "approved"
-              ? "Changes sent to REIFGO. The live listing updates once they're approved."
-              : "Listing updated and sent to REIFGO for approval"
-            : "Property saved",
+          !isDeveloperAccount
+            ? "Property saved"
+            : meta?.approval_status !== "approved"
+              ? "Listing updated and sent to REIFGO for approval"
+              : saved?.nothing_changed
+                ? saved.has_pending_changes === false && meta.has_pending_changes
+                  ? "Everything matches the live listing again, so the waiting changes were withdrawn."
+                  : "Nothing was changed, so nothing was sent to REIFGO."
+                : "Changes sent to REIFGO. The live listing updates once they're approved.",
         );
       }
       navigate(backTo);
@@ -538,9 +542,9 @@ export default function PropertyForm() {
               value={form.min_entry_price}
               onChange={set("min_entry_price")}
               hint={
-                currency === "AED" && form.min_entry_price
-                  ? `≈ AED ${Math.round(Number(form.min_entry_price) * USD_TO_AED).toLocaleString()}`
-                  : "Prices are stored in USD"
+                shownCurrency !== "USD" && form.min_entry_price
+                  ? `≈ ${fmtMoney(form.min_entry_price)}${approximate ? " at today's rate" : ""}. Prices are entered in USD.`
+                  : "Prices are entered in USD"
               }
             />
             <FormField label="Sustainability rating (0–5)" name="sustainability_rating" error={fieldError("sustainability_rating")} type="number" value={form.sustainability_rating} onChange={set("sustainability_rating")} />
@@ -811,7 +815,7 @@ export default function PropertyForm() {
 
         <RowListEditor
           title="Nearby places"
-          hint="Distance drives both the printed figure and the length of the bar, which is scaled against the furthest place on this property. Icons work as for amenities, e.g. mci:pine-tree."
+          hint="Distance drives both the printed figure and the length of the bar, which is scaled against the furthest place on this property."
           emptyText="No nearby places yet."
           addLabel="+ Add place"
           rows={form.nearby_places}
@@ -821,7 +825,13 @@ export default function PropertyForm() {
           blank={{ name: "", icon: "", travel_minutes: "", travel_mode: "drive", distance_km: "" }}
           columns={[
             { key: "name", label: "Name", placeholder: "Marina Mall", flex: 1.6 },
-            { key: "icon", label: "Icon", placeholder: "bag-outline", flex: 1.2 },
+            {
+              key: "icon",
+              label: "Icon",
+              flex: 1.3,
+              minWidth: 170,
+              render: (row, update) => <IconSelect set="places" value={row.icon} onChange={(icon) => update("icon", icon)} />,
+            },
             { key: "travel_minutes", label: "Minutes", type: "number", placeholder: "10", flex: 0.8 },
             {
               key: "travel_mode",

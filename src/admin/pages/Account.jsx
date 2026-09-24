@@ -3,6 +3,8 @@ import { api, PERMISSIONS, permissionTitle, updateSessionName } from "../api.js"
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtDate } from "../contentUtils.js";
+import { timeAgo } from "../leadUtils.js";
+import { COMMON_CURRENCIES, currencyName, useCurrency } from "../currency.jsx";
 
 // Account settings: reached by clicking your name in the sidebar.
 export default function Account() {
@@ -11,6 +13,9 @@ export default function Account() {
   const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
   const [busy, setBusy] = useState(false);
   const toast = useToast();
+  const { currency, setCurrency, available, ratesUpdatedAt } = useCurrency();
+  const common = COMMON_CURRENCIES.filter((c) => available.includes(c));
+  const others = available.filter((c) => !COMMON_CURRENCIES.includes(c));
 
   const load = () =>
     api
@@ -99,7 +104,7 @@ export default function Account() {
             <label className="adm-field">
               <span className="adm-field__label">Email</span>
               <input value={me.email ?? "—"} disabled readOnly />
-              <span className="adm-field__hint">Your sign-in address. It can't be changed.</span>
+              <span className="adm-field__hint">Your sign-in address. Only a REIFGO admin can change it.</span>
             </label>
             {editable.includes("phone") && (
               <FormField label="Contact number" value={form.phone} onChange={set("phone")} />
@@ -134,6 +139,43 @@ export default function Account() {
           )}
         </section>
       </form>
+
+      <section className="adm-panel">
+        <header className="adm-panel__head">
+          <div>
+            <h2>Display currency</h2>
+            <p className="adm-panel__note">
+              How prices and figures show for you in the CMS. It doesn't change any listing's price.
+            </p>
+          </div>
+        </header>
+        <div className="adm-form-grid">
+          <label className="adm-field">
+            <span className="adm-field__label">Show prices in</span>
+            <select
+              value={currency}
+              onChange={(e) => {
+                setCurrency(e.target.value);
+                toast.success(`Prices now show in ${currencyName(e.target.value)}`);
+              }}
+            >
+              <optgroup label="Most used">
+                {common.map((c) => <option key={c} value={c}>{c} · {currencyName(c)}</option>)}
+              </optgroup>
+              {others.length > 0 && (
+                <optgroup label="All currencies">
+                  {others.map((c) => <option key={c} value={c}>{c} · {currencyName(c)}</option>)}
+                </optgroup>
+              )}
+            </select>
+            <span className="adm-field__hint">
+              {currency === "USD" || currency === "AED"
+                ? "Listing prices are entered in USD. AED uses the fixed dollar peg."
+                : `Converted from USD at today's rate, so figures are approximate${ratesUpdatedAt ? ` (rates updated ${timeAgo(ratesUpdatedAt)})` : ""}.`}
+            </span>
+          </label>
+        </div>
+      </section>
 
       {me.can_change_password ? (
         <form className="adm-form" onSubmit={savePassword}>

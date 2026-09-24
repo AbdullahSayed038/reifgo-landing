@@ -146,7 +146,7 @@ function FieldValue({ field, value, fmtMoney }) {
  */
 export default function Approvals() {
   const [queue, setQueue] = useState(null);
-  const [section, setSection] = useState("accounts");
+  const [section, setSection] = useState("all");
   const [developer, setDeveloper] = useState("all");
   const [busy, setBusy] = useState(false);
   const [viewing, setViewing] = useState(null); // { kind, item, detail? }
@@ -162,12 +162,7 @@ export default function Approvals() {
   };
 
   useEffect(() => {
-    api.get("/admin/approvals").then((q) => {
-      show(q);
-      // Open on the first section that has something waiting.
-      const first = SECTIONS.find((s) => (q[s.key] ?? []).length);
-      if (first) setSection(first.key);
-    }).catch((e) => toast.error(e.message));
+    api.get("/admin/approvals").then(show).catch((e) => toast.error(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -187,16 +182,26 @@ export default function Approvals() {
   const itemsFor = (key) =>
     (queue?.[key] ?? []).filter((item) => developer === "all" || devOf(key, item).id === developer);
 
+  // Developer first (Syed): one panel per developer holding everything they
+  // have waiting, split by kind. The kind tabs only narrow what's shown.
   const grouped = useMemo(() => {
     const map = new Map();
-    for (const item of itemsFor(section)) {
-      const d = devOf(section, item);
-      if (!map.has(d.id)) map.set(d.id, { name: d.name, items: [] });
-      map.get(d.id).items.push(item);
+    for (const s of SECTIONS) {
+      if (section !== "all" && section !== s.key) continue;
+      for (const item of itemsFor(s.key)) {
+        const d = devOf(s.key, item);
+        if (!map.has(d.id)) map.set(d.id, { id: d.id, name: d.name, count: 0, kinds: new Map() });
+        const group = map.get(d.id);
+        if (!group.kinds.has(s.key)) group.kinds.set(s.key, []);
+        group.kinds.get(s.key).push(item);
+        group.count++;
+      }
     }
     return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queue, section, developer]);
+
+  const shownTotal = SECTIONS.reduce((n, s) => n + itemsFor(s.key).length, 0);
 
   const open = async (kind, item) => {
     setDeclineReason(null);
@@ -283,6 +288,10 @@ export default function Approvals() {
       ) : (
         <>
           <div className="adm-tabs">
+            <button className={`adm-tab${section === "all" ? " is-active" : ""}`} onClick={() => setSection("all")}>
+              All
+              <span className="adm-tab__count">{shownTotal}</span>
+            </button>
             {SECTIONS.map((s) => (
               <button
                 key={s.key}
@@ -315,17 +324,23 @@ export default function Approvals() {
             </section>
           ) : (
             grouped.map((group) => (
-              <section className="adm-panel" key={group.name}>
+              <section className="adm-panel" key={group.id}>
                 <header className="adm-panel__head">
-                  <h2>{group.name} <span className="adm-tab__count">{group.items.length}</span></h2>
+                  <h2>{group.name} <span className="adm-tab__count">{group.count}</span></h2>
                 </header>
-                {group.items.map((item) => {
-                  const s = summary(section, item);
+                {SECTIONS.filter((k) => group.kinds.has(k.key)).map((k) => (
+                <div className="adm-approval-kind" key={k.key}>
+                {section === "all" && (
+                  <h3 className="adm-approval-kind__title">{k.label} <span>{group.kinds.get(k.key).length}</span></h3>
+                )}
+                {group.kinds.get(k.key).map((item) => {
+                  const kind = k.key;
+                  const s = summary(kind, item);
                   return (
-                    <div className="adm-review adm-review--link" key={item.id} onClick={() => open(section, item)}>
+                    <div className="adm-review adm-review--link" key={item.id} onClick={() => open(kind, item)}>
                       {s.img ? (
                         <img className="adm-review__img" src={s.img} alt="" loading="lazy" />
-                      ) : section === "listings" ? (
+                      ) : kind === "listings" ? (
                         <span className="adm-review__img" />
                       ) : null}
                       {s.logo && <img className="adm-review__img" src={s.logo} alt="" style={{ objectFit: "contain", background: "#fff" }} />}
@@ -337,13 +352,15 @@ export default function Approvals() {
                         {s.lines.filter(Boolean).map((l, i) => <span key={i}>{l}</span>)}
                       </div>
                       <div className="adm-review__actions">
-                        <button className="adm-btn adm-btn--primary adm-btn--sm" onClick={(e) => { e.stopPropagation(); open(section, item); }}>
+                        <button className="adm-btn adm-btn--primary adm-btn--sm" onClick={(e) => { e.stopPropagation(); open(kind, item); }}>
                           View
                         </button>
                       </div>
                     </div>
                   );
                 })}
+                </div>
+                ))}
               </section>
             ))
           )}

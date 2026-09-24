@@ -32,12 +32,16 @@ export default function Login() {
         <span className="adm-login__logo">REIFGO</span>
         <h1>Admin Dashboard</h1>
         <p>Sign in to manage app content.</p>
+        {/* Everyone signs in with their email. It stays a text field so the
+            server's owner login (a plain username) still works. */}
         <input
           type="text"
+          inputMode="email"
           autoFocus
           autoCapitalize="none"
           autoComplete="username"
-          placeholder="Email or username"
+          aria-label="Email"
+          placeholder="Email"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />

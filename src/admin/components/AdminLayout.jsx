@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useAutoRefresh } from "../useAutoRefresh.js";
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api, can, getSession, IS_DEMO, isReifgoTier, logout, permissionTitle } from "../api.js";
-import { useCurrency } from "../currency.jsx";
 
 const ADMIN_NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
@@ -41,7 +40,6 @@ function teamNav(session) {
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const { currency, setCurrency } = useCurrency();
   const [menuOpen, setMenuOpen] = useState(false);
   const [approvals, setApprovals] = useState(0);
   const location = useLocation();
@@ -143,21 +141,6 @@ export default function AdminLayout() {
           </div>
           <span className="adm-account__chev" aria-hidden="true">›</span>
         </Link>
-
-        <div className="adm-currency" role="group" aria-label="Display currency">
-          <span className="adm-currency__label">Currency</span>
-          <div className="adm-currency__switch">
-            {["USD", "AED"].map((c) => (
-              <button
-                key={c}
-                className={`adm-currency__opt${currency === c ? " is-active" : ""}`}
-                onClick={() => setCurrency(c)}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <button
           className="adm-nav-link adm-sidebar__logout"

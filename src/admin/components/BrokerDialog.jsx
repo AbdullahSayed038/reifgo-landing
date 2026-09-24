@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, getSession, isReifgoAdmin, isReifgoTier, PERMISSION_PRESETS, PERMISSIONS } from "../api.js";
 import { str } from "../contentUtils.js";
+import { credentialErrors, emailIsChanging } from "../credentials.js";
 import FormField from "./FormField.jsx";
 import { useToast } from "./Toast.jsx";
 
@@ -23,8 +24,11 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
     position: broker?.position ?? "",
     developer_id: broker?.developer_id ?? "",
     permissions: broker?.permissions ?? [],
+    emailAgain: "",
     password: "",
+    passwordAgain: "",
   });
+  const [errors, setErrors] = useState({});
   const [developers, setDevelopers] = useState([]);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
@@ -46,7 +50,13 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
+  const set = (key) => (value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    // A red mark clears as soon as that field is edited.
+    setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
+  };
+  const emailEditable = isNew || isReifgoAdmin(session);
+  const askEmailAgain = emailEditable && emailIsChanging(form.email, broker?.email);
   const togglePermission = (key) =>
     setForm((f) => ({
       ...f,
@@ -61,12 +71,18 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
   const submit = async (e) => {
     e.preventDefault();
     if (busy) return;
-    if (!form.name.trim() || !form.email.trim()) {
-      toast.error("Name and email are both required");
-      return;
-    }
-    if (form.password && form.password.length < 8) {
-      toast.error("A password needs at least 8 characters");
+    const found = {
+      ...(form.name.trim() ? {} : { name: "Enter their name" }),
+      ...credentialErrors(form, {
+        originalEmail: broker?.email ?? "",
+        emailRequired: true,
+        passwordRequired: isNew,
+        checkEmail: emailEditable,
+      }),
+    };
+    setErrors(found);
+    if (Object.keys(found).length) {
+      toast.error("Check the fields marked in red");
       return;
     }
     setBusy(true);
@@ -115,22 +131,29 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
           <h2>{isNew ? "Add team member" : `Edit ${broker.name}`}</h2>
         </header>
 
-        <form className="adm-form" onSubmit={submit}>
+        <form className="adm-form" onSubmit={submit} noValidate>
           <div className="adm-form-grid adm-dialog__body">
             {broker?.approval_status === "rejected" && (
               <p className="adm-note adm-note--danger adm-field--span2" style={{ margin: 0 }}>
                 REIFGO declined this account{broker.rejection_reason ? `: ${broker.rejection_reason}` : "."} Saving your changes sends it back for approval.
               </p>
             )}
-            <FormField label="Name" required value={form.name} onChange={set("name")} />
-            {isNew || isReifgoAdmin(session) ? (
-              <FormField
-                label="Email"
-                required
-                value={form.email}
-                onChange={set("email")}
-                hint={isNew ? "Their sign-in address. Only REIFGO can change it later." : "Their sign-in address. Only REIFGO admins can change it."}
-              />
+            <FormField label="Name" required value={form.name} onChange={set("name")} error={errors.name} />
+            {emailEditable ? (
+              <>
+                <FormField
+                  label="Email"
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={set("email")}
+                  error={errors.email}
+                  hint={isNew ? "Their sign-in address. Only REIFGO can change it later." : "Their sign-in address. Only REIFGO admins can change it."}
+                />
+                {askEmailAgain && (
+                  <FormField label="Email again" type="email" required value={form.emailAgain} onChange={set("emailAgain")} error={errors.emailAgain} />
+                )}
+              </>
             ) : (
               <label className="adm-field">
                 <span className="adm-field__label">Email</span>
@@ -197,18 +220,24 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
             </div>
 
             {(isNew || reifgo) && (
-              <FormField
-                label={isNew ? "Password" : "Set a new password"}
-                type="password"
-                value={form.password}
-                onChange={set("password")}
-                span={2}
-                hint={
-                  isNew
-                    ? "At least 8 characters. They can change it from Account settings, or with Forgot password."
-                    : "REIFGO only. Leave blank to keep their current password."
-                }
-              />
+              <>
+                <FormField
+                  label={isNew ? "Password" : "Set a new password"}
+                  type="password"
+                  required={isNew}
+                  value={form.password}
+                  onChange={set("password")}
+                  error={errors.password}
+                  hint={
+                    isNew
+                      ? "At least 8 characters. They can change it later from Account settings."
+                      : "REIFGO only. Leave blank to keep their current password."
+                  }
+                />
+                {(isNew || form.password) && (
+                  <FormField label="Password again" type="password" required value={form.passwordAgain} onChange={set("passwordAgain")} error={errors.passwordAgain} />
+                )}
+              </>
             )}
           </div>
 

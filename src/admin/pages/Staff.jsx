@@ -5,9 +5,10 @@ import FormField from "../components/FormField.jsx";
 import Modal from "../components/Modal.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtDate } from "../contentUtils.js";
+import { credentialErrors, emailIsChanging } from "../credentials.js";
 
 const ROLE_LABEL = { reifgo_admin: "REIFGO admin", regional_admin: "Regional admin" };
-const EMPTY = { name: "", email: "", role: "reifgo_admin", region: "", password: "" };
+const EMPTY = { name: "", email: "", emailAgain: "", role: "reifgo_admin", region: "", password: "", passwordAgain: "" };
 
 // REIFGO's own staff accounts (AdminAccount). Only a REIFGO admin can add or
 // change them; a regional admin sees just their own row.
@@ -16,6 +17,7 @@ export default function Staff() {
   const [editing, setEditing] = useState(null); // {} new, or a row
   const [form, setForm] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState({});
   const toast = useToast();
   const session = getSession();
   const canManage = session?.role === "admin" || session?.role === "reifgo_admin";
@@ -32,15 +34,31 @@ export default function Staff() {
 
   const open = (row) => {
     setEditing(row);
-    setForm(row.id ? { name: row.name, email: row.email, role: row.role, region: row.region ?? "", password: "" } : EMPTY);
+    setErrors({});
+    setForm(row.id ? { ...EMPTY, name: row.name, email: row.email, role: row.role, region: row.region ?? "" } : EMPTY);
   };
-  const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k) => (v) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setErrors((e) => (e[k] ? { ...e, [k]: undefined } : e));
+  };
+  const ownEmail = !!editing?.id && editing.email === mine;
+  const askEmailAgain = !ownEmail && emailIsChanging(form.email, editing?.email);
 
   const save = async () => {
     if (busy) return;
     const isNew = !editing.id;
-    if (isNew && form.password.length < 8) return toast.error("Set a password of at least 8 characters");
-    if (!isNew && form.password && form.password.length < 8) return toast.error("A password needs at least 8 characters");
+    const found = {
+      ...(form.name.trim() ? {} : { name: "Enter their name" }),
+      ...(form.role === "regional_admin" && !form.region.trim() ? { region: "Enter the region" } : {}),
+      ...credentialErrors(form, {
+        originalEmail: editing.email ?? "",
+        emailRequired: true,
+        passwordRequired: isNew,
+        checkEmail: !ownEmail,
+      }),
+    };
+    setErrors(found);
+    if (Object.keys(found).length) return toast.error("Check the fields marked in red");
     setBusy(true);
     const body = {
       name: form.name.trim(),
@@ -139,15 +157,20 @@ export default function Staff() {
           }
         >
           <div className="adm-form-grid">
-            <FormField label="Name" required value={form.name} onChange={set("name")} span={2} />
-            {editing.id && editing.email === mine ? (
+            <FormField label="Name" required value={form.name} onChange={set("name")} span={2} error={errors.name} />
+            {ownEmail ? (
               <label className="adm-field adm-field--span2">
                 <span className="adm-field__label">Email</span>
                 <input value={form.email} disabled readOnly />
                 <span className="adm-field__hint">You can't change your own email. Another REIFGO admin can.</span>
               </label>
             ) : (
-              <FormField label="Email" required value={form.email} onChange={set("email")} span={2} />
+              <>
+                <FormField label="Email" type="email" required value={form.email} onChange={set("email")} span={askEmailAgain ? undefined : 2} error={errors.email} />
+                {askEmailAgain && (
+                  <FormField label="Email again" type="email" required value={form.emailAgain} onChange={set("emailAgain")} error={errors.emailAgain} />
+                )}
+              </>
             )}
             <FormField
               label="Role"
@@ -160,16 +183,21 @@ export default function Staff() {
               ]}
             />
             {form.role === "regional_admin" && (
-              <FormField label="Region" required value={form.region} onChange={set("region")} placeholder="UAE" />
+              <FormField label="Region" required value={form.region} onChange={set("region")} placeholder="UAE" error={errors.region} />
             )}
             <FormField
               label={editing.id ? "Set a new password" : "Password"}
               type="password"
+              required={!editing.id}
               value={form.password}
               onChange={set("password")}
-              span={2}
+              span={editing.id && !form.password ? 2 : undefined}
+              error={errors.password}
               hint={editing.id ? "Leave blank to keep their current password." : "At least 8 characters. They can change it from Account settings."}
             />
+            {(!editing.id || form.password) && (
+              <FormField label="Password again" type="password" required value={form.passwordAgain} onChange={set("passwordAgain")} error={errors.passwordAgain} />
+            )}
           </div>
         </Modal>
       )}

@@ -3,6 +3,9 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { DeveloperListings, DeveloperTeam } from "../components/DeveloperTabs.jsx";
 import { api, getSession, isReifgoAdmin, isReifgoTier, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
+import { IconSelect } from "../components/IconPicker.jsx";
+import Switch from "../components/Switch.jsx";
+import { credentialErrors, emailIsChanging } from "../credentials.js";
 import { useToast } from "../components/Toast.jsx";
 
 const EMPTY = {
@@ -14,7 +17,9 @@ const EMPTY = {
   hero_image_url: "",
   logo_url: "",
   email: "",
+  emailAgain: "",
   password: "",
+  passwordAgain: "",
   is_verified: false,
   is_approved: false,
   values: [],
@@ -41,6 +46,7 @@ export default function DeveloperForm({ selfMode = false }) {
   const showTabs = !isNew && !selfMode;
   const [devRow, setDevRow] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -58,7 +64,9 @@ export default function DeveloperForm({ selfMode = false }) {
           name: d.name ?? "",
           logo_url: d.logo_url ?? "",
           email: d.email ?? "",
+          emailAgain: "",
           password: "",
+          passwordAgain: "",
           tagline: d.tagline ?? "",
           years_in_market: d.years_in_market ?? "",
           total_projects: d.total_projects ?? "",
@@ -77,7 +85,10 @@ export default function DeveloperForm({ selfMode = false }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
+  const set = (key) => (value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
+  };
 
   const heroFileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -121,9 +132,28 @@ export default function DeveloperForm({ selfMode = false }) {
   const removeValue = (i) =>
     setForm((f) => ({ ...f, values: f.values.filter((_, j) => j !== i) }));
 
+  // REIFGO sets the sign-in email once; after that only a main admin changes it.
+  const emailEditable = canModerate && (isNew || !meta?.email || isReifgoAdmin(session));
+  const askEmailAgain = emailEditable && emailIsChanging(form.email, meta?.email);
+
   const submit = async (e) => {
     e.preventDefault();
     if (busy) return;
+    const found = {
+      ...(form.name.trim() ? {} : { name: "Enter the developer's name" }),
+      ...(canModerate
+        ? credentialErrors(form, { originalEmail: meta?.email ?? "", checkEmail: emailEditable })
+        : {}),
+    };
+    // A password is no use without an email to sign in with.
+    if (canModerate && form.password && !form.email.trim() && !found.email) {
+      found.email = "Add a sign-in email so they can use this password";
+    }
+    setErrors(found);
+    if (Object.keys(found).length) {
+      toast.error("Check the fields marked in red");
+      return;
+    }
     setBusy(true);
 
     const payload = {
@@ -135,7 +165,7 @@ export default function DeveloperForm({ selfMode = false }) {
       hero_image_url: str(form.hero_image_url),
       logo_url: str(form.logo_url),
       // The sign-in email is set once, by REIFGO; the password only by REIFGO.
-      ...(canModerate && (isNew || !meta?.email || isReifgoAdmin(session)) && form.email.trim() ? { email: form.email.trim() } : {}),
+      ...(emailEditable && form.email.trim() ? { email: form.email.trim() } : {}),
       ...(canModerate && form.password ? { password: form.password } : {}),
       ...(canModerate && {
         is_verified: form.is_verified,
@@ -166,6 +196,7 @@ export default function DeveloperForm({ selfMode = false }) {
               : "Developer saved",
         );
         if (!canModerate) setForm((f) => ({ ...f, logo_url: saved.logo_url ?? "" }));
+        setForm((f) => ({ ...f, emailAgain: "", password: "", passwordAgain: "" }));
       }
       if (selfMode) {
         setBusy(false);
@@ -225,11 +256,11 @@ export default function DeveloperForm({ selfMode = false }) {
       )}
 
       {(!showTabs || tab === "profile") && (
-      <form className="adm-form" onSubmit={submit}>
+      <form className="adm-form" onSubmit={submit} noValidate>
         <section className="adm-panel">
           <header className="adm-panel__head"><h2>Details</h2></header>
           <div className="adm-form-grid">
-            <FormField label="Name" required value={form.name} onChange={set("name")} />
+            <FormField label="Name" required value={form.name} onChange={set("name")} error={errors.name} />
             <FormField label="Tagline" value={form.tagline} onChange={set("tagline")} placeholder="Building tomorrow's skylines" />
             <FormField label="Years in market" type="number" value={form.years_in_market} onChange={set("years_in_market")} />
             <FormField label="Total projects" type="number" value={form.total_projects} onChange={set("total_projects")} />
@@ -296,36 +327,63 @@ export default function DeveloperForm({ selfMode = false }) {
                 <span className="adm-field__hint">Logo changes are checked by REIFGO before they go live.</span>
               )}
             </div>
-            {canModerate && !isNew && (
-              meta?.email && !isReifgoAdmin(session) ? (
+            {canModerate && (
+              emailEditable ? (
+                <>
+                  <FormField
+                    label="Sign-in email"
+                    type="email"
+                    value={form.email}
+                    onChange={set("email")}
+                    error={errors.email}
+                    hint={
+                      isNew || !meta?.email
+                        ? "Used to sign in and for Forgot password. Only a REIFGO admin can change it later."
+                        : "Used to sign in and for Forgot password. The developer can't change it themselves."
+                    }
+                  />
+                  {askEmailAgain && (
+                    <FormField label="Sign-in email again" type="email" value={form.emailAgain} onChange={set("emailAgain")} error={errors.emailAgain} />
+                  )}
+                </>
+              ) : (
                 <label className="adm-field">
                   <span className="adm-field__label">Sign-in email</span>
-                  <input value={meta.email} disabled readOnly />
+                  <input value={meta?.email ?? ""} disabled readOnly />
                   <span className="adm-field__hint">Used to sign in and for Forgot password. Only a REIFGO admin can change it.</span>
                 </label>
-              ) : meta?.email ? (
-                <FormField label="Sign-in email" value={form.email} onChange={set("email")} hint="Used to sign in and for Forgot password. The developer can't change it themselves." />
-              ) : (
-                <FormField label="Sign-in email" value={form.email} onChange={set("email")} hint="Set once. Used to sign in and for Forgot password." />
               )
-            )}
-            {canModerate && isNew && (
-              <FormField label="Sign-in email" value={form.email} onChange={set("email")} hint="Used to sign in and for Forgot password. It can't be changed later." />
-            )}
-            {canModerate && (
-              <FormField
-                label={isNew ? "Password" : "Set a new password"}
-                type="password"
-                value={form.password}
-                onChange={set("password")}
-                hint={isNew ? "At least 8 characters." : "Leave blank to keep the current password."}
-              />
             )}
             {canModerate && (
               <>
-                <FormField label="Verified" type="checkbox" value={form.is_verified} onChange={set("is_verified")} />
-                <FormField label="Approved (visible in app)" type="checkbox" value={form.is_approved} onChange={set("is_approved")} />
+                <FormField
+                  label={isNew ? "Password" : "Set a new password"}
+                  type="password"
+                  value={form.password}
+                  onChange={set("password")}
+                  error={errors.password}
+                  hint={isNew ? "At least 8 characters." : "Leave blank to keep the current password."}
+                />
+                {form.password && (
+                  <FormField label="Password again" type="password" value={form.passwordAgain} onChange={set("passwordAgain")} error={errors.passwordAgain} />
+                )}
               </>
+            )}
+            {canModerate && (
+              <div className="adm-switch-group adm-field--span2">
+                <Switch
+                  label="Show in the app"
+                  description="Lists this developer on the app's Developers screen. Turn it off while the profile is being set up."
+                  checked={form.is_approved}
+                  onChange={set("is_approved")}
+                />
+                <Switch
+                  label="Verified developer"
+                  description="Adds the verified tick next to the developer's name on its listings."
+                  checked={form.is_verified}
+                  onChange={set("is_verified")}
+                />
+              </div>
             )}
           </div>
         </section>
@@ -346,7 +404,7 @@ export default function DeveloperForm({ selfMode = false }) {
                 <span className="adm-repeater__index">{i + 1}</span>
                 <div className="adm-repeater__fields">
                   <input placeholder="Title" value={v.title} onChange={(e) => setValue(i, "title", e.target.value)} />
-                  <input placeholder="Icon, e.g. leaf-outline or mci:math-compass" value={v.icon} onChange={(e) => setValue(i, "icon", e.target.value)} />
+                  <IconSelect set="values" value={v.icon} onChange={(icon) => setValue(i, "icon", icon)} />
                   <input placeholder="Description (optional)" value={v.description} onChange={(e) => setValue(i, "description", e.target.value)} />
                 </div>
                 <div className="adm-repeater__actions">

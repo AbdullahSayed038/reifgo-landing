@@ -41,7 +41,13 @@ export default function App() {
     location.pathname.startsWith("/admin") || pathname.startsWith("/admin");
 
   useEffect(() => {
-    if (location.pathname === pathname) return;
+    // Same page, new ?query or #hash (e.g. the CMS's ?tab=): pass it straight
+    // through, with no fade and no scroll jump. Without this the page never
+    // sees the new search params.
+    if (location.pathname === pathname) {
+      if (location.key !== shown.key) setShown(location);
+      return;
+    }
 
     if (skipAnimation || prefersReducedMotion()) {
       setShown(location);
@@ -58,7 +64,7 @@ export default function App() {
     }, EXIT_MS);
 
     return () => clearTimeout(timer);
-  }, [location, pathname, skipAnimation]);
+  }, [location, pathname, shown.key, skipAnimation]);
 
   return (
     <LeadModalProvider>
