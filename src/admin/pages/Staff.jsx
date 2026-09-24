@@ -11,7 +11,7 @@ import { fmtDate } from "../contentUtils.js";
 import { credentialErrors, emailIsChanging } from "../credentials.js";
 import { REGIONS } from "../regions.js";
 
-const ROLE_LABEL = { reifgo_admin: "REIFGO admin", regional_admin: "Regional admin" };
+const ROLE_LABEL = { reifgo_admin: "REIFGO admin", regional_admin: "Regional admin", support: "Customer support" };
 const EMPTY = {
   name: "",
   email: "",
@@ -235,6 +235,8 @@ export default function Staff() {
                     {r.can_create_developers ? " · can add" : ""}
                   </span>
                 </div>
+              ) : r.role === "support" ? (
+                "Investors only"
               ) : (
                 "All developers"
               ),
@@ -325,7 +327,13 @@ export default function Staff() {
               options={[
                 { value: "reifgo_admin", label: "REIFGO admin (everything)" },
                 { value: "regional_admin", label: "Regional admin (chosen developers)" },
+                { value: "support", label: "Customer support (helps app investors)" },
               ]}
+              hint={
+                form.role === "support"
+                  ? "Sees the Investors pages only: profiles, enquiries and which documents are in. Can't open documents or reach anything else."
+                  : undefined
+              }
             />
             {regional && (
               <FormField

@@ -21,13 +21,14 @@ import Login from "./pages/Login.jsx";
 import PropertiesList from "./pages/PropertiesList.jsx";
 import PropertyForm from "./pages/PropertyForm.jsx";
 import Users from "./pages/Users.jsx";
+import InvestorDetail from "./pages/InvestorDetail.jsx";
 import Account from "./pages/Account.jsx";
 import Approvals from "./pages/Approvals.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import Staff from "./pages/Staff.jsx";
 import Activity from "./pages/Activity.jsx";
-import { can } from "./api.js";
+import { can, canSeeInvestors } from "./api.js";
 
 // UI-level guard for REIFGO-only sections. Real enforcement is server-side.
 // (This used to check the shared "admin" login alone, which locked real
@@ -43,6 +44,11 @@ function NeedsPermission({ permission, children }) {
 // REIFGO staff only — the events programme is REIFGO's, not a developer tool.
 function ReifgoOnly({ children }) {
   return isReifgoTier() ? children : <Navigate to="/admin" replace />;
+}
+
+// REIFGO admins, regional admins and customer support.
+function InvestorsOnly({ children }) {
+  return canSeeInvestors() ? children : <Navigate to="/admin" replace />;
 }
 
 // Admin + developer (i.e. not a broker).
@@ -87,7 +93,8 @@ export default function AdminApp() {
             <Route path="leads" element={<Leads />} />
             <Route path="leads/:id" element={<LeadDetail />} />
             <Route path="team" element={<Team />} />
-            <Route path="users" element={<AdminOnly><Users /></AdminOnly>} />
+            <Route path="users" element={<InvestorsOnly><Users /></InvestorsOnly>} />
+            <Route path="users/:id" element={<InvestorsOnly><InvestorDetail /></InvestorsOnly>} />
           </Route>
         </Routes>
         </CurrencyProvider>

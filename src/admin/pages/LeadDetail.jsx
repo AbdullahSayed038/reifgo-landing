@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCurrency } from "../currency.jsx";
 import { Link, useParams } from "react-router-dom";
-import { api, can, getSession } from "../api.js";
+import { api, can, canSeeInvestors, getSession } from "../api.js";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
 import Presence from "../components/Presence.jsx";
@@ -247,6 +247,11 @@ export default function LeadDetail() {
               <dt>Received</dt><dd>{fmtDateTime(lead.created_at)}</dd>
               {lead.response_hours != null && (<><dt>First response</dt><dd>{fmtHours(lead.response_hours)}</dd></>)}
             </dl>
+            {lead.user?.id && lead.source !== "website" && canSeeInvestors(session) && (
+              <Link className="adm-btn adm-btn--ghost adm-btn--sm" style={{ marginTop: 12 }} to={`/admin/users/${lead.user.id}`}>
+                Open investor profile
+              </Link>
+            )}
             {lead.message && (
               // The app sends the inquiry answers one per line.
               <p className="adm-tl__meta" style={{ marginTop: 12, whiteSpace: "pre-line" }}>{lead.message}</p>

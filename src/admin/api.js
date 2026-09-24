@@ -64,6 +64,16 @@ export function permissionTitle(permissions = []) {
   return "Custom access";
 }
 
+/** Customer support: the Investors pages and nothing else (server-enforced). */
+export function isSupport(session = getSession()) {
+  return session?.role === "support";
+}
+
+/** Who sees app investors: REIFGO admins, regional admins and support. */
+export function canSeeInvestors(session = getSession()) {
+  return isReifgoTier(session) || isSupport(session);
+}
+
 /** A main REIFGO admin (not a regional one): can change people's emails. */
 export function isReifgoAdmin(session = getSession()) {
   return ["admin", "reifgo_admin"].includes(session?.role);
@@ -175,7 +185,30 @@ async function request(method, path, body) {
   return data;
 }
 
+/**
+ * A private file (an investor's document) as a Blob. It needs the sign-in
+ * token, so it can't be a plain link; the caller opens an object URL.
+ */
+async function blob(path) {
+  const token = getToken();
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store",
+    });
+  } catch {
+    throw new ApiError(0, "Can't reach the API — is the backend running?");
+  }
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(res.status, data?.message || `Request failed (${res.status})`);
+  }
+  return res.blob();
+}
+
 export const api = {
+  blob,
   get: (path) => request("GET", path),
   post: (path, body) => request("POST", path, body),
   patch: (path, body) => request("PATCH", path, body),

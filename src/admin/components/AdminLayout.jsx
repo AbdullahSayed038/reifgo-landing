@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAutoRefresh } from "../useAutoRefresh.js";
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { api, can, getSession, IS_DEMO, isReifgoTier, logout, permissionTitle } from "../api.js";
+import { api, can, getSession, IS_DEMO, isReifgoTier, isSupport, logout, permissionTitle } from "../api.js";
 
 const ADMIN_NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
@@ -13,7 +13,8 @@ const ADMIN_NAV = [
   { to: "/admin/leads", label: "Leads", icon: "◎" },
   // Syed asked what the difference was: developers' sales staff vs people in the app.
   { to: "/admin/team", label: "Sales Teams", icon: "◍" },
-  { to: "/admin/users", label: "App Users", icon: "◉" },
+  // "Investors", not "Users": the people using the app (Syed, Sept 22 + 24).
+  { to: "/admin/users", label: "Investors", icon: "◉" },
   { to: "/admin/approvals", label: "Approvals", icon: "✓", badge: "approvals" },
   { to: "/admin/staff", label: "REIFGO Team", icon: "◇" },
   { to: "/admin/activity", label: "Activity Log", icon: "≡" },
@@ -28,6 +29,13 @@ const DEVELOPER_NAV = [
   { to: "/admin/company", label: "Company Profile", icon: "◈" },
   { to: "/admin/activity", label: "Activity Log", icon: "≡" },
 ];
+
+// Customer support helps app investors and sees nothing else.
+const SUPPORT_NAV = [
+  { to: "/admin/users", label: "Investors", icon: "◉" },
+  { to: "/admin/activity", label: "Activity Log", icon: "≡" },
+];
+const SUPPORT_PATHS = /^\/admin\/(users|activity|account)(\/|$)/;
 
 // A team account's menu follows its permissions.
 function teamNav(session) {
@@ -77,19 +85,28 @@ export default function AdminLayout() {
 
   const isDeveloper = session.role === "developer";
   const isBroker = session.role === "broker";
-  const nav = isBroker ? teamNav(session) : isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
-  const portalLabel = isBroker
-    ? "Sales Portal"
-    : isDeveloper
-      ? "Developer Portal"
-      : "Admin Dashboard";
-  const roleLabel = isBroker
-    ? permissionTitle(session.permissions)
-    : isDeveloper
-      ? "Developer account"
-      : session.role === "regional_admin"
-        ? "Regional admin"
-        : "Administrator";
+  const support = isSupport(session);
+  // Support's home is the Investors page; the rest of the CMS isn't theirs.
+  if (support && !SUPPORT_PATHS.test(location.pathname)) {
+    return <Navigate to="/admin/users" replace />;
+  }
+  const nav = support ? SUPPORT_NAV : isBroker ? teamNav(session) : isDeveloper ? DEVELOPER_NAV : ADMIN_NAV;
+  const portalLabel = support
+    ? "Support Desk"
+    : isBroker
+      ? "Sales Portal"
+      : isDeveloper
+        ? "Developer Portal"
+        : "Admin Dashboard";
+  const roleLabel = support
+    ? "Customer support"
+    : isBroker
+      ? permissionTitle(session.permissions)
+      : isDeveloper
+        ? "Developer account"
+        : session.role === "regional_admin"
+          ? "Regional admin"
+          : "Administrator";
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -108,7 +125,7 @@ export default function AdminLayout() {
           </svg>
         </button>
         <span className="adm-topbar__logo">REIFGO</span>
-        <span className="adm-topbar__sub">{isBroker ? "Sales Agent" : isDeveloper ? "Portal" : "Admin"}</span>
+        <span className="adm-topbar__sub">{support ? "Support" : isBroker ? "Sales Agent" : isDeveloper ? "Portal" : "Admin"}</span>
       </header>
 
       {menuOpen && <div className="adm-scrim" onClick={closeMenu} />}

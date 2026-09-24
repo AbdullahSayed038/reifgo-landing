@@ -14,6 +14,7 @@ const TYPES = [
   { value: "team", label: "Team accounts" },
   { value: "developer", label: "Developers" },
   { value: "staff", label: "REIFGO team" },
+  { value: "investor", label: "Investors" },
   { value: "amenity", label: "Amenities" },
   { value: "logo", label: "Logos" },
 ];
@@ -30,6 +31,7 @@ const ROLE = {
   admin: "REIFGO",
   reifgo_admin: "REIFGO",
   regional_admin: "Regional admin",
+  support: "Customer support",
   developer: "Developer",
   broker: "Sales team",
   system: "System",
@@ -48,6 +50,8 @@ function targetLink(item) {
       return "/admin/team";
     case "staff":
       return "/admin/staff";
+    case "investor":
+      return `/admin/users/${item.target_id}`;
     default:
       return null;
   }
@@ -170,8 +174,10 @@ export default function Activity() {
           <h1>Activity log</h1>
           <p>
             {reifgo
-              ? "Who did what in the CMS: sign-ins, approvals, access changes, listings and leads."
-              : "Who did what in your company's account: sign-ins, team changes, listings and leads."}
+              ? "Who did what in the CMS: sign-ins, approvals, access changes, listings, leads and investors."
+              : session?.role === "support"
+                ? "Your own activity: sign-ins and the investor accounts you've updated."
+                : "Who did what in your company's account: sign-ins, team changes, listings and leads."}
           </p>
         </div>
       </header>
