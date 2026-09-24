@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { api, can, getSession } from "../api.js";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
+import Presence from "../components/Presence.jsx";
 import {
   APP_PROPERTY_URL,
   ESCALATION,
@@ -279,6 +280,11 @@ export default function LeadDetail() {
               {lead.assigned_at && (
                 <p className="adm-tl__meta" style={{ marginTop: 10 }}>
                   Assigned {timeAgo(lead.assigned_at)}
+                </p>
+              )}
+              {lead.broker && (
+                <p className="adm-tl__meta" style={{ marginTop: 6 }}>
+                  {lead.broker.name}: <Presence at={lead.broker.last_seen_at} />
                 </p>
               )}
               {lead.rotation_expires_at && lead.status === "assigned" && (

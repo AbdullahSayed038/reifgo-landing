@@ -5,6 +5,7 @@ import { fmtDate } from "../contentUtils.js";
 import { useCurrency } from "../currency.jsx";
 import BrokerDialog from "./BrokerDialog.jsx";
 import DataTable from "./DataTable.jsx";
+import Presence from "./Presence.jsx";
 import DistributionPanel from "./DistributionPanel.jsx";
 import SalesManagerPicker from "./SalesManagerPicker.jsx";
 import StatusBadge from "./StatusBadge.jsx";
@@ -113,12 +114,20 @@ export function DeveloperTeam({ developer, onDeveloperChange }) {
                   {b.approval_status === "pending" && <span className="adm-badge adm-badge--pending">Waiting for REIFGO</span>}
                   {b.approval_status === "rejected" && <span className="adm-badge adm-badge--closed">Declined</span>}
                   {!b.is_active && <span className="adm-badge adm-badge--muted">Deactivated</span>}
+                  {b.permissions_requested_at && <span className="adm-badge adm-badge--assigned">Access change waiting</span>}
                 </strong>
                 <span>{b.email}</span>
               </div>
             ),
           },
           { key: "access", label: "Access", width: 150, sortValue: (b) => permissionTitle(b.permissions), render: (b) => permissionTitle(b.permissions) },
+          {
+            key: "last_seen_at",
+            label: "Last seen",
+            width: 150,
+            sortValue: (b) => (b.last_seen_at ? new Date(b.last_seen_at).getTime() : 0),
+            render: (b) => <Presence at={b.last_seen_at} />,
+          },
           { key: "open", label: "Open leads", width: 100, sortValue: (b) => b.stats.open, render: (b) => b.stats.open },
           { key: "created_at", label: "Added", width: 110, render: (b) => fmtDate(b.created_at) },
         ]}

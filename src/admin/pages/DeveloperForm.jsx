@@ -5,6 +5,8 @@ import { api, getSession, isReifgoAdmin, isReifgoTier, uploadImage } from "../ap
 import FormField from "../components/FormField.jsx";
 import { IconSelect } from "../components/IconPicker.jsx";
 import Switch from "../components/Switch.jsx";
+import Presence from "../components/Presence.jsx";
+import { REGIONS } from "../regions.js";
 import { credentialErrors, emailIsChanging } from "../credentials.js";
 import { useToast } from "../components/Toast.jsx";
 
@@ -22,6 +24,8 @@ const EMPTY = {
   passwordAgain: "",
   is_verified: false,
   is_approved: false,
+  region: "",
+  account_manager_id: "",
   values: [],
 };
 
@@ -47,8 +51,16 @@ export default function DeveloperForm({ selfMode = false }) {
   const [devRow, setDevRow] = useState(null);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState({});
+  // REIFGO team members who can be the account manager (main admins pick).
+  const [staff, setStaff] = useState([]);
+  const mainAdmin = isReifgoAdmin(session);
   const navigate = useNavigate();
   const toast = useToast();
+
+  useEffect(() => {
+    if (!mainAdmin || selfMode) return;
+    api.get("/admin/accounts").then((rows) => setStaff(rows.filter((r) => r.is_active))).catch(() => {});
+  }, [mainAdmin, selfMode]);
 
   useEffect(() => {
     if (isNew) return;
@@ -74,6 +86,8 @@ export default function DeveloperForm({ selfMode = false }) {
           hero_image_url: d.hero_image_url ?? "",
           is_verified: d.is_verified,
           is_approved: d.is_approved,
+          region: d.region ?? "",
+          account_manager_id: d.account_manager?.id ?? "",
           values: (d.values ?? []).map((v) => ({
             icon: v.icon ?? "",
             title: v.title,
@@ -171,6 +185,11 @@ export default function DeveloperForm({ selfMode = false }) {
         is_verified: form.is_verified,
         is_approved: form.is_approved,
       }),
+      // Region and account manager are the main admins' call.
+      ...(mainAdmin && !selfMode && {
+        region: form.region || null,
+        account_manager_id: form.account_manager_id || null,
+      }),
       values: form.values
         .filter((v) => v.title.trim())
         .map((v, i) => ({
@@ -183,8 +202,12 @@ export default function DeveloperForm({ selfMode = false }) {
 
     try {
       if (isNew) {
-        await api.post("/admin/developers", payload);
-        toast.success("Developer created");
+        const created = await api.post("/admin/developers", payload);
+        toast.success(
+          created?.approval_status === "pending"
+            ? "Developer added. A REIFGO admin needs to approve it before it shows in the app."
+            : "Developer created",
+        );
       } else {
         const saved = await api.patch(`/admin/developers/${id}`, payload);
         setMeta((m) => ({ ...m, email: saved.email, pending_logo_url: saved.pending_logo_url, logo_url: saved.logo_url }));
@@ -230,6 +253,18 @@ export default function DeveloperForm({ selfMode = false }) {
           {selfMode && <p>How {form.name || "your company"} appears in the REIFGO app.</p>}
         </div>
       </header>
+
+      {!selfMode && devRow?.approval_status === "pending" && (
+        <p className="adm-note adm-note--warn">
+          Added by {devRow.created_by_admin?.name ?? "a regional admin"}. It stays out of the app, and its sign-in doesn't work,
+          until a main REIFGO admin approves it in Approvals.
+        </p>
+      )}
+      {!selfMode && devRow?.approval_status === "rejected" && (
+        <p className="adm-note adm-note--danger">
+          A REIFGO admin declined this developer{devRow.rejection_reason ? `: ${devRow.rejection_reason}` : "."}
+        </p>
+      )}
 
       {showTabs && (
         <div className="adm-tabs">
@@ -373,8 +408,13 @@ export default function DeveloperForm({ selfMode = false }) {
               <div className="adm-switch-group adm-field--span2">
                 <Switch
                   label="Show in the app"
-                  description="Lists this developer on the app's Developers screen. Turn it off while the profile is being set up."
+                  description={
+                    (isNew && !mainAdmin) || (devRow?.approval_status === "pending" && !mainAdmin)
+                      ? "Turns on once a main REIFGO admin approves this developer."
+                      : "Lists this developer on the app's Developers screen. Turn it off while the profile is being set up."
+                  }
                   checked={form.is_approved}
+                  disabled={(isNew && !mainAdmin) || (devRow?.approval_status === "pending" && !mainAdmin)}
                   onChange={set("is_approved")}
                 />
                 <Switch
@@ -387,6 +427,64 @@ export default function DeveloperForm({ selfMode = false }) {
             )}
           </div>
         </section>
+
+        {canModerate && !selfMode && (
+          <section className="adm-panel">
+            <header className="adm-panel__head">
+              <div>
+                <h2>REIFGO</h2>
+                <p className="adm-panel__note">Who at REIFGO looks after this developer. Only main REIFGO admins change these.</p>
+              </div>
+            </header>
+            <div className="adm-form-grid">
+              {mainAdmin ? (
+                <>
+                  <FormField
+                    label="Account manager"
+                    type="select"
+                    value={form.account_manager_id}
+                    onChange={set("account_manager_id")}
+                    hint={staff.length ? "The REIFGO team member responsible for this developer." : "Add people on the REIFGO Team page first."}
+                    options={[
+                      { value: "", label: "Not set" },
+                      ...staff.map((a) => ({
+                        value: a.id,
+                        label: `${a.name}${a.role === "regional_admin" ? ` · Regional admin, ${a.region}` : ""}`,
+                      })),
+                    ]}
+                  />
+                  <FormField
+                    label="Region"
+                    type="select"
+                    value={form.region}
+                    onChange={set("region")}
+                    hint="Regional admins for this region see it first when they're given developers."
+                    options={[{ value: "", label: "Not set" }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="adm-field">
+                    <span className="adm-field__label">Account manager</span>
+                    <input value={devRow?.account_manager?.name ?? (isNew ? "You" : "Not set")} disabled readOnly />
+                  </label>
+                  <label className="adm-field">
+                    <span className="adm-field__label">Region</span>
+                    <input value={form.region || "Not set"} disabled readOnly />
+                  </label>
+                </>
+              )}
+              {!isNew && (
+                <label className="adm-field">
+                  <span className="adm-field__label">Company login</span>
+                  <span className="adm-field__static">
+                    <Presence at={devRow?.last_seen_at} />
+                  </span>
+                </label>
+              )}
+            </div>
+          </section>
+        )}
 
         <section className="adm-panel">
           <header className="adm-panel__head">

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, PERMISSIONS, permissionTitle } from "../api.js";
+import { api, isReifgoAdmin, PERMISSIONS, permissionTitle } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import IconPicker, { IconPreview } from "../components/IconPicker.jsx";
 import Modal from "../components/Modal.jsx";
@@ -14,6 +14,8 @@ const SECTIONS = [
   { key: "listings", label: "Listings" },
   { key: "amenities", label: "Amenity requests" },
   { key: "logos", label: "Logo changes" },
+  // Developers a regional admin added; main admins only.
+  { key: "developers", label: "New developers" },
 ];
 
 // The listing fields a reviewer sees, in page order, with how to show each.
@@ -167,7 +169,9 @@ export default function Approvals() {
   }, []);
 
   const devOf = (kind, item) =>
-    kind === "logos" ? { id: item.id, name: item.name } : { id: item.developer?.id ?? item.developer_id ?? "reifgo", name: item.developer_name ?? "REIFGO" };
+    kind === "logos" || kind === "developers"
+      ? { id: item.id, name: item.name }
+      : { id: item.developer?.id ?? item.developer_id ?? "reifgo", name: item.developer_name ?? "REIFGO" };
 
   // Every developer with something waiting, for the filter.
   const developers = useMemo(() => {
@@ -248,9 +252,23 @@ export default function Approvals() {
   const summary = (kind, item) => {
     switch (kind) {
       case "accounts":
+        return item.kind === "access"
+          ? {
+              title: `${item.name} · ${permissionTitle(item.permissions)} → ${permissionTitle(item.pending_permissions)}`,
+              badge: ["assigned", "Access change"],
+              lines: [item.email, `Asked by ${item.permissions_requested_by ?? "the developer"} ${timeAgo(item.permissions_requested_at)}`],
+            }
+          : {
+              title: `${item.name} · ${permissionTitle(item.permissions)}`,
+              badge: ["pending", "New account"],
+              lines: [item.email, `Added by ${item.created_by ?? "the developer"} ${timeAgo(item.created_at)}`],
+            };
+      case "developers":
         return {
-          title: `${item.name} · ${permissionTitle(item.permissions)}`,
-          lines: [item.email, `Added by ${item.created_by ?? "the developer"} ${timeAgo(item.created_at)}`],
+          title: item.name,
+          badge: ["pending", "New developer"],
+          lines: [item.region ?? "No region", `Added by ${item.created_by ?? "a regional admin"} ${timeAgo(item.created_at)}`],
+          logo: item.logo_url,
         };
       case "listings":
         return {
@@ -292,7 +310,7 @@ export default function Approvals() {
               All
               <span className="adm-tab__count">{shownTotal}</span>
             </button>
-            {SECTIONS.map((s) => (
+            {SECTIONS.filter((s) => s.key !== "developers" || isReifgoAdmin()).map((s) => (
               <button
                 key={s.key}
                 className={`adm-tab${section === s.key ? " is-active" : ""}`}
@@ -370,7 +388,9 @@ export default function Approvals() {
       {viewing && (
         <Modal
           title={
-            viewing.kind === "accounts" ? `Team account · ${viewing.item.name}`
+            viewing.kind === "accounts"
+              ? `${viewing.item.kind === "access" ? "Access change" : "Team account"} · ${viewing.item.name}`
+              : viewing.kind === "developers" ? `New developer · ${viewing.item.name}`
               : viewing.kind === "listings" ? `${viewing.item.kind === "new" ? "New listing" : "Edit"} · ${viewing.item.name}`
                 : viewing.kind === "amenities" ? `Amenity request · ${viewing.item.label}`
                   : `Logo change · ${viewing.item.name}`
@@ -401,7 +421,49 @@ export default function Approvals() {
               {devOf(viewing.kind, viewing.item).name}
             </p>
 
-            {viewing.kind === "accounts" && (
+            {viewing.kind === "developers" && (
+              <dl className="adm-kv adm-kv--left">
+                <dt>Name</dt><dd>{viewing.item.name}</dd>
+                <dt>Tagline</dt><dd>{viewing.item.tagline || "—"}</dd>
+                <dt>Region</dt><dd>{viewing.item.region || "—"}</dd>
+                <dt>Sign-in email</dt><dd>{viewing.item.email || "—"}</dd>
+                <dt>Added by</dt><dd>{viewing.item.created_by ?? "a regional admin"} · {fmtDate(viewing.item.created_at)}</dd>
+                <dt>Profile</dt><dd><Link to={`/admin/developers/${viewing.item.id}`}>Open the full profile</Link></dd>
+                <dt>Approving</dt><dd>Shows it in the app and lets its company login sign in.</dd>
+              </dl>
+            )}
+
+            {viewing.kind === "accounts" && viewing.item.kind === "access" && (
+              <table className="adm-diff">
+                <thead>
+                  <tr><th /><th>Current access</th><th>Asked for</th></tr>
+                </thead>
+                <tbody>
+                  <tr className="is-changed">
+                    <th>Access</th>
+                    <td>{permissionTitle(viewing.item.permissions)}</td>
+                    <td>{permissionTitle(viewing.item.pending_permissions)}</td>
+                  </tr>
+                  {PERMISSIONS.map((p) => {
+                    const now = viewing.item.permissions.includes(p.key);
+                    const next = viewing.item.pending_permissions.includes(p.key);
+                    return (
+                      <tr key={p.key} className={now !== next ? "is-changed" : ""}>
+                        <th>{p.label}{now !== next && <span className="adm-diff-flag">{next ? "Added" : "Removed"}</span>}</th>
+                        <td>{now ? "Yes" : "No"}</td>
+                        <td>{next ? "Yes" : "No"}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr>
+                    <th>Asked by</th>
+                    <td colSpan={2}>{viewing.item.permissions_requested_by ?? "the developer"} · {fmtDate(viewing.item.permissions_requested_at)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
+
+            {viewing.kind === "accounts" && viewing.item.kind !== "access" && (
               <dl className="adm-kv adm-kv--left">
                 <dt>Name</dt><dd>{viewing.item.name}</dd>
                 <dt>Email</dt><dd>{viewing.item.email}</dd>

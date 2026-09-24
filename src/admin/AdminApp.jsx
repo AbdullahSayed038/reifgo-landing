@@ -26,6 +26,7 @@ import Approvals from "./pages/Approvals.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import Staff from "./pages/Staff.jsx";
+import Activity from "./pages/Activity.jsx";
 import { can } from "./api.js";
 
 // UI-level guard for REIFGO-only sections. Real enforcement is server-side.
@@ -72,6 +73,7 @@ export default function AdminApp() {
             <Route path="approvals" element={<AdminOnly><Approvals /></AdminOnly>} />
             <Route path="amenities" element={<Navigate to="/admin/developers" replace />} />
             <Route path="staff" element={<AdminOnly><Staff /></AdminOnly>} />
+            <Route path="activity" element={<Activity />} />
             {/* Events are REIFGO's own, not a developer tool (September round). */}
             <Route path="events" element={<ReifgoOnly><EventsList /></ReifgoOnly>} />
             <Route path="events/new" element={<ReifgoOnly><EventForm /></ReifgoOnly>} />

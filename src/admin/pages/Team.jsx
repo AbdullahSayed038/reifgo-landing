@@ -3,6 +3,7 @@ import { api, can, getSession, isReifgoTier, permissionTitle } from "../api.js";
 import DistributionPanel from "../components/DistributionPanel.jsx";
 import SalesManagerPicker from "../components/SalesManagerPicker.jsx";
 import DataTable from "../components/DataTable.jsx";
+import Presence from "../components/Presence.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtHours, initials } from "../leadUtils.js";
@@ -153,6 +154,11 @@ export default function Team() {
                     {b.approval_status === "rejected" && (
                       <span className="adm-badge adm-badge--closed" title={b.rejection_reason ?? ""}>Declined</span>
                     )}
+                    {b.permissions_requested_at && (
+                      <span className="adm-badge adm-badge--assigned" title={`Asked for ${permissionTitle(b.pending_permissions)} access`}>
+                        Access change waiting
+                      </span>
+                    )}
                   </strong>
                   <span>
                     {permissionTitle(b.permissions)}
@@ -164,6 +170,13 @@ export default function Team() {
                 </span>
               </span>
             ),
+          },
+          {
+            key: "last_seen_at",
+            label: "Last seen",
+            width: 150,
+            sortValue: (b) => (b.last_seen_at ? new Date(b.last_seen_at).getTime() : 0),
+            render: (b) => <Presence at={b.last_seen_at} />,
           },
           // The developer is the group band now, so it does not also need a
           // column repeating it on every row.

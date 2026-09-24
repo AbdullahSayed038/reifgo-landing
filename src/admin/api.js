@@ -69,6 +69,35 @@ export function isReifgoAdmin(session = getSession()) {
   return ["admin", "reifgo_admin"].includes(session?.role);
 }
 
+/** Main admins, and regional admins whose account allows it, add developers. */
+export function canCreateDevelopers(session = getSession()) {
+  return isReifgoAdmin(session) || (session?.role === "regional_admin" && !!session.can_create_developers);
+}
+
+/** A Sales Manager, as far as access goes: someone who hands out leads. */
+export const isManagerAccess = (permissions = []) => permissions.includes("assign_leads");
+
+// Online means a CMS request in the last few minutes (the sidebar polls every
+// 20 seconds while the CMS is open).
+const ONLINE_MS = 5 * 60 * 1000;
+
+/** { online, label } for an account's last_seen_at. */
+export function presence(lastSeenAt) {
+  if (!lastSeenAt) return { online: false, label: "Never signed in" };
+  const ms = Date.now() - new Date(lastSeenAt).getTime();
+  if (ms < ONLINE_MS) return { online: true, label: "Online" };
+  const mins = Math.round(ms / 60000);
+  if (mins < 60) return { online: false, label: `Last seen ${mins} min ago` };
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return { online: false, label: `Last seen ${hours}h ago` };
+  const days = Math.round(hours / 24);
+  if (days < 30) return { online: false, label: `Last seen ${days} day${days === 1 ? "" : "s"} ago` };
+  return {
+    online: false,
+    label: `Last seen ${new Date(lastSeenAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`,
+  };
+}
+
 /** "+971 50 123 4567" -> "+971 50 ••• ••67" for lists; the full number shows once a lead is opened. */
 export function maskPhone(phone) {
   if (!phone) return "";
@@ -165,6 +194,7 @@ export async function login(username, password) {
     broker_id: data.broker_id ?? null,
     permissions: data.permissions ?? [],
     name: data.name ?? "Admin",
+    can_create_developers: !!data.can_create_developers,
   };
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;

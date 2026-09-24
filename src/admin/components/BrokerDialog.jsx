@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, getSession, isReifgoAdmin, isReifgoTier, PERMISSION_PRESETS, PERMISSIONS } from "../api.js";
+import { api, getSession, isManagerAccess, isReifgoAdmin, isReifgoTier, permissionTitle, PERMISSION_PRESETS, PERMISSIONS } from "../api.js";
 import { str } from "../contentUtils.js";
 import { credentialErrors, emailIsChanging } from "../credentials.js";
 import FormField from "./FormField.jsx";
@@ -56,6 +56,13 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
     setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
   };
   const emailEditable = isNew || isReifgoAdmin(session);
+  // Syed, Sept 24: once someone is a Sales Manager, only REIFGO changes their
+  // access. On the developer side, giving a live account more access waits
+  // for REIFGO; a new Sales Agent needs no approval at all.
+  const live = !isNew && (broker.approval_status ?? "approved") === "approved";
+  const accessLocked = !reifgo && live && isManagerAccess(broker.permissions ?? []);
+  const adding = form.permissions.some((p) => !(broker?.permissions ?? []).includes(p));
+  const needsApproval = !reifgo && ((isNew && form.permissions.length > 0) || (live && adding));
   const askEmailAgain = emailEditable && emailIsChanging(form.email, broker?.email);
   const togglePermission = (key) =>
     setForm((f) => ({
@@ -105,11 +112,15 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
         toast.success(
           created.approval_status === "pending"
             ? `${payload.name} added. They can sign in once REIFGO approves the account.`
-            : `${payload.name} added`,
+            : `${payload.name} added. They can sign in now.`,
         );
       } else {
-        await api.patch(`/admin/brokers/${broker.id}`, payload);
-        toast.success("Team member saved");
+        const saved = await api.patch(`/admin/brokers/${broker.id}`, accessLocked ? { ...payload, permissions: undefined } : payload);
+        toast.success(
+          saved?.permissions_requested_at && !broker.permissions_requested_at
+            ? "Saved. The new access is waiting for REIFGO to approve it."
+            : "Team member saved",
+        );
       }
       onSaved();
     } catch (err) {
@@ -193,7 +204,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
                     type="button"
                     key={key}
                     className={`adm-chip-btn${samePerms(preset.permissions) ? " is-active" : ""}`}
-                    disabled={!preset.permissions.every(grantable)}
+                    disabled={accessLocked || !preset.permissions.every(grantable)}
                     onClick={() => applyPreset(preset)}
                   >
                     {preset.label}
@@ -210,13 +221,28 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
                     <input
                       type="checkbox"
                       checked={form.permissions.includes(p.key)}
-                      disabled={!grantable(p.key) || (!isNew && broker.id === session?.broker_id)}
+                      disabled={accessLocked || !grantable(p.key) || (!isNew && broker.id === session?.broker_id)}
                       onChange={() => togglePermission(p.key)}
                     />
                     <span>{p.label}</span>
                   </label>
                 ))}
               </div>
+              {accessLocked ? (
+                <span className="adm-field__hint">A Sales Manager's access can only be changed by REIFGO.</span>
+              ) : broker?.permissions_requested_at ? (
+                <span className="adm-field__hint">
+                  Waiting for REIFGO to approve {permissionTitle(broker.pending_permissions)} access. They keep their current access until then.
+                </span>
+              ) : needsApproval ? (
+                <span className="adm-field__hint adm-field__hint--warn">
+                  {isNew
+                    ? "Management access needs REIFGO's approval. They can sign in once it's approved."
+                    : "Giving more access needs REIFGO's approval. They keep their current access until then."}
+                </span>
+              ) : !reifgo && isNew ? (
+                <span className="adm-field__hint">A Sales Agent can sign in straight away.</span>
+              ) : null}
             </div>
 
             {(isNew || reifgo) && (

@@ -16,6 +16,7 @@ const ADMIN_NAV = [
   { to: "/admin/users", label: "App Users", icon: "◉" },
   { to: "/admin/approvals", label: "Approvals", icon: "✓", badge: "approvals" },
   { to: "/admin/staff", label: "REIFGO Team", icon: "◇" },
+  { to: "/admin/activity", label: "Activity Log", icon: "≡" },
 ];
 
 const DEVELOPER_NAV = [
@@ -25,6 +26,7 @@ const DEVELOPER_NAV = [
   { to: "/admin/leads", label: "Leads", icon: "◎" },
   { to: "/admin/team", label: "Team", icon: "◍" },
   { to: "/admin/company", label: "Company Profile", icon: "◈" },
+  { to: "/admin/activity", label: "Activity Log", icon: "≡" },
 ];
 
 // A team account's menu follows its permissions.
@@ -35,6 +37,7 @@ function teamNav(session) {
     ...(can("manage_properties", session) ? [{ to: "/admin/properties", label: "Properties", icon: "◨" }] : []),
     { to: "/admin/team", label: "Team", icon: "◍" },
     ...(can("edit_company", session) ? [{ to: "/admin/company", label: "Company Profile", icon: "◈" }] : []),
+    ...(can("manage_team", session) ? [{ to: "/admin/activity", label: "Activity Log", icon: "≡" }] : []),
   ];
 }
 
@@ -56,6 +59,12 @@ export default function AdminLayout() {
     loadApprovals();
   }, [loadApprovals, location.pathname]);
   useAutoRefresh(loadApprovals);
+  // Keeps "Online" accurate for accounts that don't poll the approvals count.
+  const heartbeat = useCallback(() => {
+    if (reifgo || IS_DEMO || !getSession()) return;
+    api.get("/admin/me").catch(() => {});
+  }, [reifgo]);
+  useAutoRefresh(heartbeat, { intervalMs: 60000 });
   useEffect(() => {
     const onCount = (e) => setApprovals(e.detail ?? 0);
     window.addEventListener("reifgo:approvals", onCount);

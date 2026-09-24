@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, can, getSession, isReifgoTier, maskPhone } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
+import Presence from "../components/Presence.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -322,6 +323,7 @@ export default function Leads() {
                 <span className="adm-broker-name">
                   <span className="adm-avatar">{initials(r.broker.name)}</span>
                   {r.broker.name}
+                  <Presence at={r.broker.last_seen_at} compact />
                 </span>
               ) : (
                 <span className="use">Unassigned</span>
