@@ -27,6 +27,8 @@ const SUPPORT_NAV = [
   { to: "/admin/users", label: "Investors", icon: "◉" },
   { to: "/admin/activity", label: "Activity Log", icon: "≡" },
 ];
+// Pages with a V2 design (see design.jsx): the switch only shows on these.
+const V2_PAGES = /^\/admin(\/leads)?\/?$/;
 const SUPPORT_PATHS = /^\/admin\/(users|activity|account)(\/|$)/;
 
 // The sales team's menu follows its permissions. Listings, developers and the
@@ -149,8 +151,9 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        {/* Syed, Sept 24: V1 / V2 above the account name. Support has no V2 pages. */}
-        {!support && <DesignSwitch />}
+        {/* Syed, Sept 24: V1 / V2 above the account name, only on the pages
+            that have a V2 (Dashboard and Leads). */}
+        {!support && V2_PAGES.test(location.pathname) && <DesignSwitch />}
 
         {/* Syed: click the name to change your details or password. */}
         <Link to="/admin/account" className="adm-account adm-account--link" onClick={closeMenu} title="Account settings">
