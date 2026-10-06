@@ -3,11 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, permissionTitle } from "../api.js";
 import { fmtDate } from "../contentUtils.js";
 import { useCurrency } from "../currency.jsx";
-import BrokerDialog from "./BrokerDialog.jsx";
 import DataTable from "./DataTable.jsx";
 import Presence from "./Presence.jsx";
-import DistributionPanel from "./DistributionPanel.jsx";
-import SalesManagerPicker from "./SalesManagerPicker.jsx";
 import StatusBadge from "./StatusBadge.jsx";
 import { useToast } from "./Toast.jsx";
 
@@ -75,46 +72,45 @@ export function DeveloperListings({ developerId }) {
   );
 }
 
-/** A developer's sales team, Sales Manager and lead distribution, on their page. */
-export function DeveloperTeam({ developer, onDeveloperChange }) {
+/**
+ * REIFGO's sales agents who cover this developer (Oct 6: developers have no
+ * teams of their own). Auto rotation sends this developer's leads to them
+ * first. Coverage is set on the Sales Team page.
+ */
+export function DeveloperAgents({ developer }) {
   const [team, setTeam] = useState(null);
-  const [adding, setAdding] = useState(false);
   const toast = useToast();
 
-  const load = () =>
-    api.get(`/admin/brokers?developer_id=${encodeURIComponent(developer.id)}`).then(setTeam).catch((e) => toast.error(e.message));
-
   useEffect(() => {
-    load();
+    api
+      .get(`/admin/brokers?developer_id=${encodeURIComponent(developer.id)}`)
+      .then((rows) => setTeam(rows.filter((b) => (b.approval_status ?? "approved") === "approved")))
+      .catch((e) => toast.error(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [developer.id]);
 
   return (
     <>
-      <SalesManagerPicker developer={developer} team={team} onChanged={onDeveloperChange} />
-      <DistributionPanel developerId={developer.id} onChanged={load} />
       <div className="adm-filters" style={{ justifyContent: "space-between", marginBottom: 12 }}>
-        <Link to="/admin/team" className="adm-tl__meta">Open all Sales Teams</Link>
-        <button className="adm-btn adm-btn--primary" onClick={() => setAdding(true)}>+ Add team member</button>
+        <p className="adm-tl__meta" style={{ margin: 0 }}>
+          REIFGO agents covering {developer.name.replace(/\s+/g, " ")}. Their leads go to these agents first when auto rotation is on.
+        </p>
+        <Link to="/admin/team" className="adm-btn adm-btn--ghost">Manage on Sales Team</Link>
       </div>
       <DataTable
         rows={team ?? []}
         searchKeys={["name", "email"]}
-        searchPlaceholder="Search the team…"
-        emptyText={team === null ? "Loading…" : "No team members yet."}
+        searchPlaceholder="Search agents…"
+        emptyText={team === null ? "Loading…" : "No agents cover this developer yet, so its leads can go to anyone on the team."}
         columns={[
           {
             key: "name",
-            label: "Team member",
+            label: "Agent",
             render: (b) => (
               <div className="adm-cell-stack">
                 <strong>
                   {b.name}
-                  {developer.sales_manager?.id === b.id && <span className="adm-badge adm-badge--active">Sales Manager</span>}
-                  {b.approval_status === "pending" && <span className="adm-badge adm-badge--pending">Waiting for REIFGO</span>}
-                  {b.approval_status === "rejected" && <span className="adm-badge adm-badge--closed">Declined</span>}
                   {!b.is_active && <span className="adm-badge adm-badge--muted">Deactivated</span>}
-                  {b.permissions_requested_at && <span className="adm-badge adm-badge--assigned">Access change waiting</span>}
                 </strong>
                 <span>{b.email}</span>
               </div>
@@ -132,17 +128,6 @@ export function DeveloperTeam({ developer, onDeveloperChange }) {
           { key: "created_at", label: "Added", width: 110, render: (b) => fmtDate(b.created_at) },
         ]}
       />
-      {adding && (
-        <BrokerDialog
-          broker={{ developer_id: developer.id }}
-          isAdmin={false}
-          onClose={() => setAdding(false)}
-          onSaved={() => {
-            setAdding(false);
-            load();
-          }}
-        />
-      )}
     </>
   );
 }

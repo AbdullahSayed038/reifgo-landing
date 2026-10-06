@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCurrency } from "../currency.jsx";
 import { Link, useParams } from "react-router-dom";
-import { api, can, canSeeInvestors, getSession } from "../api.js";
+import { api, can, canSeeInvestors, getSession, isReifgoTier } from "../api.js";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
 import Presence from "../components/Presence.jsx";
@@ -10,6 +10,8 @@ import {
   ESCALATION,
   LEAD_CATEGORY,
   LIFECYCLE,
+  agentOptions,
+  leadSource,
   STEP_LABEL,
   fmtDateTime,
   fmtHours,
@@ -31,7 +33,8 @@ export default function LeadDetail() {
   const { fmtMoney } = useCurrency();
   const session = getSession();
   const isBroker = session?.role === "broker";
-  const canAssign = can("assign_leads", session) && !!lead?.developer_id;
+  // Any lead can go to any of REIFGO's agents (Oct 6), general ones included.
+  const canAssign = can("assign_leads", session);
 
   useEffect(() => {
     api.get(`/admin/leads/${id}`).then(setLead).catch((e) => toast.error(e.message));
@@ -83,9 +86,8 @@ export default function LeadDetail() {
   const category = leadCategory(lead);
   const prop = lead.property;
   const esc = lead.escalation ? ESCALATION[lead.escalation] : null;
-  const brokerOptions = brokers.filter(
-    (b) => b.developer_id === lead.developer_id && b.is_active && (b.approval_status ?? "approved") === "approved",
-  );
+  const brokerOptions = agentOptions(brokers, lead);
+  const source = leadSource(lead);
 
   // Which status actions to offer given the current state.
   const actions = [];
@@ -114,7 +116,7 @@ export default function LeadDetail() {
 
       {esc && (
         <div className={`adm-esc-banner adm-esc-banner--${esc.tone}`}>
-          ⚠ {esc.label} — no Sales Agent response within {lead.escalation === "reifgo" ? "48h" : "24h"} of assignment.
+          ⚠ {esc.label}: no reply from the Sales Agent within {lead.escalation === "reifgo" ? "48h" : "24h"} of assignment.
         </div>
       )}
 
@@ -224,7 +226,7 @@ export default function LeadDetail() {
                   <a className="adm-btn adm-btn--ghost adm-btn--sm" href={APP_PROPERTY_URL(prop.id)} target="_blank" rel="noopener noreferrer">
                     View listing ↗
                   </a>
-                  {can("manage_properties", session) && (
+                  {isReifgoTier(session) && (
                     <Link className="adm-btn adm-btn--ghost adm-btn--sm" to={`/admin/properties/${prop.id}`}>
                       Open in CMS
                     </Link>
@@ -241,7 +243,11 @@ export default function LeadDetail() {
               <dt>Email</dt><dd>{lead.user?.email ?? "—"}</dd>
               <dt>Lead type</dt><dd><span className={`adm-badge adm-badge--lead-${category}`}>{LEAD_CATEGORY[category]}</span></dd>
               <dt>Request</dt><dd><StatusBadge value={lead.lead_type} /></dd>
-              <dt>Source</dt><dd>{lead.source === "website" ? "Website form" : "App"}</dd>
+              <dt>Sent from</dt>
+              <dd>
+                {source.label}
+                {source.page && <span className="adm-muted"> ({source.page})</span>}
+              </dd>
               {!lead.property && lead.developer_name && (<><dt>Developer</dt><dd>{lead.developer_name}</dd></>)}
               {lead.interest && (<><dt>Interest</dt><dd>{lead.interest}</dd></>)}
               <dt>Received</dt><dd>{fmtDateTime(lead.created_at)}</dd>
@@ -258,7 +264,7 @@ export default function LeadDetail() {
             )}
           </section>
 
-          {lead.developer_id && (
+          {(
             <section className="adm-panel">
               <header className="adm-panel__head"><h2>Assignment</h2></header>
               {canAssign ? (
@@ -270,7 +276,7 @@ export default function LeadDetail() {
                   >
                     <option value="">Unassigned</option>
                     {brokerOptions.map((b) => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
+                      <option key={b.id} value={b.id}>{b.name}{b.covering ? ` · covers ${lead.developer_name}` : ""}</option>
                     ))}
                   </select>
                 </div>

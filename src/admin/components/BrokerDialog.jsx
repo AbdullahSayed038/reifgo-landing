@@ -6,14 +6,15 @@ import FormField from "./FormField.jsx";
 import { useToast } from "./Toast.jsx";
 
 /**
- * Add or edit a team account (Sales Manager, Sales Agent, or custom access).
+ * Add or edit someone on REIFGO's sales team (Sales Manager, Sales Agent, or
+ * custom access), and which developers they cover.
  *
- * Access is tick-box permissions with the two job titles as presets. A
- * developer's new accounts wait for REIFGO before they can sign in. The email
- * is fixed once the account exists, and only REIFGO sets someone else's
- * password — everyone can change their own from Account settings.
+ * Access is tick-box permissions with the two job titles as presets. When a
+ * Sales Manager gives someone management access it waits for a REIFGO admin.
+ * The email is fixed once the account exists, and only REIFGO sets someone
+ * else's password — everyone can change their own from Account settings.
  */
-export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
+export default function BrokerDialog({ broker, onClose, onSaved }) {
   const isNew = !broker?.id;
   const session = getSession();
   const reifgo = isReifgoTier(session);
@@ -22,7 +23,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
     email: broker?.email ?? "",
     phone: broker?.phone ?? "",
     position: broker?.position ?? "",
-    developer_id: broker?.developer_id ?? "",
+    covers: (broker?.covers ?? []).map((d) => d.id),
     permissions: broker?.permissions ?? [],
     emailAgain: "",
     password: "",
@@ -37,12 +38,9 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
   const grantable = (key) =>
     session?.role !== "broker" || (session.permissions ?? []).includes(key);
 
-  // Only REIFGO picks the desk; a developer's team is always their own, and the
-  // server enforces that regardless of what is sent.
   useEffect(() => {
-    if (!isAdmin) return;
-    api.get("/admin/developers").then(setDevelopers).catch(() => {});
-  }, [isAdmin]);
+    api.get("/admin/brokers/developer-options").then(setDevelopers).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -56,9 +54,9 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
     setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
   };
   const emailEditable = isNew || isReifgoAdmin(session);
-  // Syed, Sept 24: once someone is a Sales Manager, only REIFGO changes their
-  // access. On the developer side, giving a live account more access waits
-  // for REIFGO; a new Sales Agent needs no approval at all.
+  // Syed, Sept 24: once someone is a Sales Manager, only a REIFGO admin changes
+  // their access. When a Sales Manager gives a live account more access it
+  // waits for a REIFGO admin; a new Sales Agent needs no approval at all.
   const live = !isNew && (broker.approval_status ?? "approved") === "approved";
   const accessLocked = !reifgo && live && isManagerAccess(broker.permissions ?? []);
   const adding = form.permissions.some((p) => !(broker?.permissions ?? []).includes(p));
@@ -100,9 +98,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
       phone: str(form.phone),
       position: str(form.position),
       permissions: form.permissions,
-      // REIFGO picks the developer (or it's preset from the developer's page);
-      // for a developer's own team the server uses their company regardless.
-      ...(isNew && form.developer_id ? { developer_id: form.developer_id } : {}),
+      developer_ids: form.covers,
       ...(form.password ? { password: form.password } : {}),
     };
 
@@ -111,14 +107,14 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
         const created = await api.post("/admin/brokers", payload);
         toast.success(
           created.approval_status === "pending"
-            ? `${payload.name} added. They can sign in once REIFGO approves the account.`
+            ? `${payload.name} added. They can sign in once a REIFGO admin approves the account.`
             : `${payload.name} added. They can sign in now.`,
         );
       } else {
         const saved = await api.patch(`/admin/brokers/${broker.id}`, accessLocked ? { ...payload, permissions: undefined } : payload);
         toast.success(
           saved?.permissions_requested_at && !broker.permissions_requested_at
-            ? "Saved. The new access is waiting for REIFGO to approve it."
+            ? "Saved. The new access is waiting for a REIFGO admin to approve it."
             : "Team member saved",
         );
       }
@@ -135,18 +131,18 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
         className="adm-dialog"
         role="dialog"
         aria-modal="true"
-        aria-label={isNew ? "Add team member" : `Edit ${broker.name}`}
+        aria-label={isNew ? "Add to the sales team" : `Edit ${broker.name}`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <header className="adm-dialog__head">
-          <h2>{isNew ? "Add team member" : `Edit ${broker.name}`}</h2>
+          <h2>{isNew ? "Add to the sales team" : `Edit ${broker.name}`}</h2>
         </header>
 
         <form className="adm-form" onSubmit={submit} noValidate>
           <div className="adm-form-grid adm-dialog__body">
             {broker?.approval_status === "rejected" && (
               <p className="adm-note adm-note--danger adm-field--span2" style={{ margin: 0 }}>
-                REIFGO declined this account{broker.rejection_reason ? `: ${broker.rejection_reason}` : "."} Saving your changes sends it back for approval.
+                A REIFGO admin declined this account{broker.rejection_reason ? `: ${broker.rejection_reason}` : "."} Saving your changes sends it back for approval.
               </p>
             )}
             <FormField label="Name" required value={form.name} onChange={set("name")} error={errors.name} />
@@ -179,22 +175,38 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
               onChange={set("position")}
               placeholder="Senior Sales Consultant"
             />
-            {isAdmin && isNew && (
-              <FormField
-                label="Developer"
-                type="select"
-                value={form.developer_id}
-                onChange={set("developer_id")}
-                options={[
-                  { value: "", label: "Select a developer…" },
-                  ...developers.map((d) => ({
-                    value: d.id,
-                    label: (d.name || "").replace(/\s+/g, " "),
-                  })),
-                ]}
-                span={2}
-              />
-            )}
+            <div className="adm-field adm-field--span2">
+              <span className="adm-field__label">Covers developers</span>
+              <div className="adm-country-chips">
+                {form.covers.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className="adm-chip-btn is-active"
+                    aria-label={`Stop covering ${developers.find((d) => d.id === id)?.name ?? "this developer"}`}
+                    onClick={() => set("covers")(form.covers.filter((x) => x !== id))}
+                  >
+                    {developers.find((d) => d.id === id)?.name ?? "…"} <span aria-hidden="true">✕</span>
+                  </button>
+                ))}
+                <select
+                  className="adm-inline-select"
+                  value=""
+                  aria-label="Add a developer they cover"
+                  onChange={(e) => e.target.value && set("covers")([...form.covers, e.target.value])}
+                >
+                  <option value="">{form.covers.length ? "+ Add a developer" : "Any developer (add one to focus)"}</option>
+                  {developers
+                    .filter((d) => !form.covers.includes(d.id))
+                    .map((d) => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                </select>
+              </div>
+              <span className="adm-field__hint">
+                With auto rotation on, leads for these developers go to the agents covering them first. Anyone can still be assigned any lead by hand.
+              </span>
+            </div>
 
             <div className="adm-field adm-field--span2">
               <span className="adm-field__label">Access</span>
@@ -229,16 +241,16 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
                 ))}
               </div>
               {accessLocked ? (
-                <span className="adm-field__hint">A Sales Manager's access can only be changed by REIFGO.</span>
+                <span className="adm-field__hint">A Sales Manager's access can only be changed by a REIFGO admin.</span>
               ) : broker?.permissions_requested_at ? (
                 <span className="adm-field__hint">
-                  Waiting for REIFGO to approve {permissionTitle(broker.pending_permissions)} access. They keep their current access until then.
+                  Waiting for a REIFGO admin to approve {permissionTitle(broker.pending_permissions)} access. They keep their current access until then.
                 </span>
               ) : needsApproval ? (
                 <span className="adm-field__hint adm-field__hint--warn">
                   {isNew
-                    ? "Management access needs REIFGO's approval. They can sign in once it's approved."
-                    : "Giving more access needs REIFGO's approval. They keep their current access until then."}
+                    ? "Management access needs a REIFGO admin's approval. They can sign in once it's approved."
+                    : "Giving more access needs a REIFGO admin's approval. They keep their current access until then."}
                 </span>
               ) : !reifgo && isNew ? (
                 <span className="adm-field__hint">A Sales Agent can sign in straight away.</span>
@@ -272,7 +284,7 @@ export default function BrokerDialog({ broker, isAdmin, onClose, onSaved }) {
               Cancel
             </button>
             <button className="adm-btn adm-btn--primary" disabled={busy}>
-              {busy ? "Saving…" : isNew ? "Add team member" : "Save changes"}
+              {busy ? "Saving…" : isNew ? "Add to the team" : "Save changes"}
             </button>
           </footer>
         </form>

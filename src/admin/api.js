@@ -37,11 +37,9 @@ export function isReifgoTier(session = getSession()) {
  * uses this to hide controls; the server enforces the same rules.
  */
 export const PERMISSIONS = [
-  { key: "view_all_leads", label: "See all the company's leads" },
+  { key: "view_all_leads", label: "See every lead" },
   { key: "assign_leads", label: "Hand out leads and set lead distribution" },
-  { key: "manage_properties", label: "Add and edit listings" },
-  { key: "manage_team", label: "Add and manage team accounts" },
-  { key: "edit_company", label: "Edit the company profile" },
+  { key: "manage_team", label: "Add and manage the sales team" },
 ];
 
 export const PERMISSION_PRESETS = {
@@ -51,7 +49,7 @@ export const PERMISSION_PRESETS = {
 
 export function can(permission, session = getSession()) {
   if (!session) return false;
-  if (isReifgoTier(session) || session.role === "developer") return true;
+  if (isReifgoTier(session)) return true;
   return (session.permissions ?? []).includes(permission);
 }
 

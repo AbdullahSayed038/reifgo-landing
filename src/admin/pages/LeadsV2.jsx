@@ -8,11 +8,13 @@ import { useAutoRefresh } from "../useAutoRefresh.js";
 import {
   APP_PROPERTY_URL,
   LEAD_CATEGORY,
+  agentOptions,
   exactTime,
   fmtHours,
   initials,
   lastTouch,
   leadCategory,
+  leadSource,
   timeAgo,
   urgencyOf,
 } from "../leadUtils.js";
@@ -376,9 +378,7 @@ function LeadPreview({ lead, brokers, canAssign, onChanged }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
-  const eligible = brokers.filter(
-    (b) => b.developer_id === lead.developer_id && b.is_active && (b.approval_status ?? "approved") === "approved",
-  );
+  const eligible = agentOptions(brokers, lead);
   const [assignTo, setAssignTo] = useState(lead.assigned_broker_id ?? "");
   const cat = leadCategory(lead);
   const u = lead.u;
@@ -416,7 +416,7 @@ function LeadPreview({ lead, brokers, canAssign, onChanged }) {
           <h2>{lead.user?.full_name || "Unnamed investor"}</h2>
           <p>
             <span className={`adm-badge adm-badge--lead-${cat}`}>{LEAD_CATEGORY[cat]}</span>
-            <span>{lead.source === "website" ? "Website" : "App"}</span>
+            <span title={leadSource(lead).page ?? undefined}>{leadSource(lead).label}</span>
             <span title={exactTime(lead.created_at)}>Received {exactTime(lead.created_at)}</span>
           </p>
         </div>
@@ -453,7 +453,7 @@ function LeadPreview({ lead, brokers, canAssign, onChanged }) {
 
       {lead.message && <p className="adm-lv2-message">{lead.message}</p>}
 
-      {canAssign && lead.developer_id && !closed && (
+      {canAssign && !closed && (
         <div className="adm-lv2-action">
           <label htmlFor={`assign-${lead.id}`}>{lead.assigned_broker_id ? "Reassign to" : "Assign to"}</label>
           <div className="adm-lv2-action__row">
@@ -461,7 +461,7 @@ function LeadPreview({ lead, brokers, canAssign, onChanged }) {
               <option value="">Choose an agent…</option>
               {eligible.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.name}{b.stats?.open != null ? ` · ${b.stats.open} open` : ""}
+                  {b.name}{b.covering ? " · covers this developer" : ""}{b.stats?.open != null ? ` · ${b.stats.open} open` : ""}
                 </option>
               ))}
             </select>
@@ -479,13 +479,9 @@ function LeadPreview({ lead, brokers, canAssign, onChanged }) {
               Assign
             </button>
           </div>
-          {eligible.length === 0 && <span className="adm-muted">This developer has no active agents yet.</span>}
+          {eligible.length === 0 && <span className="adm-muted">No one is on the sales team yet. Add people on the Sales Team page.</span>}
         </div>
       )}
-      {canAssign && !lead.developer_id && !closed && (
-        <p className="adm-muted adm-lv2-action">A general enquiry stays with the REIFGO team; there's no developer agent to assign.</p>
-      )}
-
       {!closed && (
         <div className="adm-lv2-action">
           <label>Move to</label>

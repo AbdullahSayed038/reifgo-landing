@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, isReifgoTier } from "../api.js";
+import { api } from "../api.js";
 import FormField from "./FormField.jsx";
 import { useToast } from "./Toast.jsx";
 
@@ -16,23 +16,21 @@ const TIMEZONES = [
 const DEFAULT_HOURS = { timezone: "Asia/Dubai", days: [1, 2, 3, 4, 5], start: "09:00", end: "18:00" };
 
 /**
- * How a developer's new leads reach their agents (Syed, Sept 15).
- * Manual: a Sales Manager hands each one out. Auto: leads rotate between the
- * agents in the rotation; if the agent doesn't mark it contacted within the
- * window (working hours only) it moves to the next one.
+ * How new leads reach REIFGO's sales team (Syed, Sept 15; one desk since
+ * Oct 6). Manual: a Sales Manager hands each one out. Auto: leads rotate
+ * between the agents in the rotation, agents covering a lead's developer
+ * first; if the agent doesn't mark it contacted within the window (working
+ * hours only) it moves to the next one.
  */
-export default function DistributionPanel({ developerId, onChanged }) {
+export default function DistributionPanel({ onChanged }) {
   const [data, setData] = useState(null);
   const [draft, setDraft] = useState(null);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
-  const reifgo = isReifgoTier();
 
   const load = () => {
-    if (reifgo && !developerId) return;
-    const qs = reifgo ? `?developer_id=${encodeURIComponent(developerId)}` : "";
     api
-      .get(`/admin/leads/distribution${qs}`)
+      .get("/admin/leads/distribution")
       .then((d) => {
         setData(d);
         setDraft({
@@ -48,16 +46,8 @@ export default function DistributionPanel({ developerId, onChanged }) {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [developerId]);
+  }, []);
 
-  if (reifgo && !developerId) {
-    return (
-      <section className="adm-panel">
-        <header className="adm-panel__head"><h2>Lead distribution</h2></header>
-        <p className="adm-panel__empty">Pick a developer above to see how their leads are handed out.</p>
-      </section>
-    );
-  }
   if (!data || !draft) return null;
 
   const editable = data.can_edit;
@@ -83,7 +73,6 @@ export default function DistributionPanel({ developerId, onChanged }) {
     setBusy(true);
     try {
       const next = await api.patch("/admin/leads/distribution", {
-        ...(reifgo ? { developer_id: developerId } : {}),
         lead_distribution: draft.lead_distribution,
         ...(draft.lead_distribution === "auto"
           ? { rotation_minutes: minutes, working_hours: draft.useHours ? draft.hours : null }
@@ -113,7 +102,7 @@ export default function DistributionPanel({ developerId, onChanged }) {
   return (
     <section className="adm-panel">
       <header className="adm-panel__head">
-        <h2>Lead distribution{reifgo ? ` · ${data.name}` : ""}</h2>
+        <h2>Lead distribution</h2>
       </header>
 
       <div className="adm-seg" role="radiogroup" aria-label="Lead distribution">
@@ -138,7 +127,7 @@ export default function DistributionPanel({ developerId, onChanged }) {
       <p className="adm-tl__meta" style={{ margin: "10px 0 14px" }}>
         {draft.lead_distribution === "manual"
           ? "A Sales Manager picks who gets each new lead."
-          : `Each new lead goes to the next agent in turn. If they haven't marked it contacted within ${hoursText(Number(draft.rotation_minutes) || 0)}${draft.useHours ? " of working time" : ""}, it moves to the next agent.`}
+          : `Each new lead goes to the next agent in turn, agents covering its developer first. If they haven't marked it contacted within ${hoursText(Number(draft.rotation_minutes) || 0)}${draft.useHours ? " of working time" : ""}, it moves to the next agent.`}
       </p>
 
       {draft.lead_distribution === "auto" && (
@@ -203,7 +192,9 @@ export default function DistributionPanel({ developerId, onChanged }) {
                       onChange={() => toggleAgent(a)}
                     />
                     <span>
-                      {a.name} {a.position && <small>· {a.position}</small>} {!a.is_active && <small>· deactivated</small>}
+                      {a.name} {a.position && <small>· {a.position}</small>}
+                      {(a.covers ?? []).length > 0 && <small> · covers {a.covers.map((d) => d.name).join(", ")}</small>}
+                      {!a.is_active && <small> · deactivated</small>}
                     </span>
                   </label>
                 ))}
@@ -223,7 +214,7 @@ export default function DistributionPanel({ developerId, onChanged }) {
           </button>
         </footer>
       ) : (
-        <p className="adm-tl__meta" style={{ marginTop: 12 }}>Only accounts that can hand out leads can change this.</p>
+        <p className="adm-tl__meta" style={{ marginTop: 12 }}>Only REIFGO admins and Sales Managers can change this.</p>
       )}
     </section>
   );

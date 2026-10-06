@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, can, getSession, isReifgoTier, permissionTitle } from "../api.js";
+import { api, can, getSession, isReifgoAdmin, permissionTitle } from "../api.js";
 import DistributionPanel from "../components/DistributionPanel.jsx";
-import SalesManagerPicker from "../components/SalesManagerPicker.jsx";
 import DataTable from "../components/DataTable.jsx";
 import Presence from "../components/Presence.jsx";
 import StatCard from "../components/StatCard.jsx";
@@ -10,25 +9,21 @@ import { fmtHours, initials } from "../leadUtils.js";
 import BrokerDialog from "../components/BrokerDialog.jsx";
 import { fmtDate } from "../contentUtils.js";
 
+/**
+ * REIFGO's sales team (Syed, Oct 6): Sales Managers and Sales Agents who work
+ * every lead. Developers no longer have teams of their own; an agent can
+ * cover certain developers so rotation sends those leads to them first.
+ */
 export default function Team() {
   const [brokers, setBrokers] = useState(null);
   const [editing, setEditing] = useState(null); // broker object, or {} for new
   const [busyId, setBusyId] = useState(null);
   const toast = useToast();
   const session = getSession();
-  const isAdmin = isReifgoTier(session);
-  // Team accounts without manage_team see the desk but can't change it; the
-  // server refuses these writes either way.
-  const canManage = can("manage_team");
-  const canDistribute = can("assign_leads");
-  const [distDeveloper, setDistDeveloper] = useState("");
-  // A developer's own team page shows who their Sales Manager is.
-  const [myDeveloper, setMyDeveloper] = useState(null);
-  useEffect(() => {
-    if (isAdmin || !session?.developer_id) return;
-    api.get(`/admin/developers/${session.developer_id}`).then(setMyDeveloper).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Main REIFGO admins and Sales Managers run the team; everyone else sees it.
+  // The server refuses these writes either way.
+  const canManage = isReifgoAdmin(session) || (session?.role === "broker" && can("manage_team", session));
+  const canDistribute = isReifgoAdmin(session) || (session?.role === "broker" && can("assign_leads", session));
 
   const reload = () =>
     api.get("/admin/brokers").then(setBrokers).catch((e) => toast.error(e.message));
@@ -59,7 +54,7 @@ export default function Team() {
       toast.success(`${b.name} removed`);
       await reload();
     } catch (e) {
-      // The server refuses to delete a broker holding live leads and says how
+      // The server refuses to delete someone holding live leads and says how
       // many; surfacing that verbatim is more useful than "failed".
       toast.error(e.message);
     } finally {
@@ -78,65 +73,39 @@ export default function Team() {
     { open: 0, overdue: 0, won: 0, closed: 0 },
   );
   const teamCloseRate = totals.closed ? Math.round((totals.won / totals.closed) * 100) : null;
+  const managers = (brokers ?? []).filter((b) => (b.permissions ?? []).includes("assign_leads")).length;
 
   return (
     <>
       <header className="adm-page-head">
         <div>
-          <h1>{isAdmin ? "Sales Teams" : "Team"}</h1>
+          <h1>Sales Team</h1>
           <p>
-            {isAdmin
-              ? "Developers' sales staff (Sales Managers and Sales Agents) who log in to the CMS to work leads. People who use the app are under App Users."
-              : "Your team accounts and how they're performing. New accounts can sign in once REIFGO approves them."}
+            REIFGO's Sales Managers and Sales Agents. They work every lead, from the app and the website. Investors who
+            use the app are under Investors; REIFGO's admins and support are under REIFGO Team.
           </p>
         </div>
         {canManage && (
           <button className="adm-btn adm-btn--primary" onClick={() => setEditing({})}>
-            + Add team member
+            + Add to the team
           </button>
         )}
       </header>
 
       <div className="adm-stat-grid">
-        <StatCard label="Team members" value={brokers?.length} />
+        <StatCard label="Team members" value={brokers?.length} hint={brokers ? `${managers} Sales Manager${managers === 1 ? "" : "s"}` : undefined} />
         <StatCard label="Open leads" value={totals.open} />
-        <StatCard label="Needs Attention" value={totals.overdue} />
+        <StatCard label="Needs Attention" value={totals.overdue} accent={totals.overdue > 0} />
         <StatCard label="Team close rate" value={teamCloseRate == null ? "—" : `${teamCloseRate}%`} />
       </div>
 
-      {!isAdmin && myDeveloper && (
-        <SalesManagerPicker developer={myDeveloper} team={brokers} onChanged={setMyDeveloper} />
-      )}
-
-      {canDistribute && (
-        <>
-          {isAdmin && (
-            <div className="adm-filters" style={{ marginBottom: 12 }}>
-              <select
-                className="adm-inline-select"
-                value={distDeveloper}
-                aria-label="Developer for lead distribution"
-                onChange={(e) => setDistDeveloper(e.target.value)}
-              >
-                <option value="">Lead distribution for…</option>
-                {[...new Map((brokers ?? []).map((b) => [b.developer_id, b.developer_name])).entries()].map(([id, name]) => (
-                  <option key={id} value={id}>{name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-          {(!isAdmin || distDeveloper) && (
-            <DistributionPanel developerId={isAdmin ? distDeveloper : undefined} onChanged={reload} />
-          )}
-        </>
-      )}
+      {canDistribute && <DistributionPanel onChanged={reload} />}
 
       <DataTable
         rows={brokers ?? []}
-        searchKeys={["name", "email"]}
+        searchKeys={["name", "email", "position"]}
         searchPlaceholder="Search the team…"
-        emptyText={brokers === null ? "Loading…" : "No team members yet."}
-        groupBy={isAdmin ? (b) => b.developer_name || b.developer_id : undefined}
+        emptyText={brokers === null ? "Loading…" : "No one on the sales team yet."}
         columns={[
           {
             key: "name",
@@ -150,7 +119,7 @@ export default function Team() {
                   <strong>
                     {b.name}
                     {!b.is_active && <span className="adm-badge adm-badge--muted">Deactivated</span>}
-                    {b.approval_status === "pending" && <span className="adm-badge adm-badge--pending">Waiting for REIFGO</span>}
+                    {b.approval_status === "pending" && <span className="adm-badge adm-badge--pending">Waiting for a REIFGO admin</span>}
                     {b.approval_status === "rejected" && (
                       <span className="adm-badge adm-badge--closed" title={b.rejection_reason ?? ""}>Declined</span>
                     )}
@@ -172,14 +141,24 @@ export default function Team() {
             ),
           },
           {
+            key: "covers",
+            label: "Covers",
+            width: 200,
+            sortValue: (b) => (b.covers ?? []).map((d) => d.name).join(", ") || null,
+            render: (b) =>
+              (b.covers ?? []).length ? (
+                <span className="adm-link-list">{b.covers.map((d) => d.name).join(", ")}</span>
+              ) : (
+                <span className="use">Any developer</span>
+              ),
+          },
+          {
             key: "last_seen_at",
             label: "Last seen",
             width: 150,
             sortValue: (b) => (b.last_seen_at ? new Date(b.last_seen_at).getTime() : 0),
             render: (b) => <Presence at={b.last_seen_at} />,
           },
-          // The developer is the group band now, so it does not also need a
-          // column repeating it on every row.
           { key: "open", sortValue: (b) => b.stats.open, label: "Open", width: 70, render: (b) => b.stats.open },
           {
             key: "overdue",
@@ -193,12 +172,12 @@ export default function Team() {
                 <span className="use">0</span>
               ),
           },
-          { key: "resp", sortValue: (b) => b.stats.avg_response_hours, label: "Avg response", width: 120, render: (b) => fmtHours(b.stats.avg_response_hours) },
+          { key: "resp", sortValue: (b) => b.stats.avg_response_hours, label: "Avg response", width: 110, render: (b) => fmtHours(b.stats.avg_response_hours) },
           {
             key: "close",
             sortValue: (b) => b.stats.close_rate,
             label: "Close rate",
-            width: 120,
+            width: 110,
             render: (b) =>
               b.stats.close_rate == null ? (
                 <span className="use">—</span>
@@ -218,11 +197,7 @@ export default function Team() {
                   width: 190,
                   render: (b) => (
                     <div className="adm-row-actions">
-                      <button
-                        type="button"
-                        className="adm-btn adm-btn--ghost adm-btn--sm"
-                        onClick={() => setEditing(b)}
-                      >
+                      <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => setEditing(b)}>
                         Edit
                       </button>
                       <button
@@ -253,7 +228,6 @@ export default function Team() {
       {editing && (
         <BrokerDialog
           broker={editing}
-          isAdmin={isAdmin}
           onClose={() => setEditing(null)}
           onSaved={async () => {
             setEditing(null);

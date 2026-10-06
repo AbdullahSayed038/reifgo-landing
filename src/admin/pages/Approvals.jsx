@@ -11,10 +11,11 @@ import { countryName, currencyFor } from "../countries.js";
 import { APP_PROPERTY_URL, timeAgo } from "../leadUtils.js";
 
 const SECTIONS = [
-  { key: "accounts", label: "Team accounts" },
+  // Management access a Sales Manager gave someone on the sales team.
+  { key: "accounts", label: "Sales team access" },
+  // Left over from before developers stopped having accounts (Oct 6).
   { key: "listings", label: "Listings" },
   { key: "amenities", label: "Amenity requests" },
-  { key: "logos", label: "Logo changes" },
   // Developers a regional admin added; main admins only.
   { key: "developers", label: "New developers" },
 ];
@@ -147,9 +148,9 @@ function FieldValue({ field, value, fmtMoney, currency }) {
 }
 
 /**
- * What REIFGO has to sign off (Syed): team accounts developers created,
- * listings and edits to live listings, amenities that aren't in the list, and
- * logo changes. Split into sections, grouped by developer, and every item can
+ * What REIFGO has to sign off: sales team access a Sales Manager gave or
+ * asked for, developers a regional admin added, and anything developers sent
+ * before they stopped having accounts (Oct 6). Split into sections, grouped by developer, and every item can
  * be opened in full — with an edit's changes highlighted — before deciding.
  */
 export default function Approvals() {

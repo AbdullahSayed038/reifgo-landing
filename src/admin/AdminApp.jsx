@@ -73,13 +73,15 @@ export default function AdminApp() {
           <Route element={<AdminLayout />}>
             {/* V1 / V2: the sidebar switch (Syed, Sept 24). V1 stays as it was. */}
             <Route index element={<Versioned v1={<Dashboard />} v2={<DashboardV2 />} />} />
-            <Route path="properties" element={<PropertiesList />} />
-            <Route path="properties/new" element={<PropertyForm />} />
-            <Route path="properties/:id" element={<PropertyForm />} />
+            {/* REIFGO lists every property (Oct 6). */}
+            <Route path="properties" element={<AdminOnly><PropertiesList /></AdminOnly>} />
+            <Route path="properties/new" element={<AdminOnly><PropertyForm /></AdminOnly>} />
+            <Route path="properties/:id" element={<AdminOnly><PropertyForm /></AdminOnly>} />
             <Route path="developers" element={<AdminOnly><DevelopersList /></AdminOnly>} />
             <Route path="developers/new" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
             <Route path="developers/:id" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
-            <Route path="company" element={<NeedsPermission permission="edit_company"><DeveloperForm selfMode /></NeedsPermission>} />
+            {/* Developers no longer sign in (Oct 6); old links land on the dashboard. */}
+            <Route path="company" element={<Navigate to="/admin" replace />} />
             <Route path="account" element={<Account />} />
             <Route path="approvals" element={<AdminOnly><Approvals /></AdminOnly>} />
             <Route path="amenities" element={<Navigate to="/admin/developers" replace />} />

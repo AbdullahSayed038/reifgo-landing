@@ -109,6 +109,8 @@ export default function LeadModal({ intent, property, onClose }) {
       // reached the CMS. It now opens a real lead for the REIFGO team.
       await sendWebsiteLead({
         intent,
+        // Which page it was sent from (Syed, Oct 6), e.g. "/property/azure".
+        source_page: window.location.pathname,
         full_name: form.name.trim(),
         email: form.email.trim(),
         ...(form.phone.trim() && { phone: form.phone.trim() }),

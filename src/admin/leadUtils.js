@@ -39,10 +39,50 @@ export function leadCategory(lead) {
 // Agent can open or share it without the app. Only live listings load there.
 export const APP_PROPERTY_URL = (id) => `${window.location.origin}/property/${id}`;
 
+// No reply after 24h goes to the Sales Managers, after 48h to REIFGO admins
+// (it went to the developer before developers stopped having accounts, Oct 6).
+// The tone names are only the badge colours.
 export const ESCALATION = {
-  developer: { label: "Escalated to you", tone: "developer" },
-  reifgo: { label: "Escalated to REIFGO", tone: "reifgo" },
+  manager: { label: "Escalated to Sales Managers", tone: "developer" },
+  reifgo: { label: "Escalated to REIFGO admins", tone: "reifgo" },
 };
+
+/**
+ * Who a lead can go to: every active agent on REIFGO's sales team, the ones
+ * covering the lead's developer first (Oct 6).
+ */
+export function agentOptions(brokers, lead) {
+  const active = (brokers ?? []).filter((b) => b.is_active && (b.approval_status ?? "approved") === "approved");
+  const covers = (b) => !!lead?.developer_id && (b.covers ?? []).some((d) => d.id === lead.developer_id);
+  return [...active]
+    .sort((a, b) => Number(covers(b)) - Number(covers(a)) || a.name.localeCompare(b.name))
+    .map((b) => ({ ...b, covering: covers(b) }));
+}
+
+// Where a lead was sent from (Syed, Oct 6). Pages are stored as paths.
+const PAGE_NAMES = [
+  [/^\/property\/[^/]+$/, "Listing page"],
+  [/^\/services$/, "Services page"],
+  [/^\/advisor$/, "AI advisor"],
+  [/^\/insights(\/.*)?$/, "Insights"],
+  [/^\/forum$/, "Forum page"],
+  [/^\/$/, "Home page"],
+  [/^property\/[^/]+$/, "Listing screen"],
+  [/^developer\/[^/]+$/, "Developer screen"],
+  [/^inquiry$/, "Enquiry form"],
+  [/^forum$/, "Forum screen"],
+  [/^advisor$/, "AI advisor"],
+  [/^event\/[^/]+$/, "Event screen"],
+];
+
+/** "Website · Listing page" (+ the raw path) or "App · Developer screen". */
+export function leadSource(lead) {
+  const where = lead?.source === "website" ? "Website" : "App";
+  const page = lead?.source_page;
+  if (!page) return { label: where, page: null };
+  const name = PAGE_NAMES.find(([re]) => re.test(page))?.[1];
+  return { label: name ? `${where} · ${name}` : where, page };
+}
 
 export function initials(name) {
   if (!name) return "?";
@@ -126,7 +166,7 @@ export function urgencyOf(lead, now = Date.now()) {
       detail: `Waiting ${fmtSpan(waited)}`,
     };
   }
-  if (lead.escalation === "developer") {
+  if (lead.escalation === "manager") {
     return { level: "critical", rank: 1, label: "Overdue", detail: `No reply for ${fmtSpan(since(lead.assigned_at))}` };
   }
   if (lead.status === "assigned" && !lead.first_response_at) {
