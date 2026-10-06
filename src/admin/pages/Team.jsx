@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { api, can, getSession, isReifgoAdmin, permissionTitle } from "../api.js";
+import { api, can, getSession, hasFullAccess, permissionTitle } from "../api.js";
+import { Link } from "react-router-dom";
 import DistributionPanel from "../components/DistributionPanel.jsx";
 import DataTable from "../components/DataTable.jsx";
 import Presence from "../components/Presence.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtHours, initials } from "../leadUtils.js";
-import BrokerDialog from "../components/BrokerDialog.jsx";
 import { fmtDate } from "../contentUtils.js";
 
 /**
@@ -16,14 +16,12 @@ import { fmtDate } from "../contentUtils.js";
  */
 export default function Team() {
   const [brokers, setBrokers] = useState(null);
-  const [editing, setEditing] = useState(null); // broker object, or {} for new
-  const [busyId, setBusyId] = useState(null);
   const toast = useToast();
   const session = getSession();
-  // Main REIFGO admins and Sales Managers run the team; everyone else sees it.
-  // The server refuses these writes either way.
-  const canManage = isReifgoAdmin(session) || (session?.role === "broker" && can("manage_team", session));
-  const canDistribute = isReifgoAdmin(session) || (session?.role === "broker" && can("assign_leads", session));
+  // People are added and their access set on the REIFGO Team page (full
+  // access). Here, whoever hands out leads sets distribution and rotation.
+  const canManage = hasFullAccess(session);
+  const canDistribute = can("leads_assign", session);
 
   const reload = () =>
     api.get("/admin/brokers").then(setBrokers).catch((e) => toast.error(e.message));
@@ -32,35 +30,6 @@ export default function Team() {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const toggleActive = async (b) => {
-    setBusyId(b.id);
-    try {
-      await api.patch(`/admin/brokers/${b.id}`, { is_active: !b.is_active });
-      toast.success(b.is_active ? `${b.name} deactivated` : `${b.name} reactivated`);
-      await reload();
-    } catch (e) {
-      toast.error(e.message);
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const remove = async (b) => {
-    if (!window.confirm(`Remove ${b.name}? This cannot be undone.`)) return;
-    setBusyId(b.id);
-    try {
-      await api.del(`/admin/brokers/${b.id}`);
-      toast.success(`${b.name} removed`);
-      await reload();
-    } catch (e) {
-      // The server refuses to delete someone holding live leads and says how
-      // many; surfacing that verbatim is more useful than "failed".
-      toast.error(e.message);
-    } finally {
-      setBusyId(null);
-    }
-  };
 
   const totals = (brokers ?? []).reduce(
     (a, b) => {
@@ -73,7 +42,7 @@ export default function Team() {
     { open: 0, overdue: 0, won: 0, closed: 0 },
   );
   const teamCloseRate = totals.closed ? Math.round((totals.won / totals.closed) * 100) : null;
-  const managers = (brokers ?? []).filter((b) => (b.permissions ?? []).includes("assign_leads")).length;
+  const managers = (brokers ?? []).filter((b) => (b.permissions ?? []).includes("leads_assign")).length;
 
   return (
     <>
@@ -81,14 +50,14 @@ export default function Team() {
         <div>
           <h1>Sales Team</h1>
           <p>
-            REIFGO's Sales Managers and Sales Agents. They work every lead, from the app and the website. Investors who
-            use the app are under Investors; REIFGO's admins and support are under REIFGO Team.
+            The people on the REIFGO Team who work leads, from the app and the website, and how they're doing. Add
+            people and set what they can do on the REIFGO Team page.
           </p>
         </div>
         {canManage && (
-          <button className="adm-btn adm-btn--primary" onClick={() => setEditing({})}>
-            + Add to the team
-          </button>
+          <Link className="adm-btn adm-btn--primary" to="/admin/staff">
+            Manage on REIFGO Team
+          </Link>
         )}
       </header>
 
@@ -130,7 +99,7 @@ export default function Team() {
                     )}
                   </strong>
                   <span>
-                    {permissionTitle(b.permissions)}
+                    {permissionTitle(b.permissions, b.full_access)}
                     {b.position && b.position !== permissionTitle(b.permissions) ? ` · ${b.position}` : ""} · {b.email}
                   </span>
                   {b.approval_status === "rejected" && b.rejection_reason && (
@@ -189,52 +158,9 @@ export default function Team() {
               ),
           },
           { key: "created_at", label: "Added", width: 105, render: (b) => <span style={{ whiteSpace: "nowrap" }}>{fmtDate(b.created_at)}</span> },
-          ...(canManage
-            ? [
-                {
-                  key: "manage",
-                  label: "",
-                  width: 190,
-                  render: (b) => (
-                    <div className="adm-row-actions">
-                      <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => setEditing(b)}>
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="adm-btn adm-btn--ghost adm-btn--sm"
-                        disabled={busyId === b.id}
-                        onClick={() => toggleActive(b)}
-                      >
-                        {b.is_active ? "Deactivate" : "Activate"}
-                      </button>
-                      <button
-                        type="button"
-                        className="adm-icon-btn adm-icon-btn--danger"
-                        aria-label={`Remove ${b.name}`}
-                        disabled={busyId === b.id}
-                        onClick={() => remove(b)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ),
-                },
-              ]
-            : []),
         ]}
       />
 
-      {editing && (
-        <BrokerDialog
-          broker={editing}
-          onClose={() => setEditing(null)}
-          onSaved={async () => {
-            setEditing(null);
-            await reload();
-          }}
-        />
-      )}
     </>
   );
 }

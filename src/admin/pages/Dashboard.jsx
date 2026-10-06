@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, can, getSession, isReifgoTier, permissionTitle } from "../api.js";
+import { api, can, canAny, getSession, hasFullAccess, LEAD_AREAS, permissionTitle } from "../api.js";
 import { BarChart, DonutChart } from "../components/charts.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
@@ -28,9 +28,9 @@ const clean = (s) => (s ?? "").replace(/\s+/g, " ").trim();
  */
 export default function Dashboard() {
   const session = getSession();
-  const isAdmin = isReifgoTier(session);
-  const isBroker = session?.role === "broker";
-  const seesAll = can("view_all_leads", session);
+  const isAdmin = hasFullAccess(session) || can("approvals", session);
+  const isBroker = !hasFullAccess(session) && !can("leads_all", session);
+  const seesAll = can("leads_all", session);
 
   const [leads, setLeads] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -44,10 +44,10 @@ export default function Dashboard() {
     const skip = () => Promise.resolve(null);
     const calls = [
       api.get("/admin/stats"),
-      api.get("/admin/leads"),
-      can("manage_properties", session) ? api.get("/admin/properties") : skip(),
-      seesAll || can("manage_team", session) ? api.get("/admin/brokers") : skip(),
-      isAdmin ? api.get("/admin/approvals") : skip(),
+      canAny(LEAD_AREAS, session) ? api.get("/admin/leads") : Promise.resolve([]),
+      can("developers", session) ? api.get("/admin/properties") : skip(),
+      seesAll || can("leads_assign", session) ? api.get("/admin/brokers") : skip(),
+      can("approvals", session) ? api.get("/admin/approvals") : skip(),
     ];
     // allSettled: one panel failing must not blank the others.
     Promise.allSettled(calls).then((results) => {
@@ -121,10 +121,10 @@ export default function Dashboard() {
 
   const approvalPreview = approvals
     ? [
-        ...approvals.accounts.map((a) => ({ key: `a${a.id}`, kind: "Team account", title: `${a.name} · ${permissionTitle(a.permissions)}`, who: a.developer_name, at: a.created_at })),
-        ...approvals.listings.map((l) => ({ key: `l${l.id}`, kind: l.kind === "new" ? "New listing" : "Listing edit", title: l.name, who: l.developer_name, at: l.submitted_at })),
-        ...approvals.amenities.map((r) => ({ key: `m${r.id}`, kind: "Amenity", title: r.label, who: r.developer_name, at: r.created_at })),
-        ...approvals.logos.map((d) => ({ key: `g${d.id}`, kind: "Logo", title: "New logo", who: d.name, at: d.logo_requested_at })),
+        ...(approvals.accounts ?? []).map((a) => ({ key: `a${a.id}`, kind: "Team account", title: `${a.name} · ${permissionTitle(a.permissions)}`, who: a.developer_name, at: a.created_at })),
+        ...(approvals.listings ?? []).map((l) => ({ key: `l${l.id}`, kind: l.kind === "new" ? "New listing" : "Listing edit", title: l.name, who: l.developer_name, at: l.submitted_at })),
+        ...(approvals.amenities ?? []).map((r) => ({ key: `m${r.id}`, kind: "Amenity", title: r.label, who: r.developer_name, at: r.created_at })),
+        ...(approvals.logos ?? []).map((d) => ({ key: `g${d.id}`, kind: "Logo", title: "New logo", who: d.name, at: d.logo_requested_at })),
       ]
         .sort((a, b) => new Date(a.at) - new Date(b.at))
         .slice(0, 5)
@@ -151,7 +151,7 @@ export default function Dashboard() {
       <div className="adm-stat-grid adm-stat-grid--4">
         {isAdmin ? (
           <StatCard label="Waiting for approval" value={approvals?.total} to="/admin/approvals" accent={approvals?.total > 0} />
-        ) : can("manage_properties", session) ? (
+        ) : can("developers", session) ? (
           <StatCard label="Listings waiting for REIFGO" value={waitingListings} to="/admin/properties" accent={waitingListings > 0} />
         ) : (
           <StatCard label="Contacted" value={count((l) => l.status === "contacted")} to="/admin/leads" />
@@ -172,8 +172,8 @@ export default function Dashboard() {
           </>
         ) : (
           <>
-            {can("manage_properties", session) && <StatCard label="Live listings" value={liveListings.length} to="/admin/properties" />}
-            {(seesAll || can("manage_team", session)) && <StatCard label="Team members" value={activeTeam.length} to="/admin/team" />}
+            {can("developers", session) && <StatCard label="Live listings" value={liveListings.length} to="/admin/properties" />}
+            {(seesAll || can("leads_assign", session)) && <StatCard label="Team members" value={activeTeam.length} to="/admin/team" />}
             <StatCard label="Won" value={won} to="/admin/leads" />
             <StatCard label="Close rate" value={closed ? `${Math.round((won / closed) * 100)}%` : "—"} to="/admin/leads" />
           </>
@@ -191,7 +191,7 @@ export default function Dashboard() {
             <header className="adm-panel__head"><h2>Open leads by developer</h2></header>
             {byDeveloper.length === 0 ? <p className="adm-panel__empty">No open leads.</p> : <BarChart data={byDeveloper} color="#00556c" />}
           </section>
-        ) : seesAll || can("manage_team", session) ? (
+        ) : seesAll || can("leads_assign", session) ? (
           <section className="adm-panel">
             <header className="adm-panel__head"><h2>Average response by team member</h2></header>
             {agentBars.length === 0 ? (

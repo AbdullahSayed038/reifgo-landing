@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCurrency } from "../currency.jsx";
 import { Link, useParams } from "react-router-dom";
-import { api, can, canSeeInvestors, getSession, isReifgoTier } from "../api.js";
+import { api, can, canSeeInvestors, getSession } from "../api.js";
 import StatusBadge from "../components/StatusBadge.jsx";
 import { useToast } from "../components/Toast.jsx";
 import Presence from "../components/Presence.jsx";
@@ -32,13 +32,12 @@ export default function LeadDetail() {
   const toast = useToast();
   const { fmtMoney } = useCurrency();
   const session = getSession();
-  const isBroker = session?.role === "broker";
   // Any lead can go to any of REIFGO's agents (Oct 6), general ones included.
-  const canAssign = can("assign_leads", session);
+  const canAssign = can("leads_assign", session);
 
   useEffect(() => {
     api.get(`/admin/leads/${id}`).then(setLead).catch((e) => toast.error(e.message));
-    if (can("assign_leads", session)) api.get("/admin/brokers").then(setBrokers).catch(() => {});
+    if (can("leads_assign", session)) api.get("/admin/brokers").then(setBrokers).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -226,7 +225,7 @@ export default function LeadDetail() {
                   <a className="adm-btn adm-btn--ghost adm-btn--sm" href={APP_PROPERTY_URL(prop.id)} target="_blank" rel="noopener noreferrer">
                     View listing ↗
                   </a>
-                  {isReifgoTier(session) && (
+                  {can("developers", session) && (
                     <Link className="adm-btn adm-btn--ghost adm-btn--sm" to={`/admin/properties/${prop.id}`}>
                       Open in CMS
                     </Link>

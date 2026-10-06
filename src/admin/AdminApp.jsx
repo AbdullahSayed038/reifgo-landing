@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import "./admin.css";
-import { getSession, isReifgoTier } from "./api.js";
 import AdminLayout from "./components/AdminLayout.jsx";
 import { ToastProvider } from "./components/Toast.jsx";
 import { CurrencyProvider } from "./currency.jsx";
@@ -31,33 +30,6 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import Staff from "./pages/Staff.jsx";
 import Activity from "./pages/Activity.jsx";
-import { can, canSeeInvestors } from "./api.js";
-
-// UI-level guard for REIFGO-only sections. Real enforcement is server-side.
-// (This used to check the shared "admin" login alone, which locked real
-// REIFGO accounts out of Developers, Forum and Users.)
-function AdminOnly({ children }) {
-  return isReifgoTier() ? children : <Navigate to="/admin" replace />;
-}
-
-function NeedsPermission({ permission, children }) {
-  return can(permission) ? children : <Navigate to="/admin" replace />;
-}
-
-// REIFGO staff only — the events programme is REIFGO's, not a developer tool.
-function ReifgoOnly({ children }) {
-  return isReifgoTier() ? children : <Navigate to="/admin" replace />;
-}
-
-// REIFGO admins, regional admins and customer support.
-function InvestorsOnly({ children }) {
-  return canSeeInvestors() ? children : <Navigate to="/admin" replace />;
-}
-
-// Admin + developer (i.e. not a broker).
-function StaffOnly({ children }) {
-  return getSession()?.role !== "broker" ? children : <Navigate to="/admin" replace />;
-}
 
 // The CMS. Mounted lazily at /admin/* — see src/App.jsx.
 export default function AdminApp() {
@@ -74,34 +46,35 @@ export default function AdminApp() {
             {/* V1 / V2: the sidebar switch (Syed, Sept 24). V1 stays as it was. */}
             <Route index element={<Versioned v1={<Dashboard />} v2={<DashboardV2 />} />} />
             {/* REIFGO lists every property (Oct 6). */}
-            <Route path="properties" element={<AdminOnly><PropertiesList /></AdminOnly>} />
-            <Route path="properties/new" element={<AdminOnly><PropertyForm /></AdminOnly>} />
-            <Route path="properties/:id" element={<AdminOnly><PropertyForm /></AdminOnly>} />
-            <Route path="developers" element={<AdminOnly><DevelopersList /></AdminOnly>} />
-            <Route path="developers/new" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
-            <Route path="developers/:id" element={<AdminOnly><DeveloperForm /></AdminOnly>} />
+            <Route path="properties" element={<PropertiesList />} />
+            <Route path="properties/new" element={<PropertyForm />} />
+            <Route path="properties/:id" element={<PropertyForm />} />
+            <Route path="developers" element={<DevelopersList />} />
+            <Route path="developers/new" element={<DeveloperForm />} />
+            <Route path="developers/:id" element={<DeveloperForm />} />
             {/* Developers no longer sign in (Oct 6); old links land on the dashboard. */}
             <Route path="company" element={<Navigate to="/admin" replace />} />
             <Route path="account" element={<Account />} />
-            <Route path="approvals" element={<AdminOnly><Approvals /></AdminOnly>} />
+            <Route path="approvals" element={<Approvals />} />
             <Route path="amenities" element={<Navigate to="/admin/developers" replace />} />
-            <Route path="staff" element={<AdminOnly><Staff /></AdminOnly>} />
+            <Route path="staff" element={<Staff />} />
             <Route path="activity" element={<Activity />} />
             {/* Events are REIFGO's own, not a developer tool (September round). */}
-            <Route path="events" element={<ReifgoOnly><EventsList /></ReifgoOnly>} />
-            <Route path="events/new" element={<ReifgoOnly><EventForm /></ReifgoOnly>} />
-            <Route path="events/:id" element={<ReifgoOnly><EventForm /></ReifgoOnly>} />
+            <Route path="events" element={<EventsList />} />
+            <Route path="events/new" element={<EventForm />} />
+            <Route path="events/:id" element={<EventForm />} />
             <Route path="insights" element={<InsightsList />} />
             <Route path="insights/new" element={<InsightForm />} />
             <Route path="insights/:id" element={<InsightForm />} />
-            <Route path="categories" element={<StaffOnly><Categories /></StaffOnly>} />
-            <Route path="summit" element={<AdminOnly><Summit /></AdminOnly>} />
-            <Route path="summit/invitations" element={<AdminOnly><SummitInvitations /></AdminOnly>} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="summit" element={<Summit />} />
+            <Route path="summit/invitations" element={<SummitInvitations />} />
+            {/* Who can open each page: canOpen() in api.js, applied in AdminLayout. */}
             <Route path="leads" element={<Versioned v1={<Leads />} v2={<LeadsV2 />} />} />
             <Route path="leads/:id" element={<LeadDetail />} />
             <Route path="team" element={<Team />} />
-            <Route path="users" element={<InvestorsOnly><Users /></InvestorsOnly>} />
-            <Route path="users/:id" element={<InvestorsOnly><InvestorDetail /></InvestorsOnly>} />
+            <Route path="users" element={<Users />} />
+            <Route path="users/:id" element={<InvestorDetail />} />
           </Route>
         </Routes>
         </DesignProvider>

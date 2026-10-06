@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, isReifgoAdmin, PERMISSIONS, permissionTitle } from "../api.js";
+import { api, hasFullAccess } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import IconPicker, { IconPreview } from "../components/IconPicker.jsx";
 import Modal from "../components/Modal.jsx";
@@ -11,12 +11,11 @@ import { countryName, currencyFor } from "../countries.js";
 import { APP_PROPERTY_URL, timeAgo } from "../leadUtils.js";
 
 const SECTIONS = [
-  // Management access a Sales Manager gave someone on the sales team.
-  { key: "accounts", label: "Sales team access" },
-  // Left over from before developers stopped having accounts (Oct 6).
+  // Left over from before developers stopped having accounts (Oct 6); team
+  // accounts no longer need approving (one REIFGO Team, Oct 6).
   { key: "listings", label: "Listings" },
   { key: "amenities", label: "Amenity requests" },
-  // Developers a regional admin added; main admins only.
+  // Developers someone without full access added; full access approves them.
   { key: "developers", label: "New developers" },
 ];
 
@@ -258,18 +257,6 @@ export default function Approvals() {
 
   const summary = (kind, item) => {
     switch (kind) {
-      case "accounts":
-        return item.kind === "access"
-          ? {
-              title: `${item.name} · ${permissionTitle(item.permissions)} → ${permissionTitle(item.pending_permissions)}`,
-              badge: ["assigned", "Access change"],
-              lines: [item.email, `Asked by ${item.permissions_requested_by ?? "the developer"} ${timeAgo(item.permissions_requested_at)}`],
-            }
-          : {
-              title: `${item.name} · ${permissionTitle(item.permissions)}`,
-              badge: ["pending", "New account"],
-              lines: [item.email, `Added by ${item.created_by ?? "the developer"} ${timeAgo(item.created_at)}`],
-            };
       case "developers":
         return {
           title: item.name,
@@ -304,7 +291,7 @@ export default function Approvals() {
       <header className="adm-page-head">
         <div>
           <h1>Approvals</h1>
-          <p>Everything developers have sent for REIFGO to check. Open an item to see it in full before you approve it.</p>
+          <p>Everything waiting for a check before it goes live. Open an item to see it in full before you approve it.</p>
         </div>
       </header>
 
@@ -317,7 +304,7 @@ export default function Approvals() {
               All
               <span className="adm-tab__count">{shownTotal}</span>
             </button>
-            {SECTIONS.filter((s) => s.key !== "developers" || isReifgoAdmin()).map((s) => (
+            {SECTIONS.filter((s) => s.key !== "developers" || hasFullAccess()).map((s) => (
               <button
                 key={s.key}
                 className={`adm-tab${section === s.key ? " is-active" : ""}`}
@@ -395,9 +382,7 @@ export default function Approvals() {
       {viewing && (
         <Modal
           title={
-            viewing.kind === "accounts"
-              ? `${viewing.item.kind === "access" ? "Access change" : "Team account"} · ${viewing.item.name}`
-              : viewing.kind === "developers" ? `New developer · ${viewing.item.name}`
+            viewing.kind === "developers" ? `New developer · ${viewing.item.name}`
               : viewing.kind === "listings" ? `${viewing.item.kind === "new" ? "New listing" : "Edit"} · ${viewing.item.name}`
                 : viewing.kind === "amenities" ? `Amenity request · ${viewing.item.label}`
                   : `Logo change · ${viewing.item.name}`
@@ -433,58 +418,9 @@ export default function Approvals() {
                 <dt>Name</dt><dd>{viewing.item.name}</dd>
                 <dt>Tagline</dt><dd>{viewing.item.tagline || "—"}</dd>
                 <dt>Region</dt><dd>{viewing.item.region || "—"}</dd>
-                <dt>Sign-in email</dt><dd>{viewing.item.email || "—"}</dd>
-                <dt>Added by</dt><dd>{viewing.item.created_by ?? "a regional admin"} · {fmtDate(viewing.item.created_at)}</dd>
+                                <dt>Added by</dt><dd>{viewing.item.created_by ?? "a regional admin"} · {fmtDate(viewing.item.created_at)}</dd>
                 <dt>Profile</dt><dd><Link to={`/admin/developers/${viewing.item.id}`}>Open the full profile</Link></dd>
-                <dt>Approving</dt><dd>Shows it in the app and lets its company login sign in.</dd>
-              </dl>
-            )}
-
-            {viewing.kind === "accounts" && viewing.item.kind === "access" && (
-              <table className="adm-diff">
-                <thead>
-                  <tr><th /><th>Current access</th><th>Asked for</th></tr>
-                </thead>
-                <tbody>
-                  <tr className="is-changed">
-                    <th>Access</th>
-                    <td>{permissionTitle(viewing.item.permissions)}</td>
-                    <td>{permissionTitle(viewing.item.pending_permissions)}</td>
-                  </tr>
-                  {PERMISSIONS.map((p) => {
-                    const now = viewing.item.permissions.includes(p.key);
-                    const next = viewing.item.pending_permissions.includes(p.key);
-                    return (
-                      <tr key={p.key} className={now !== next ? "is-changed" : ""}>
-                        <th>{p.label}{now !== next && <span className="adm-diff-flag">{next ? "Added" : "Removed"}</span>}</th>
-                        <td>{now ? "Yes" : "No"}</td>
-                        <td>{next ? "Yes" : "No"}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr>
-                    <th>Asked by</th>
-                    <td colSpan={2}>{viewing.item.permissions_requested_by ?? "the developer"} · {fmtDate(viewing.item.permissions_requested_at)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            )}
-
-            {viewing.kind === "accounts" && viewing.item.kind !== "access" && (
-              <dl className="adm-kv adm-kv--left">
-                <dt>Name</dt><dd>{viewing.item.name}</dd>
-                <dt>Email</dt><dd>{viewing.item.email}</dd>
-                <dt>Phone</dt><dd>{viewing.item.phone || "—"}</dd>
-                <dt>Position</dt><dd>{viewing.item.position || "—"}</dd>
-                <dt>Access</dt>
-                <dd>
-                  {permissionTitle(viewing.item.permissions)}
-                  <ul className="adm-diff-list">
-                    <li>Work the leads assigned to them</li>
-                    {PERMISSIONS.filter((p) => viewing.item.permissions.includes(p.key)).map((p) => <li key={p.key}>{p.label}</li>)}
-                  </ul>
-                </dd>
-                <dt>Added by</dt><dd>{viewing.item.created_by ?? "the developer"} · {fmtDate(viewing.item.created_at)}</dd>
+                <dt>Approving</dt><dd>Shows it and its listings in the app.</dd>
               </dl>
             )}
 

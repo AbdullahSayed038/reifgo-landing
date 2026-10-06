@@ -3952,3 +3952,59 @@ button.adm-stat {
 .adm-dv2-list time span {
   font-size: 11px;
 }
+
+/* REIFGO Team form: the areas someone can be given, grouped (Oct 6). */
+.adm-area-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 6px;
+}
+.adm-area-group {
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--adm-line, #dfe5e8);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.adm-area-group legend {
+  padding: 0 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--adm-muted);
+}
+.adm-area-group__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+.adm-area-group__item input {
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  flex: none;
+  accent-color: var(--adm-brand);
+}
+/* Forms with grouped options (the REIFGO Team form). */
+.adm-modal.adm-modal--wide {
+  width: 720px;
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+.adm-modal--wide .adm-modal__body {
+  overflow-y: auto;
+  min-height: 0;
+}
+.adm-modal--wide .adm-modal__foot {
+  padding-top: 14px;
+  border-top: 1px solid var(--adm-line, #dfe5e8);
+}

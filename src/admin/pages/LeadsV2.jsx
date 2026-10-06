@@ -96,8 +96,8 @@ function AgentChip({ broker }) {
 export default function LeadsV2() {
   const session = getSession();
   const reifgo = isReifgoTier(session);
-  const agentOnly = !can("view_all_leads", session);
-  const canAssign = can("assign_leads", session);
+  const agentOnly = !can("leads_all", session);
+  const canAssign = can("leads_assign", session);
   const navigate = useNavigate();
   const toast = useToast();
 

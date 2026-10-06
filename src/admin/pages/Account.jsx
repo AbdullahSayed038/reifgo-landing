@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, PERMISSIONS, permissionTitle, updateSessionName } from "../api.js";
+import { api, AREAS, accessTitle, updateSessionName } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { useToast } from "../components/Toast.jsx";
 import { fmtDate } from "../contentUtils.js";
@@ -119,15 +119,20 @@ export default function Account() {
               </label>
             )}
           </div>
-          {me.kind === "team" && (
+          {me.kind === "reifgo" && (
             <div style={{ marginTop: 16 }}>
-              <span className="adm-field__label">Access: {permissionTitle(me.permissions)}</span>
-              <ul className="adm-tl__meta" style={{ margin: "6px 0 0", paddingLeft: 18 }}>
-                <li>Work the leads assigned to you</li>
-                {PERMISSIONS.filter((p) => me.permissions.includes(p.key)).map((p) => (
-                  <li key={p.key}>{p.label}</li>
-                ))}
-              </ul>
+              <span className="adm-field__label">Your access: {accessTitle(me.full_access, me.permissions ?? [])}</span>
+              {!me.full_access && (
+                <ul className="adm-tl__meta" style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                  {AREAS.filter((a) => (me.permissions ?? []).includes(a.key)).map((a) => (
+                    <li key={a.key}>{a.label}</li>
+                  ))}
+                  {(me.developers ?? []).length > 0 && (
+                    <li>Only these developers: {me.developers.map((d) => d.name.replace(/\s+/g, " ")).join(", ")}</li>
+                  )}
+                </ul>
+              )}
+              <span className="adm-field__hint">Someone with full access changes this on the REIFGO Team page.</span>
             </div>
           )}
           {editable.length > 0 && (

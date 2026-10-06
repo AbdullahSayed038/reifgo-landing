@@ -45,7 +45,7 @@ export default function PropertiesList() {
               : "New listings and changes to live ones go to REIFGO for approval before they show in the app."}
           </p>
         </div>
-        {can("manage_properties") && (
+        {can("developers") && (
           <Link className="adm-btn adm-btn--primary" to="/admin/properties/new">
             + New property
           </Link>
@@ -97,7 +97,7 @@ export default function PropertiesList() {
             key: "actions",
             label: "",
             width: 60,
-            render: (r) => (reifgo || (can("manage_properties") && r.approval_status !== "approved")) && (
+            render: (r) => (reifgo || (can("developers") && r.approval_status !== "approved")) && (
               <button
                 className="adm-icon-btn adm-icon-btn--danger"
                 aria-label={`Delete ${r.name}`}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, getSession, isSupport, maskPhone } from "../api.js";
+import { api, can, getSession, maskPhone } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import Presence from "../components/Presence.jsx";
 import StatCard from "../components/StatCard.jsx";
@@ -45,7 +45,7 @@ export default function Users() {
   const toast = useToast();
   const navigate = useNavigate();
   const session = getSession();
-  const support = isSupport(session);
+  const opensDocs = can("investor_documents", session);
 
   useEffect(() => {
     api.get("/admin/users").then(setRows).catch((e) => toast.error(e.message));
@@ -99,9 +99,8 @@ export default function Users() {
         <div>
           <h1>Investors</h1>
           <p>
-            People who signed up in the REIFGO app. Developers' sales staff are under Sales Teams, and REIFGO's own
-            staff under REIFGO Team.
-            {support ? " You can update an investor's details; only REIFGO admins open documents." : ""}
+            People who signed up in the REIFGO app. REIFGO's own people are on the REIFGO Team page.
+            {opensDocs ? "" : " Your account can't open investor documents."}
           </p>
         </div>
       </header>

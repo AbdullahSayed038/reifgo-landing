@@ -9,81 +9,168 @@ export const IS_DEMO =
   import.meta.env.VITE_DEMO === "1" ||
   (import.meta.env.PROD && !import.meta.env.VITE_API_URL);
 
-// Session = { token, role: "admin" | "developer", developer_id, name }.
-// The role only drives what the UI shows; real enforcement is (and must
-// stay) server-side, keyed off the JWT claims.
+// Session = { token, role: "admin" | "staff", name, full_access, permissions }.
+// It only drives what the UI shows; real enforcement is (and must stay)
+// server-side, where each person's areas are read fresh on every request.
 const SESSION_KEY = "reifgo_admin_session";
 
 export function getSession() {
   try {
-    return JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    // Sessions from before the one-team change (Oct 6) need a new sign-in.
+    return s && ["admin", "staff"].includes(s.role) ? s : null;
   } catch {
     return null;
   }
 }
 
 /**
- * REIFGO's own staff, as opposed to a developer or a Sales Agent. The backend
- * now issues `reifgo_admin` and `regional_admin` tokens alongside the original
- * shared `admin` login, so checking for "admin" alone would lock those out.
+ * The areas someone on the REIFGO Team can be given (Syed, Oct 6: one list;
+ * a few people have full access, everyone else what we tick). Same keys as
+ * the backend's guards/permissions.ts.
  */
-export function isReifgoTier(session = getSession()) {
-  return ["admin", "reifgo_admin", "regional_admin"].includes(session?.role);
-}
+export const AREA_GROUPS = [
+  {
+    label: "Developers & listings",
+    areas: [
+      { key: "developers", label: "Edit developers and their listings" },
+      { key: "add_developers", label: "Add new developers (a full admin approves them)" },
+    ],
+  },
+  {
+    label: "Content",
+    areas: [
+      { key: "events", label: "Events" },
+      { key: "insights", label: "Insights" },
+      { key: "forum", label: "Forum" },
+    ],
+  },
+  {
+    label: "Leads",
+    areas: [
+      { key: "leads_work", label: "Work leads (can be given leads)" },
+      { key: "leads_all", label: "See every lead" },
+      { key: "leads_assign", label: "Hand out leads and set lead distribution" },
+    ],
+  },
+  {
+    label: "Investors",
+    areas: [
+      { key: "investors", label: "Investor profiles" },
+      { key: "investor_documents", label: "Open and verify investor documents" },
+    ],
+  },
+  {
+    label: "Oversight",
+    areas: [
+      { key: "approvals", label: "Approvals" },
+      { key: "activity", label: "The whole activity log" },
+    ],
+  },
+];
+export const AREAS = AREA_GROUPS.flatMap((g) => g.areas);
 
-/**
- * What a team account may do. REIFGO and the developer's company login can do
- * everything on their side; a team account only what it was given. The UI
- * uses this to hide controls; the server enforces the same rules.
- */
-export const PERMISSIONS = [
-  { key: "view_all_leads", label: "See every lead" },
-  { key: "assign_leads", label: "Hand out leads and set lead distribution" },
-  { key: "manage_team", label: "Add and manage the sales team" },
+/** One-click starting points in the REIFGO Team form. */
+export const AREA_PRESETS = [
+  { label: "Sales Manager", permissions: ["leads_work", "leads_all", "leads_assign"] },
+  { label: "Sales Agent", permissions: ["leads_work"] },
+  { label: "Customer support", permissions: ["investors"] },
+  { label: "Content editor", permissions: ["events", "insights", "forum"] },
+  {
+    label: "Regional admin",
+    permissions: ["developers", "leads_all", "leads_assign", "approvals", "activity", "investors"],
+  },
 ];
 
-export const PERMISSION_PRESETS = {
-  sales_manager: { label: "Sales Manager", permissions: ["view_all_leads", "assign_leads", "manage_team"] },
-  sales_agent: { label: "Sales Agent", permissions: [] },
+/** The owner login, or someone given full access. */
+export function hasFullAccess(session = getSession()) {
+  return session?.role === "admin" || !!session?.full_access;
+}
+
+/** Full access, or this area was ticked. */
+export function can(area, session = getSession()) {
+  if (!session) return false;
+  if (hasFullAccess(session)) return true;
+  return (session.permissions ?? []).includes(area);
+}
+
+export const canAny = (areas, session = getSession()) => areas.some((a) => can(a, session));
+
+/** "Full access", a preset's name, or the areas in short. */
+export function accessTitle(fullAccess, permissions = []) {
+  if (fullAccess) return "Full access";
+  const same = (a, b) => a.length === b.length && a.every((p) => b.includes(p));
+  const preset = AREA_PRESETS.find((p) => same(permissions, p.permissions));
+  if (preset) return preset.label;
+  if (!permissions.length) return "No areas yet";
+  return `${permissions.length} area${permissions.length === 1 ? "" : "s"}`;
+}
+
+/** Old name, kept for the sales views: a person's access in a few words. */
+export const permissionTitle = (permissions = [], fullAccess = false) => accessTitle(fullAccess, permissions);
+
+/** Everyone signed in is REIFGO now (developers don't sign in, Oct 6). */
+export function isReifgoTier(session = getSession()) {
+  return !!session;
+}
+
+/** Full access (the name is from when this meant "main REIFGO admin"). */
+export const isReifgoAdmin = hasFullAccess;
+
+/** Who sees app investors. */
+export function canSeeInvestors(session = getSession()) {
+  return canAny(["investors", "investor_documents"], session);
+}
+
+/** Only investor profiles: the old "customer support" view of the menu. */
+export function isSupport(session = getSession()) {
+  return !hasFullAccess(session) && canSeeInvestors(session) && (session?.permissions ?? []).every((p) => p.startsWith("investor"));
+}
+
+export function canCreateDevelopers(session = getSession()) {
+  return can("add_developers", session);
+}
+
+export const LEAD_AREAS = ["leads_work", "leads_all", "leads_assign"];
+
+/**
+ * The areas that open each CMS section (same split as the server's
+ * AdminGuard AREA_ROUTES). null = anyone signed in; "full" = full access.
+ */
+const SECTION_AREAS = {
+  // The dashboard is about leads and approvals; anyone else starts on their
+  // first page (content editors on Events, support on Investors).
+  "": [...LEAD_AREAS, "approvals"],
+  account: null,
+  activity: null,
+  company: null,
+  developers: ["developers", "add_developers"],
+  properties: ["developers", "add_developers"],
+  amenities: ["developers", "add_developers"],
+  events: ["events"],
+  insights: ["insights"],
+  categories: ["insights"],
+  summit: ["forum"],
+  leads: LEAD_AREAS,
+  team: ["leads_assign", "leads_all"],
+  users: ["investors", "investor_documents"],
+  approvals: ["approvals"],
+  staff: "full",
 };
 
-export function can(permission, session = getSession()) {
+/** Whether this person can open a CMS page (UI only; the server enforces). */
+export function canOpen(pathname, session = getSession()) {
   if (!session) return false;
-  if (isReifgoTier(session)) return true;
-  return (session.permissions ?? []).includes(permission);
+  const section = pathname.replace(/^\/admin\/?/, "").split("/")[0];
+  if (!(section in SECTION_AREAS)) return hasFullAccess(session);
+  const areas = SECTION_AREAS[section];
+  if (areas === null) return true;
+  if (areas === "full") return hasFullAccess(session);
+  return canAny(areas, session);
 }
 
-/** "Sales Manager", "Sales Agent" or "Custom" for a set of permissions. */
-export function permissionTitle(permissions = []) {
-  const same = (a, b) => a.length === b.length && a.every((p) => b.includes(p));
-  for (const preset of Object.values(PERMISSION_PRESETS)) {
-    if (same(permissions, preset.permissions)) return preset.label;
-  }
-  return "Custom access";
-}
-
-/** Customer support: the Investors pages and nothing else (server-enforced). */
-export function isSupport(session = getSession()) {
-  return session?.role === "support";
-}
-
-/** Who sees app investors: REIFGO admins, regional admins and support. */
-export function canSeeInvestors(session = getSession()) {
-  return isReifgoTier(session) || isSupport(session);
-}
-
-/** A main REIFGO admin (not a regional one): can change people's emails. */
-export function isReifgoAdmin(session = getSession()) {
-  return ["admin", "reifgo_admin"].includes(session?.role);
-}
-
-/** Main admins, and regional admins whose account allows it, add developers. */
-export function canCreateDevelopers(session = getSession()) {
-  return isReifgoAdmin(session) || (session?.role === "regional_admin" && !!session.can_create_developers);
-}
-
-/** A Sales Manager, as far as access goes: someone who hands out leads. */
-export const isManagerAccess = (permissions = []) => permissions.includes("assign_leads");
+/** Someone who hands out leads. */
+export const isManagerAccess = (permissions = []) => permissions.includes("leads_assign");
 
 // Online means a CMS request in the last few minutes (the sidebar polls every
 // 20 seconds while the CMS is open).
@@ -221,11 +308,10 @@ export async function login(username, password) {
   const session = {
     token: data.access_token,
     role: data.role ?? "admin",
-    developer_id: data.developer_id ?? null,
     broker_id: data.broker_id ?? null,
+    full_access: !!data.full_access,
     permissions: data.permissions ?? [],
     name: data.name ?? "Admin",
-    can_create_developers: !!data.can_create_developers,
   };
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { DeveloperAgents, DeveloperListings } from "../components/DeveloperTabs.jsx";
-import { api, getSession, isReifgoAdmin, isReifgoTier, uploadImage } from "../api.js";
+import { accessTitle, api, canAny, getSession, hasFullAccess, uploadImage } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import { IconSelect } from "../components/IconPicker.jsx";
 import Switch from "../components/Switch.jsx";
@@ -36,7 +36,7 @@ export default function DeveloperForm() {
   const session = getSession();
   const id = params.id;
   const isNew = !id;
-  const canModerate = isReifgoTier(session);
+  const canModerate = canAny(["developers", "add_developers"], session);
   const [form, setForm] = useState(EMPTY);
   const [meta, setMeta] = useState(null);
   // REIFGO sees a developer's listings and sales team as tabs on its page
@@ -49,13 +49,13 @@ export default function DeveloperForm() {
   const [errors, setErrors] = useState({});
   // REIFGO team members who can be the account manager (main admins pick).
   const [staff, setStaff] = useState([]);
-  const mainAdmin = isReifgoAdmin(session);
+  const mainAdmin = hasFullAccess(session);
   const navigate = useNavigate();
   const toast = useToast();
 
   useEffect(() => {
     if (!mainAdmin) return;
-    api.get("/admin/accounts").then((rows) => setStaff(rows.filter((r) => r.is_active && r.role !== "support"))).catch(() => {});
+    api.get("/admin/accounts").then((rows) => setStaff(rows.filter((r) => r.is_active))).catch(() => {});
   }, [mainAdmin]);
 
   useEffect(() => {
@@ -314,7 +314,7 @@ export default function DeveloperForm() {
                   label="Show in the app"
                   description={
                     (isNew && !mainAdmin) || (devRow?.approval_status === "pending" && !mainAdmin)
-                      ? "Turns on once a main REIFGO admin approves this developer."
+                      ? "Turns on once someone with full access approves this developer."
                       : "Lists this developer on the app's Developers screen. Turn it off while the profile is being set up."
                   }
                   checked={form.is_approved}
@@ -337,7 +337,7 @@ export default function DeveloperForm() {
             <header className="adm-panel__head">
               <div>
                 <h2>REIFGO</h2>
-                <p className="adm-panel__note">Who at REIFGO looks after this developer. Only main REIFGO admins change these.</p>
+                <p className="adm-panel__note">Who at REIFGO looks after this developer. Only people with full access change these.</p>
               </div>
             </header>
             <div className="adm-form-grid">
@@ -353,7 +353,7 @@ export default function DeveloperForm() {
                       { value: "", label: "Not set" },
                       ...staff.map((a) => ({
                         value: a.id,
-                        label: `${a.name}${a.role === "regional_admin" ? ` · Regional admin, ${a.region}` : ""}`,
+                        label: `${a.name} · ${a.position || accessTitle(a.full_access, a.permissions)}`,
                       })),
                     ]}
                   />

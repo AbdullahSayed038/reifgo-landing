@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, can, getSession, isReifgoTier, permissionTitle } from "../api.js";
+import { api, can, canAny, canSeeInvestors, getSession, hasFullAccess, LEAD_AREAS } from "../api.js";
 import { BarChart, ColumnChart, DonutChart } from "../components/charts.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { useAutoRefresh } from "../useAutoRefresh.js";
@@ -99,11 +99,14 @@ function timeBuckets(range, leads) {
  */
 export default function DashboardV2() {
   const session = getSession();
-  const reifgo = isReifgoTier(session);
-  const isBroker = session?.role === "broker";
-  const seesAll = can("view_all_leads", session);
-  const managesListings = can("manage_properties", session);
-  const managesTeam = seesAll || can("manage_team", session);
+  // The overview (approvals, investors, leads per developer) is for full
+  // access and whoever approves; everyone else sees their own lead work.
+  const reifgo = hasFullAccess(session) || can("approvals", session);
+  const worksLeads = canAny(LEAD_AREAS, session);
+  const isBroker = !hasFullAccess(session) && !can("leads_all", session);
+  const seesAll = can("leads_all", session);
+  const managesListings = can("developers", session);
+  const managesTeam = seesAll || can("leads_assign", session);
   const navigate = useNavigate();
 
   const [range, setRangeState] = useState(readRange);
@@ -128,10 +131,10 @@ export default function DashboardV2() {
     const skip = () => Promise.resolve(null);
     const calls = [
       api.get(`/admin/stats${range.days ? `?days=${range.days}` : ""}`),
-      api.get("/admin/leads"),
+      worksLeads ? api.get("/admin/leads") : Promise.resolve([]),
       managesListings ? api.get("/admin/properties") : skip(),
       managesTeam ? api.get("/admin/brokers") : skip(),
-      reifgo ? api.get("/admin/approvals") : skip(),
+      can("approvals", session) ? api.get("/admin/approvals") : skip(),
     ];
     Promise.allSettled(calls).then((results) => {
       const [s, l, p, b, a] = results;
@@ -162,10 +165,9 @@ export default function DashboardV2() {
   const waitingListings = properties.filter((p) => p.approval_status === "pending" || p.has_pending_changes);
   const oldestApproval = approvals
     ? [
-        ...approvals.accounts.map((a) => a.created_at),
-        ...approvals.listings.map((l) => l.submitted_at),
-        ...approvals.amenities.map((r) => r.created_at),
-        ...approvals.logos.map((d) => d.logo_requested_at),
+        ...(approvals.listings ?? []).map((l) => l.submitted_at),
+        ...(approvals.amenities ?? []).map((r) => r.created_at),
+        ...(approvals.logos ?? []).map((d) => d.logo_requested_at),
         ...(approvals.developers ?? []).map((d) => d.created_at),
       ]
         .filter(Boolean)
@@ -235,10 +237,9 @@ export default function DashboardV2() {
 
   const approvalPreview = approvals
     ? [
-        ...approvals.accounts.map((a) => ({ key: `a${a.id}`, kind: "Team account", title: `${a.name} · ${permissionTitle(a.pending_permissions?.length ? a.pending_permissions : a.permissions)}`, who: a.developer_name, at: a.created_at })),
-        ...approvals.listings.map((l) => ({ key: `l${l.id}`, kind: l.kind === "new" ? "New listing" : "Listing edit", title: l.name, who: l.developer_name, at: l.submitted_at })),
-        ...approvals.amenities.map((r) => ({ key: `m${r.id}`, kind: "Amenity", title: r.label, who: r.developer_name, at: r.created_at })),
-        ...approvals.logos.map((d) => ({ key: `g${d.id}`, kind: "Logo", title: "New logo", who: d.name, at: d.logo_requested_at })),
+        ...(approvals.listings ?? []).map((l) => ({ key: `l${l.id}`, kind: l.kind === "new" ? "New listing" : "Listing edit", title: l.name, who: l.developer_name, at: l.submitted_at })),
+        ...(approvals.amenities ?? []).map((r) => ({ key: `m${r.id}`, kind: "Amenity", title: r.label, who: r.developer_name, at: r.created_at })),
+        ...(approvals.logos ?? []).map((d) => ({ key: `g${d.id}`, kind: "Logo", title: "New logo", who: d.name, at: d.logo_requested_at })),
         ...(approvals.developers ?? []).map((d) => ({ key: `d${d.id}`, kind: "New developer", title: clean(d.name), who: d.created_by_admin?.name, at: d.created_at })),
       ]
         .sort((a, b) => new Date(a.at) - new Date(b.at))
@@ -247,9 +248,9 @@ export default function DashboardV2() {
 
   const greeting = reifgo
     ? "What needs you now, and how leads are moving."
-    : isBroker && !seesAll
+    : isBroker && can("leads_work", session)
       ? `${session?.name}: your leads.`
-      : `${session?.name}: your listings and lead pipeline.`;
+      : `${session?.name}: how leads are moving.`;
 
   return (
     <>
@@ -278,7 +279,7 @@ export default function DashboardV2() {
 
       <h2 className="adm-dv2-section">Needs you now</h2>
       <div className="adm-stat-grid adm-stat-grid--4">
-        {reifgo ? (
+        {can("approvals", session) ? (
           <StatCard
             label="Waiting for approval"
             value={approvals?.total}
@@ -324,7 +325,7 @@ export default function DashboardV2() {
           hint={range.days && avgPrev != null ? `${fmtHours(avgPrev)} the ${word} before` : undefined}
         />
         <StatCard label="Won" value={leads ? won(cur) : null} hint={!ready ? undefined : range.days ? delta(won(cur), won(prev), word) : "Of leads in this period"} />
-        {reifgo && (
+        {reifgo && canSeeInvestors(session) && (
           <StatCard
             label="New investors"
             value={range.days ? stats?.range?.new_users : stats?.users}
@@ -378,7 +379,7 @@ export default function DashboardV2() {
       </div>
 
       <div className={`adm-chart-grid${reifgo ? " adm-chart-grid--2" : ""}`}>
-        {reifgo && (
+        {can("approvals", session) && (
           <section className="adm-panel">
             <header className="adm-panel__head">
               <h2>Waiting for approval</h2>

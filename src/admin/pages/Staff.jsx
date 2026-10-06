@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, getSession } from "../api.js";
+import { accessTitle, api, AREA_GROUPS, AREA_PRESETS, AREAS, getSession } from "../api.js";
 import DataTable from "../components/DataTable.jsx";
 import FormField from "../components/FormField.jsx";
 import Modal from "../components/Modal.jsx";
@@ -11,39 +11,43 @@ import { fmtDate } from "../contentUtils.js";
 import { credentialErrors, emailIsChanging } from "../credentials.js";
 import { REGIONS } from "../regions.js";
 
-const ROLE_LABEL = { reifgo_admin: "REIFGO admin", regional_admin: "Regional admin", support: "Customer support" };
 const EMPTY = {
   name: "",
   email: "",
   emailAgain: "",
-  role: "reifgo_admin",
-  region: "",
+  phone: "",
+  position: "",
+  full_access: false,
+  permissions: [],
   developer_ids: [],
-  can_create_developers: false,
+  covers: [],
+  region: "",
+  in_rotation: true,
   password: "",
   passwordAgain: "",
 };
 const cleanName = (name) => (name ?? "").replace(/\s+/g, " ").trim();
+const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+const names = (list) => (list ?? []).map((d) => cleanName(d.name)).join(", ");
 
 /**
- * The developers a regional admin works on (Syed, Sept 24): pick the region,
- * then tick developers. Those in the region come first; the rest stay
- * reachable because most developers have no region set yet.
+ * Tick developers from a searchable list. Used for "only these developers"
+ * (the limit) and for the developers whose leads they take first.
  */
-function DeveloperPicker({ developers, region, value, onChange, error }) {
+function DeveloperPicker({ label, hint, developers, region, value, onChange }) {
   const [query, setQuery] = useState("");
-  const [onlyRegion, setOnlyRegion] = useState(true);
-  const inRegion = developers.filter((d) => d.region === region);
-  const useFilter = onlyRegion && !!region && inRegion.length > 0;
   const q = query.trim().toLowerCase();
-  const shown = (useFilter ? inRegion : developers)
+  const shown = developers
     .filter((d) => !q || cleanName(d.name).toLowerCase().includes(q))
-    .sort((a, b) => (a.region === region ? 0 : 1) - (b.region === region ? 0 : 1) || cleanName(a.name).localeCompare(cleanName(b.name)));
+    .sort(
+      (a, b) =>
+        (a.region === region ? 0 : 1) - (b.region === region ? 0 : 1) || cleanName(a.name).localeCompare(cleanName(b.name)),
+    );
   const toggle = (id) => onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
 
   return (
-    <div className={`adm-field adm-field--span2${error ? " adm-field--error" : ""}`}>
-      <span className="adm-field__label">Developers they work on <em>*</em></span>
+    <div className="adm-field adm-field--span2">
+      <span className="adm-field__label">{label}</span>
       <div className="adm-filters" style={{ margin: "0 0 8px" }}>
         <input
           className="adm-dev-picker__search"
@@ -52,14 +56,12 @@ function DeveloperPicker({ developers, region, value, onChange, error }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        {region && inRegion.length > 0 && (
-          <button type="button" className="adm-chip-btn" onClick={() => setOnlyRegion((v) => !v)}>
-            {useFilter ? `Showing ${region} only · show all` : `Show ${region} only`}
-          </button>
+        <span className="adm-tl__meta">{value.length ? `${value.length} selected` : "None selected"}</span>
+        {value.length > 0 && (
+          <button type="button" className="adm-chip-btn" onClick={() => onChange([])}>Clear</button>
         )}
-        <span className="adm-tl__meta">{value.length} selected</span>
       </div>
-      <div className="adm-dev-picker" role="group" aria-label="Developers">
+      <div className="adm-dev-picker" role="group" aria-label={label}>
         {shown.length === 0 ? (
           <p className="adm-icon-empty">No developers match.</p>
         ) : (
@@ -72,20 +74,23 @@ function DeveloperPicker({ developers, region, value, onChange, error }) {
           ))
         )}
       </div>
-      {error ? (
-        <span className="adm-field__error" role="alert">{error}</span>
-      ) : (
-        <span className="adm-field__hint">
-          They only see these developers' listings, leads, teams and approvals.
-          {region && inRegion.length === 0 && ` No developer has ${region} as its region yet; set it on the developer's profile.`}
-        </span>
-      )}
+      <span className="adm-field__hint">{hint}</span>
     </div>
   );
 }
 
-// REIFGO's own staff accounts (AdminAccount). Only a REIFGO admin can add or
-// change them; a regional admin sees just their own row.
+/** What someone can do, in a line for the table. */
+function accessSummary(r) {
+  if (r.full_access) return "Everything, including the REIFGO Team";
+  const labels = AREAS.filter((a) => r.permissions.includes(a.key)).map((a) => a.label.replace(/ \(.*\)$/, ""));
+  return labels.length ? labels.join(" · ") : "Nothing ticked yet";
+}
+
+/**
+ * The REIFGO Team (Syed, Oct 6): one list of everyone at REIFGO. A few people
+ * have full access and manage this page; everyone else gets the areas ticked
+ * for them, optionally limited to some developers.
+ */
 export default function Staff() {
   const [rows, setRows] = useState(null);
   const [developers, setDevelopers] = useState([]);
@@ -95,16 +100,12 @@ export default function Staff() {
   const [errors, setErrors] = useState({});
   const toast = useToast();
   const session = getSession();
-  const canManage = session?.role === "admin" || session?.role === "reifgo_admin";
-  const [mine, setMine] = useState(null);
-  useEffect(() => {
-    api.get("/admin/me").then((m) => setMine(m.email ?? null)).catch(() => {});
-  }, []);
+  const myId = session?.role === "staff" ? session.broker_id : null;
 
   const load = () => api.get("/admin/accounts").then(setRows).catch((e) => toast.error(e.message));
   useEffect(() => {
     load();
-    if (canManage) api.get("/admin/developers").then(setDevelopers).catch(() => {});
+    api.get("/admin/developers").then(setDevelopers).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -117,10 +118,14 @@ export default function Staff() {
             ...EMPTY,
             name: row.name,
             email: row.email,
-            role: row.role,
-            region: row.region ?? "",
+            phone: row.phone ?? "",
+            position: row.position ?? "",
+            full_access: row.full_access,
+            permissions: row.permissions ?? [],
             developer_ids: (row.developers ?? []).map((d) => d.id),
-            can_create_developers: !!row.can_create_developers,
+            covers: (row.covers ?? []).map((d) => d.id),
+            region: row.region ?? "",
+            in_rotation: row.in_rotation,
           }
         : EMPTY,
     );
@@ -129,22 +134,27 @@ export default function Staff() {
     setForm((f) => ({ ...f, [k]: v }));
     setErrors((e) => (e[k] ? { ...e, [k]: undefined } : e));
   };
-  const ownEmail = !!editing?.id && editing.email === mine;
-  const askEmailAgain = !ownEmail && emailIsChanging(form.email, editing?.email);
-  const regional = form.role === "regional_admin";
+  const toggleArea = (key) =>
+    set("permissions")(form.permissions.includes(key) ? form.permissions.filter((p) => p !== key) : [...form.permissions, key]);
+
+  const self = !!editing?.id && editing.id === myId;
+  const askEmailAgain = !self && emailIsChanging(form.email, editing?.email);
+  const worksLeads = !form.full_access && form.permissions.includes("leads_work");
+  const seesInvestors = !form.full_access && form.permissions.some((p) => p.startsWith("investor"));
+  const usesDevelopers =
+    !form.full_access && form.permissions.some((p) => ["developers", "add_developers", "leads_all", "approvals", "activity"].includes(p));
 
   const save = async () => {
     if (busy) return;
     const isNew = !editing.id;
     const found = {
       ...(form.name.trim() ? {} : { name: "Enter their name" }),
-      ...(regional && !form.region ? { region: "Choose their region" } : {}),
-      ...(regional && form.developer_ids.length === 0 ? { developer_ids: "Pick at least one developer" } : {}),
+      ...(!form.full_access && form.permissions.length === 0 ? { permissions: "Tick at least one area, or give full access" } : {}),
       ...credentialErrors(form, {
         originalEmail: editing.email ?? "",
         emailRequired: true,
         passwordRequired: isNew,
-        checkEmail: !ownEmail,
+        checkEmail: !self,
       }),
     };
     setErrors(found);
@@ -152,18 +162,23 @@ export default function Staff() {
     setBusy(true);
     const body = {
       name: form.name.trim(),
-      role: form.role,
-      ...(regional
-        ? { region: form.region, developer_ids: form.developer_ids, can_create_developers: form.can_create_developers }
-        : {}),
-      // A REIFGO admin can change someone else's email, never their own.
-      ...(isNew || editing.email !== mine ? { email: form.email.trim() } : {}),
+      phone: form.phone.trim(),
+      position: form.position.trim(),
+      full_access: form.full_access,
+      // Full access covers everything; the ticks and limits only matter without it.
+      permissions: form.full_access ? [] : form.permissions,
+      developer_ids: form.full_access ? [] : form.developer_ids,
+      covers: form.full_access || form.permissions.includes("leads_work") ? form.covers : [],
+      region: form.full_access ? null : form.region || null,
+      in_rotation: form.in_rotation,
+      // Full admins change other people's emails, never their own.
+      ...(self ? {} : { email: form.email.trim() }),
       ...(form.password ? { password: form.password } : {}),
     };
     try {
       if (isNew) await api.post("/admin/accounts", body);
       else await api.patch(`/admin/accounts/${editing.id}`, body);
-      toast.success(isNew ? "Account added" : "Account saved");
+      toast.success(isNew ? `${body.name} added` : "Saved");
       setEditing(null);
       load();
     } catch (e) {
@@ -172,19 +187,34 @@ export default function Staff() {
     setBusy(false);
   };
 
-  const toggle = async (row) => {
+  const toggleActive = async (row) => {
     try {
       await api.patch(`/admin/accounts/${row.id}`, { is_active: !row.is_active });
+      toast.success(row.is_active ? `${row.name} switched off` : `${row.name} switched back on`);
       load();
     } catch (e) {
       toast.error(e.message);
     }
   };
 
-  const online = useMemo(
-    () => (rows ?? []).filter((r) => r.last_seen_at && Date.now() - new Date(r.last_seen_at).getTime() < 5 * 60 * 1000).length,
-    [rows],
-  );
+  const remove = async (row) => {
+    if (!window.confirm(`Remove ${row.name} from the REIFGO Team? Their history stays in the Activity Log.`)) return;
+    try {
+      await api.del(`/admin/accounts/${row.id}`);
+      toast.success(`${row.name} removed`);
+      load();
+    } catch (e) {
+      toast.error(e.message);
+    }
+  };
+
+  const counts = useMemo(() => {
+    const list = rows ?? [];
+    return {
+      full: list.filter((r) => r.full_access).length,
+      online: list.filter((r) => r.last_seen_at && Date.now() - new Date(r.last_seen_at).getTime() < 5 * 60 * 1000).length,
+    };
+  }, [rows]);
 
   return (
     <>
@@ -192,20 +222,20 @@ export default function Staff() {
         <div>
           <h1>REIFGO Team</h1>
           <p>
-            REIFGO's own staff. They approve developer requests, look after the developers they're account manager for,
-            and run events. {rows && `${online} online now.`}
+            Everyone at REIFGO who signs in to the CMS. Full access means everything, including this page. Everyone else
+            gets the areas you tick.
+            {rows && ` ${counts.full} with full access, ${counts.online} online now.`}
           </p>
         </div>
-        {canManage && (
-          <button className="adm-btn adm-btn--primary" onClick={() => open({})}>+ Add account</button>
-        )}
+        <button className="adm-btn adm-btn--primary" onClick={() => open({})}>+ Add someone</button>
       </header>
 
       <DataTable
         rows={rows ?? []}
-        searchKeys={["name", "email", "region"]}
-        searchPlaceholder="Search the REIFGO team…"
-        emptyText={rows === null ? "Loading…" : "No REIFGO accounts yet. The shared owner login still works."}
+        searchKeys={["name", "email", "position", "region"]}
+        searchPlaceholder="Search the REIFGO Team…"
+        emptyText={rows === null ? "Loading…" : "No one yet. The owner login still works."}
+        onRowClick={open}
         columns={[
           {
             key: "name",
@@ -214,37 +244,55 @@ export default function Staff() {
               <div className="adm-cell-stack">
                 <strong>
                   {r.name}
-                  {!r.is_active && <span className="adm-badge adm-badge--muted">Deactivated</span>}
+                  {r.id === myId && <span className="adm-badge adm-badge--muted">You</span>}
+                  {!r.is_active && <span className="adm-badge adm-badge--muted">Switched off</span>}
+                  {!r.has_password && (
+                    <span className="adm-badge adm-badge--pending" title="Set a password for them so they can sign in">
+                      No password yet
+                    </span>
+                  )}
                 </strong>
-                <span>{r.email}</span>
+                <span>
+                  {r.position ? `${r.position} · ` : ""}
+                  {r.email}
+                </span>
               </div>
             ),
           },
-          { key: "role", label: "Role", width: 140, sortValue: (r) => ROLE_LABEL[r.role], render: (r) => ROLE_LABEL[r.role] ?? r.role },
           {
-            key: "scope",
-            label: "Works on",
+            key: "access",
+            label: "Access",
+            width: 260,
+            sortValue: (r) => (r.full_access ? "0" : accessTitle(false, r.permissions)),
+            render: (r) => (
+              <div className="adm-cell-stack">
+                <strong>{accessTitle(r.full_access, r.permissions)}</strong>
+                {/* A preset's name already says it; spell out custom mixes. */}
+                {!r.full_access && !AREA_PRESETS.some((p) => same(p.permissions, r.permissions)) && <span>{accessSummary(r)}</span>}
+              </div>
+            ),
+          },
+          {
+            key: "limit",
+            label: "Developers",
             width: 190,
-            sortValue: (r) => (r.role === "regional_admin" ? (r.developers ?? []).length : 1e6),
+            sortValue: (r) => (r.full_access || !(r.developers ?? []).length ? 1e6 : r.developers.length),
             render: (r) =>
-              r.role === "regional_admin" ? (
-                <div className="adm-cell-stack">
-                  <strong>{r.region}</strong>
-                  <span title={(r.developers ?? []).map((d) => cleanName(d.name)).join(", ")}>
-                    {(r.developers ?? []).length} developer{(r.developers ?? []).length === 1 ? "" : "s"}
-                    {r.can_create_developers ? " · can add" : ""}
-                  </span>
-                </div>
-              ) : r.role === "support" ? (
-                "Investors only"
+              r.full_access || !(r.developers ?? []).length ? (
+                <span className="adm-muted">All{r.region && !r.full_access ? ` · investors in ${r.region}` : ""}</span>
               ) : (
-                "All developers"
+                <div className="adm-cell-stack">
+                  <span title={names(r.developers)}>
+                    Only {r.developers.length === 1 ? cleanName(r.developers[0].name) : `${r.developers.length} developers`}
+                  </span>
+                  {r.region && <span>Investors in {r.region}</span>}
+                </div>
               ),
           },
           {
             key: "managed",
             label: "Account manager for",
-            width: 190,
+            width: 180,
             sortValue: (r) => (r.managed_developers ?? []).length,
             render: (r) =>
               (r.managed_developers ?? []).length ? (
@@ -257,58 +305,59 @@ export default function Staff() {
                   ))}
                 </span>
               ) : (
-                <span className="adm-muted">None yet</span>
+                <span className="adm-muted">—</span>
               ),
           },
           {
             key: "last_seen_at",
             label: "Last seen",
-            width: 170,
+            width: 150,
             sortValue: (r) => (r.last_seen_at ? new Date(r.last_seen_at).getTime() : 0),
             render: (r) => <Presence at={r.last_seen_at} />,
           },
-          { key: "created_at", label: "Created", width: 110, render: (r) => fmtDate(r.created_at) },
-          ...(canManage
-            ? [
-                {
-                  key: "actions",
-                  label: "",
-                  width: 190,
-                  sortable: false,
-                  render: (r) => (
-                    <div className="adm-row-actions">
-                      <button className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => open(r)}>Edit</button>
-                      <button className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => toggle(r)}>
-                        {r.is_active ? "Deactivate" : "Activate"}
-                      </button>
-                    </div>
-                  ),
-                },
-              ]
-            : []),
+          { key: "created_at", label: "Added", width: 105, render: (r) => <span style={{ whiteSpace: "nowrap" }}>{fmtDate(r.created_at)}</span> },
+          {
+            key: "actions",
+            label: "",
+            width: 200,
+            sortable: false,
+            render: (r) =>
+              r.id === myId ? null : (
+                <div className="adm-row-actions" onClick={(e) => e.stopPropagation()}>
+                  <button className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => toggleActive(r)}>
+                    {r.is_active ? "Switch off" : "Switch on"}
+                  </button>
+                  <button className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => remove(r)}>
+                    Remove
+                  </button>
+                </div>
+              ),
+          },
         ]}
       />
 
       {editing && (
         <Modal
-          title={editing.id ? `Edit ${editing.name}` : "Add REIFGO account"}
+          title={editing.id ? `Edit ${editing.name}` : "Add someone to the REIFGO Team"}
           onClose={() => setEditing(null)}
+          wide
           footer={
             <>
               <button className="adm-btn adm-btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
               <button className="adm-btn adm-btn--primary" disabled={busy} onClick={save}>
-                {busy ? "Saving…" : editing.id ? "Save changes" : "Add account"}
+                {busy ? "Saving…" : editing.id ? "Save changes" : "Add"}
               </button>
             </>
           }
         >
           <div className="adm-form-grid">
-            <FormField label="Name" required value={form.name} onChange={set("name")} span={2} error={errors.name} />
-            {ownEmail ? (
+            <FormField label="Name" required value={form.name} onChange={set("name")} error={errors.name} />
+            <FormField label="Job title" value={form.position} onChange={set("position")} placeholder="e.g. Property Consultant" />
+            {self ? (
               <label className="adm-field adm-field--span2">
                 <span className="adm-field__label">Email</span>
                 <input value={form.email} disabled readOnly />
-                <span className="adm-field__hint">You can't change your own email. Another REIFGO admin can.</span>
+                <span className="adm-field__hint">You can't change your own email. Another full admin can.</span>
               </label>
             ) : (
               <>
@@ -318,62 +367,119 @@ export default function Staff() {
                 )}
               </>
             )}
-            <FormField
-              label="Role"
-              type="select"
-              value={form.role}
-              onChange={set("role")}
-              span={regional ? undefined : 2}
-              options={[
-                { value: "reifgo_admin", label: "REIFGO admin (everything)" },
-                { value: "regional_admin", label: "Regional admin (chosen developers)" },
-                { value: "support", label: "Customer support (helps app investors)" },
-              ]}
-              hint={
-                form.role === "support"
-                  ? "Sees the Investors pages only: profiles, enquiries and which documents are in. Can't open documents or reach anything else."
-                  : undefined
-              }
-            />
-            {regional && (
-              <FormField
-                label="Region"
-                type="select"
-                required
-                value={form.region}
-                onChange={set("region")}
-                error={errors.region}
-                options={[{ value: "", label: "Choose a region…" }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
+            <FormField label="Phone" value={form.phone} onChange={set("phone")} span={2} placeholder="+971 …" />
+
+            <div className="adm-field--span2">
+              <Switch
+                label="Full access"
+                description={
+                  self && editing.full_access
+                    ? "You can't take away your own full access. Another full admin can."
+                    : "Everything in the CMS, including this page and everyone's access. Keep this to a few people."
+                }
+                checked={form.full_access}
+                disabled={self && editing.full_access}
+                onChange={set("full_access")}
               />
+            </div>
+
+            {!form.full_access && (
+              <div className={`adm-field adm-field--span2${errors.permissions ? " adm-field--error" : ""}`}>
+                <span className="adm-field__label">What they can do <em>*</em></span>
+                <div className="adm-perm-presets">
+                  {AREA_PRESETS.map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      className={`adm-chip-btn${same(form.permissions, p.permissions) ? " is-active" : ""}`}
+                      onClick={() => set("permissions")(p.permissions)}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="adm-area-groups">
+                  {AREA_GROUPS.map((g) => (
+                    <fieldset key={g.label} className="adm-area-group">
+                      <legend>{g.label}</legend>
+                      {g.areas.map((a) => (
+                        <label key={a.key} className="adm-area-group__item">
+                          <input type="checkbox" checked={form.permissions.includes(a.key)} onChange={() => toggleArea(a.key)} />
+                          <span>{a.label}</span>
+                        </label>
+                      ))}
+                    </fieldset>
+                  ))}
+                </div>
+                {errors.permissions ? (
+                  <span className="adm-field__error" role="alert">{errors.permissions}</span>
+                ) : (
+                  <span className="adm-field__hint">The chips are starting points; tick or untick anything after.</span>
+                )}
+              </div>
             )}
-            {regional && (
+
+            {usesDevelopers && (
               <DeveloperPicker
+                label="Only these developers"
+                hint="Leave empty for every developer. When set, they only see these developers' listings, leads and approvals."
                 developers={developers}
                 region={form.region}
                 value={form.developer_ids}
                 onChange={set("developer_ids")}
-                error={errors.developer_ids}
               />
             )}
-            {regional && (
-              <div className="adm-field--span2">
-                <Switch
-                  label="Can add developers"
-                  description="New developers they add wait for a main REIFGO admin to approve them before they show in the app."
-                  checked={form.can_create_developers}
-                  onChange={set("can_create_developers")}
-                />
-              </div>
+            {seesInvestors && (
+              <FormField
+                label="Investors from"
+                type="select"
+                span={2}
+                value={form.region}
+                onChange={set("region")}
+                options={[{ value: "", label: "Every region" }, ...REGIONS.map((r) => ({ value: r, label: r }))]}
+                hint="Optional. They only see investors who live in this region."
+              />
             )}
+
+            {(worksLeads || form.full_access) && (
+              <>
+                <DeveloperPicker
+                  label="Takes leads for"
+                  hint="Auto rotation sends these developers' leads to them first. Leave empty to take leads for any developer."
+                  developers={developers}
+                  value={form.covers}
+                  onChange={set("covers")}
+                />
+                <div className="adm-field--span2">
+                  <Switch
+                    label="In lead rotation"
+                    description={
+                      worksLeads
+                        ? "When auto rotation is on, new leads can go to them."
+                        : "Only applies if you also give them leads to work."
+                    }
+                    checked={form.in_rotation}
+                    onChange={set("in_rotation")}
+                  />
+                </div>
+              </>
+            )}
+
             <FormField
-              label={editing.id ? "Set a new password" : "Password"}
+              label={editing.id ? (editing.has_password ? "Set a new password" : "Set a password") : "Password"}
               type="password"
               required={!editing.id}
               value={form.password}
               onChange={set("password")}
               span={editing.id && !form.password ? 2 : undefined}
               error={errors.password}
-              hint={editing.id ? "Leave blank to keep their current password." : "At least 8 characters. They can change it from Account settings."}
+              hint={
+                editing.id
+                  ? editing.has_password
+                    ? "Leave blank to keep their current password."
+                    : "They can't sign in until a password is set."
+                  : "At least 8 characters. They can change it from Account settings."
+              }
             />
             {(!editing.id || form.password) && (
               <FormField label="Password again" type="password" required value={form.passwordAgain} onChange={set("passwordAgain")} error={errors.passwordAgain} />

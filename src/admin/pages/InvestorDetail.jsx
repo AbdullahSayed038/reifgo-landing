@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, isReifgoTier, maskPhone } from "../api.js";
+import { api, canAny, LEAD_AREAS, maskPhone } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import Modal from "../components/Modal.jsx";
 import Presence from "../components/Presence.jsx";
@@ -53,7 +53,8 @@ export default function InvestorDetail() {
   const [sendBack, setSendBack] = useState(null); // { doc, label, reason }
   const [confirmSuspend, setConfirmSuspend] = useState(false);
   const toast = useToast();
-  const reifgo = isReifgoTier();
+  // Their enquiries link through for people who work leads.
+  const reifgo = canAny(LEAD_AREAS);
 
   const apply = (row) => {
     setU(row);

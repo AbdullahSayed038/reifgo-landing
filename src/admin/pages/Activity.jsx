@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, getSession, isReifgoTier } from "../api.js";
+import { api, can, getSession } from "../api.js";
 import { useToast } from "../components/Toast.jsx";
 import { initials } from "../leadUtils.js";
 import { useAutoRefresh } from "../useAutoRefresh.js";
@@ -28,7 +28,8 @@ const RANGES = [
 ];
 
 const ROLE = {
-  admin: "REIFGO",
+  admin: "Owner",
+  staff: "REIFGO Team",
   reifgo_admin: "REIFGO",
   regional_admin: "Regional admin",
   support: "Customer support",
@@ -76,7 +77,7 @@ const time = (iso) => new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit
  */
 export default function Activity() {
   const session = getSession();
-  const reifgo = isReifgoTier(session);
+  const reifgo = can("activity", session);
   const [items, setItems] = useState(null);
   const [next, setNext] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -93,7 +94,8 @@ export default function Activity() {
   const loadedMore = useRef(false);
 
   useEffect(() => {
-    if (reifgo) api.get("/admin/developers").then(setDevelopers).catch(() => {});
+    if (reifgo && can("developers", session)) api.get("/admin/developers").then(setDevelopers).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reifgo]);
 
   const query = useCallback(
@@ -175,9 +177,7 @@ export default function Activity() {
           <p>
             {reifgo
               ? "Who did what in the CMS: sign-ins, approvals, access changes, listings, leads and investors."
-              : session?.role === "support"
-                ? "Your own activity: sign-ins and the investor accounts you've updated."
-                : "Who did what in your company's account: sign-ins, team changes, listings and leads."}
+              : "Your own activity: sign-ins and what you've changed."}
           </p>
         </div>
       </header>

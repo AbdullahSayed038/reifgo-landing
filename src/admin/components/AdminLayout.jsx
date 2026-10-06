@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAutoRefresh } from "../useAutoRefresh.js";
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { api, can, getSession, IS_DEMO, isReifgoTier, isSupport, logout, permissionTitle } from "../api.js";
+import { api, can, canOpen, getSession, hasFullAccess, IS_DEMO, isSupport, permissionTitle, logout } from "../api.js";
 import { DesignSwitch } from "../design.jsx";
 
-const ADMIN_NAV = [
+// One menu for the whole REIFGO Team (Oct 6). Each person sees the pages
+// their areas open (canOpen); the server fences the same pages.
+const NAV = [
   { to: "/admin", label: "Dashboard", icon: "▦", end: true },
   // Listings live inside each developer's page (Syed, Sept 22).
   { to: "/admin/developers", label: "Developers & Listings", icon: "◈" },
   { to: "/admin/events", label: "Events", icon: "◷" },
   { to: "/admin/insights", label: "Insights", icon: "◪" },
   { to: "/admin/summit", label: "Forum", icon: "◫" },
-  { to: "/admin/leads", label: "Leads", icon: "◎" },
-  // Syed asked what the difference was: developers' sales staff vs people in the app.
-  // REIFGO's own sales team since Oct 6 (developers no longer sign in).
+  { to: "/admin/leads", label: (s) => (can("leads_all", s) ? "Leads" : "My Leads"), icon: "◎" },
   { to: "/admin/team", label: "Sales Team", icon: "◍" },
   // "Investors", not "Users": the people using the app (Syed, Sept 22 + 24).
   { to: "/admin/users", label: "Investors", icon: "◉" },
@@ -21,27 +21,8 @@ const ADMIN_NAV = [
   { to: "/admin/staff", label: "REIFGO Team", icon: "◇" },
   { to: "/admin/activity", label: "Activity Log", icon: "≡" },
 ];
-
-// Customer support helps app investors and sees nothing else.
-const SUPPORT_NAV = [
-  { to: "/admin/users", label: "Investors", icon: "◉" },
-  { to: "/admin/activity", label: "Activity Log", icon: "≡" },
-];
 // Pages with a V2 design (see design.jsx): the switch only shows on these.
 const V2_PAGES = /^\/admin(\/leads)?\/?$/;
-const SUPPORT_PATHS = /^\/admin\/(users|activity|account)(\/|$)/;
-
-// The sales team's menu follows its permissions. Listings, developers and the
-// rest are REIFGO admin work (Oct 6); the server fences the same pages.
-function teamNav(session) {
-  return [
-    { to: "/admin", label: "Dashboard", icon: "▦", end: true },
-    { to: "/admin/leads", label: can("view_all_leads", session) ? "Leads" : "My Leads", icon: "◎" },
-    { to: "/admin/team", label: "Sales Team", icon: "◍" },
-    { to: "/admin/activity", label: "Activity Log", icon: "≡" },
-  ];
-}
-const SALES_PATHS = /^\/admin(\/(leads|team|activity|account)(\/.*)?)?\/?$/;
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -49,23 +30,23 @@ export default function AdminLayout() {
   const [approvals, setApprovals] = useState(0);
   const location = useLocation();
   const session = getSession();
-  const reifgo = isReifgoTier(session);
+  const showApprovals = can("approvals", session);
 
   // The Approvals count: fetched on each page change and every 20s, and set
   // straight away when the Approvals page approves or declines something.
   const loadApprovals = useCallback(() => {
-    if (!reifgo || IS_DEMO) return;
+    if (!showApprovals || IS_DEMO) return;
     api.get("/admin/approvals").then((q) => setApprovals(q.total ?? 0)).catch(() => {});
-  }, [reifgo]);
+  }, [showApprovals]);
   useEffect(() => {
     loadApprovals();
   }, [loadApprovals, location.pathname]);
   useAutoRefresh(loadApprovals);
   // Keeps "Online" accurate for accounts that don't poll the approvals count.
   const heartbeat = useCallback(() => {
-    if (reifgo || IS_DEMO || !getSession()) return;
+    if (showApprovals || IS_DEMO || !getSession()) return;
     api.get("/admin/me").catch(() => {});
-  }, [reifgo]);
+  }, [showApprovals]);
   useAutoRefresh(heartbeat, { intervalMs: 60000 });
   useEffect(() => {
     const onCount = (e) => setApprovals(e.detail ?? 0);
@@ -77,29 +58,20 @@ export default function AdminLayout() {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // Developers no longer sign in (Oct 6): an old session is simply ended.
-  if (session.role === "developer") {
-    logout();
-    return <Navigate to="/admin/login" replace />;
+  const nav = NAV.filter((item) => canOpen(item.to, session)).map((item) => ({
+    ...item,
+    label: typeof item.label === "function" ? item.label(session) : item.label,
+  }));
+  // A page their areas don't open: go to the first one that does.
+  if (!canOpen(location.pathname, session)) {
+    return <Navigate to={nav[0]?.to ?? "/admin/account"} replace />;
   }
-  const isBroker = session.role === "broker";
+  const full = hasFullAccess(session);
+  const portalLabel = full ? "Admin Dashboard" : "REIFGO Team";
+  const roleLabel = session.role === "admin" ? "Owner" : session.position || permissionTitle(session.permissions, full);
+  // The V1 / V2 switch is for the pages that have a V2; support-only
+  // accounts never see those pages anyway.
   const support = isSupport(session);
-  // Support's home is the Investors page; the rest of the CMS isn't theirs.
-  if (support && !SUPPORT_PATHS.test(location.pathname)) {
-    return <Navigate to="/admin/users" replace />;
-  }
-  if (isBroker && !SALES_PATHS.test(location.pathname)) {
-    return <Navigate to="/admin/leads" replace />;
-  }
-  const nav = support ? SUPPORT_NAV : isBroker ? teamNav(session) : ADMIN_NAV;
-  const portalLabel = support ? "Support Desk" : isBroker ? "REIFGO Sales" : "Admin Dashboard";
-  const roleLabel = support
-    ? "Customer support"
-    : isBroker
-      ? permissionTitle(session.permissions)
-      : session.role === "regional_admin"
-        ? "Regional admin"
-        : "Administrator";
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -118,7 +90,7 @@ export default function AdminLayout() {
           </svg>
         </button>
         <span className="adm-topbar__logo">REIFGO</span>
-        <span className="adm-topbar__sub">{support ? "Support" : isBroker ? "Sales" : "Admin"}</span>
+        <span className="adm-topbar__sub">{full ? "Admin" : "Team"}</span>
       </header>
 
       {menuOpen && <div className="adm-scrim" onClick={closeMenu} />}

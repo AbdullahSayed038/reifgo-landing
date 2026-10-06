@@ -34,8 +34,8 @@ export default function Leads() {
   const toast = useToast();
   const session = getSession();
   // Someone who only sees their own leads (a Sales Agent).
-  const isBroker = !can("view_all_leads", session);
-  const canAssign = can("assign_leads", session);
+  const isBroker = !can("leads_all", session);
+  const canAssign = can("leads_assign", session);
 
   // Silent on refresh: a background poll shouldn't pop a toast if the network
   // hiccups, only the initial load should surface an error.
