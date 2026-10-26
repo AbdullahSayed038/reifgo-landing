@@ -68,6 +68,8 @@ const PAGE_NAMES = [
   [/^\/forum$/, "Forum page"],
   [/^\/$/, "Home page"],
   [/^property\/[^/]+$/, "Listing screen"],
+  // The app's "Download brochure" form (Oct 26).
+  [/^property\/[^/]+\/brochure$/, "Brochure download"],
   [/^developer\/[^/]+$/, "Developer screen"],
   [/^inquiry$/, "Enquiry form"],
   [/^forum$/, "Forum screen"],

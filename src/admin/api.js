@@ -348,7 +348,22 @@ export async function uploadImage(file) {
       reader.readAsDataURL(file);
     });
   }
+  return postUpload(file);
+}
 
+/** A listing's brochure (Oct 26). Same caps as the server: PDF, 20 MB. */
+export const MAX_BROCHURE_BYTES = 20 * 1024 * 1024;
+
+export async function uploadPdf(file) {
+  const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+  if (!isPdf) throw new ApiError(400, "Only PDF files can be uploaded here");
+  if (file.size > MAX_BROCHURE_BYTES) throw new ApiError(400, "PDF too large (max 20 MB)");
+  // Some browsers leave the type blank; the server checks the file itself.
+  const typed = file.type ? file : new File([file], file.name, { type: "application/pdf" });
+  return postUpload(typed);
+}
+
+async function postUpload(file) {
   const body = new FormData();
   body.append("file", file);
   const token = getToken();

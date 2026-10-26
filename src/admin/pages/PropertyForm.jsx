@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { api, getSession, isReifgoTier, uploadImage } from "../api.js";
+import { api, getSession, isReifgoTier, uploadImage, uploadPdf } from "../api.js";
 import FormField from "../components/FormField.jsx";
 import RowListEditor from "../components/RowListEditor.jsx";
 import IconPicker, { IconPreview, IconSelect } from "../components/IconPicker.jsx";
@@ -36,6 +36,8 @@ const EMPTY = {
   overview: "",
   status: "active",
   media: [],
+  // The developer's brochure PDF (Oct 26): { url, name, size } or null.
+  brochure: null,
   roi: { annual_return: "", capital_appreciation: "", rental_yield: "", exit_horizon: "" },
   construction_progress: "",
   progress_verified_at: "",
@@ -52,6 +54,7 @@ const EMPTY = {
 const PROPERTY_TYPES = ["Apartment", "Villa", "Townhouse", "Commercial", "Mixed-Use"];
 
 const num = (v) => (v === "" || v == null ? undefined : Number(v));
+const fmtBytes = (b) => (b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
 const str = (v) => (v === "" || v == null ? undefined : v);
 
 export default function PropertyForm() {
@@ -141,6 +144,9 @@ export default function PropertyForm() {
             overview: p.overview ?? "",
             status: p.status,
             media: (p.media ?? []).map((m) => ({ url: m.url, type: m.type })),
+            brochure: p.brochure_url
+              ? { url: p.brochure_url, name: p.brochure_name ?? "Brochure.pdf", size: p.brochure_size ?? null }
+              : null,
             roi: {
               annual_return: p.roi?.annual_return ?? "",
               capital_appreciation: p.roi?.capital_appreciation ?? "",
@@ -194,6 +200,23 @@ export default function PropertyForm() {
 
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const brochureRef = useRef(null);
+  const [uploadingBrochure, setUploadingBrochure] = useState(false);
+
+  const onBrochurePicked = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-picking the same file
+    if (!file) return;
+    setUploadingBrochure(true);
+    try {
+      const { url, size } = await uploadPdf(file);
+      setForm((f) => ({ ...f, brochure: { url, name: file.name, size: size ?? file.size } }));
+      toast.success("Brochure uploaded. Save the listing to publish it.");
+    } catch (err) {
+      toast.error(err.message);
+    }
+    setUploadingBrochure(false);
+  };
 
   const onFilesPicked = async (e) => {
     const files = [...e.target.files];
@@ -299,6 +322,9 @@ export default function PropertyForm() {
       media: form.media
         .filter((m) => m.url.trim())
         .map((m, i) => ({ url: m.url.trim(), type: m.type || "image", display_order: i })),
+      brochure_url: form.brochure?.url ?? null,
+      brochure_name: form.brochure?.name ?? null,
+      brochure_size: form.brochure?.size ?? null,
       // RERA only covers UAE listings; elsewhere these stay off the listing.
       ...(uae && {
         construction_progress: num(form.construction_progress),
@@ -703,6 +729,50 @@ export default function PropertyForm() {
               );
             })}
           </ul>
+        </section>
+
+        <section className="adm-panel" data-field="brochure">
+          <header className="adm-panel__head">
+            <div>
+              <h2>Brochure</h2>
+              <p className="adm-panel__note">
+                The developer's PDF, up to 20 MB. In the app, investors fill a short form (name, email, phone) to
+                download it, and that creates a lead for this listing.
+              </p>
+            </div>
+            <div className="adm-panel__head-actions">
+              <input ref={brochureRef} type="file" accept="application/pdf,.pdf" hidden onChange={onBrochurePicked} />
+              <button
+                type="button"
+                className={`adm-btn ${form.brochure ? "adm-btn--ghost" : "adm-btn--primary"}`}
+                disabled={uploadingBrochure}
+                onClick={() => brochureRef.current?.click()}
+              >
+                {uploadingBrochure ? "Uploading…" : form.brochure ? "Replace PDF" : "↑ Upload PDF"}
+              </button>
+            </div>
+          </header>
+          {form.brochure ? (
+            <div className="adm-file-row">
+              <span className="adm-file-row__icon" aria-hidden="true">PDF</span>
+              <span className="adm-file-row__text">
+                <strong>{form.brochure.name}</strong>
+                <span>{form.brochure.size ? fmtBytes(form.brochure.size) : "Size unknown"}</span>
+              </span>
+              <a className="adm-btn adm-btn--ghost adm-btn--sm" href={form.brochure.url} target="_blank" rel="noopener noreferrer">
+                View ↗
+              </a>
+              <button
+                type="button"
+                className="adm-btn adm-btn--ghost adm-btn--sm"
+                onClick={() => setForm((f) => ({ ...f, brochure: null }))}
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <p className="adm-panel__empty">No brochure yet. The app hides the download button until one is added.</p>
+          )}
         </section>
 
         <section className="adm-panel">
