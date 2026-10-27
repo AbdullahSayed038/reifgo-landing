@@ -1,0 +1,7 @@
+# REIFGO website. The CMS is private; listings live in the app, not here.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /property/
+
+Sitemap: https://reifgo-landing.vercel.app/sitemap.xml

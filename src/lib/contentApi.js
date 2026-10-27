@@ -60,7 +60,6 @@ export const fetchInsights = () => get("/insights");
 export const fetchInsight = (slug) => get(`/insights/${encodeURIComponent(slug)}`);
 export const fetchCategories = () => get("/categories?scope=insight");
 export const fetchSummit = () => get("/summit");
-export const fetchProperty = (id) => get(`/properties/${encodeURIComponent(id)}`);
 
 export async function sendWebsiteLead(payload) {
   const res = await fetch(`${BASE}/leads/website`, {

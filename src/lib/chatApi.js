@@ -15,7 +15,9 @@ export async function sendChat(messages) {
   const res = await fetch(`${BASE}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
+    // The website doesn't show listings (Syed, Oct 27): the backend answers
+    // without its property search and points to the app instead.
+    body: JSON.stringify({ messages, surface: "website" }),
     cache: "no-store",
   });
 

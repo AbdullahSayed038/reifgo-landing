@@ -1,3 +1,4 @@
+import { setPageMeta } from "../lib/seo.js";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Header from "../components/Header.jsx";
@@ -39,6 +40,16 @@ export default function InsightArticle() {
 
   useEffect(() => {
     if (article) return initReveal();
+  }, [article]);
+
+  // Each article gets its own title and share card for search and previews.
+  useEffect(() => {
+    if (!article) return;
+    setPageMeta({
+      title: `${article.title} | REIFGO Insights`,
+      description: (article.excerpt || article.body || "").replace(/\s+/g, " ").slice(0, 160),
+      image: article.cover_url || undefined,
+    });
   }, [article]);
 
   const paragraphs = (article?.body ?? "")

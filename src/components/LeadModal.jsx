@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { sendWebsiteLead } from "../lib/contentApi.js";
+import { trackEvent } from "../lib/analytics.js";
 import "./LeadModal.css";
 
 const INTERESTS = ["Residential", "Commercial", "Mixed-use", "General investment"];
@@ -42,19 +43,33 @@ const COPY = {
     title: "Get in Touch",
     lead: "Send us a message and the right person at REIFGO will reply by email.",
   },
-  // The public listing page: the lead goes to that developer's sales team.
-  listing: {
-    eyebrow: "Enquire",
-    title: "Ask about this property",
-    lead: "Leave your details and a property consultant will be in touch about availability, pricing and the payment plan.",
+  // Syed's website brief (Oct 27). Opened by the Events, For Home Owners and
+  // For Developers pages; each lands in the CRM with its own label.
+  event_registration: {
+    eyebrow: "Events",
+    title: "Register for the event",
+    lead: "Leave your details and we'll confirm your place by email.",
+  },
+  valuation: {
+    eyebrow: "For Home Owners",
+    title: "Request a valuation",
+    lead: "Tell us about your property and a REIFGO advisor will come back with a valuation.",
+  },
+  developer_meeting: {
+    eyebrow: "For Developers",
+    title: "Request a meeting",
+    lead: "Tell us about your projects and our partnerships team will set up a meeting.",
   },
 };
+
+// Event registration asks for these (Syed: name, country, budget, interest).
+const BUDGETS = ["Under AED 1M", "AED 1M - 5M", "AED 5M - 20M", "Over AED 20M"];
 
 const LeadModalContext = createContext(() => {});
 
 /**
  * Opens the lead form: `const openLead = useLeadModal(); openLead("invest")`.
- * A listing enquiry passes the property: `openLead("listing", { property })`.
+ * An event registration names the event: `openLead("event_registration", { event: "Forum 2026" })`.
  */
 export const useLeadModal = () => useContext(LeadModalContext);
 
@@ -69,17 +84,28 @@ export function LeadModalProvider({ children }) {
   return (
     <LeadModalContext.Provider value={open}>
       {children}
-      {state && <LeadModal intent={state.intent} property={state.property} onClose={close} />}
+      {state && <LeadModal intent={state.intent} event={state.event} onClose={close} />}
     </LeadModalContext.Provider>
   );
 }
 
-const EMPTY = { name: "", email: "", phone: "", interest: INTERESTS[3], message: "" };
+const EMPTY = {
+  name: "",
+  email: "",
+  phone: "",
+  interest: INTERESTS[3],
+  message: "",
+  country: "",
+  budget: "",
+  company: "",
+  purpose: "Sell",
+  property_details: "",
+};
 
-// The partner, contact and listing forms don't ask for an area of interest.
-const asksInterest = (intent) => !["partner", "contact", "listing"].includes(intent);
+// These forms don't ask for an area of interest.
+const asksInterest = (intent) => !["partner", "contact", "valuation", "developer_meeting"].includes(intent);
 
-export default function LeadModal({ intent, property, onClose }) {
+export default function LeadModal({ intent, event, onClose }) {
   const [form, setForm] = useState(EMPTY);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -97,7 +123,10 @@ export default function LeadModal({ intent, property, onClose }) {
   }, [onClose]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
-  const lead = property ? `${copy.lead.replace(/\.$/, "")} for ${property.name}.` : copy.lead;
+  const lead = event ? `${copy.lead.replace(/\.$/, "")} for ${event}.` : copy.lead;
+  const isEvent = intent === "event_registration";
+  const isValuation = intent === "valuation";
+  const isDeveloper = intent === "developer_meeting";
 
   const submit = async (e) => {
     e.preventDefault();
@@ -114,10 +143,16 @@ export default function LeadModal({ intent, property, onClose }) {
         full_name: form.name.trim(),
         email: form.email.trim(),
         ...(form.phone.trim() && { phone: form.phone.trim() }),
-        ...(property && { property_id: property.id }),
         ...(!asksInterest(intent) ? {} : { interest: form.interest }),
+        ...(event && { event_name: event }),
+        ...(form.country.trim() && { country: form.country.trim() }),
+        ...(isEvent && form.budget && { budget: form.budget }),
+        ...(isDeveloper && form.company.trim() && { company: form.company.trim() }),
+        ...(isValuation && { purpose: form.purpose }),
+        ...(isValuation && form.property_details.trim() && { property_details: form.property_details.trim() }),
         ...(form.message.trim() && { message: form.message.trim() }),
       });
+      trackEvent("generate_lead", { form: intent });
       setDone(true);
     } catch (err) {
       setError(err.message);
@@ -169,6 +204,51 @@ export default function LeadModal({ intent, property, onClose }) {
                   <input type="tel" maxLength={40} value={form.phone} onChange={set("phone")} placeholder="+971 …" />
                 </label>
               </div>
+              {isDeveloper && (
+                <label className="lm__field">
+                  <span>Company</span>
+                  <input required maxLength={120} value={form.company} onChange={set("company")} placeholder="Developer name" />
+                </label>
+              )}
+              {(isEvent || isValuation) && (
+                <div className="lm__row">
+                  <label className="lm__field">
+                    <span>Country</span>
+                    <input required={isEvent} maxLength={80} value={form.country} onChange={set("country")} placeholder="Where you live" />
+                  </label>
+                  {isEvent ? (
+                    <label className="lm__field">
+                      <span>Budget</span>
+                      <select required value={form.budget} onChange={set("budget")}>
+                        <option value="" disabled>Choose…</option>
+                        {BUDGETS.map((b) => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : (
+                    <label className="lm__field">
+                      <span>I want to</span>
+                      <select value={form.purpose} onChange={set("purpose")}>
+                        <option value="Sell">Sell</option>
+                        <option value="Lease">Lease</option>
+                      </select>
+                    </label>
+                  )}
+                </div>
+              )}
+              {isValuation && (
+                <label className="lm__field">
+                  <span>Your property</span>
+                  <input
+                    required
+                    maxLength={200}
+                    value={form.property_details}
+                    onChange={set("property_details")}
+                    placeholder="Area, type and size, e.g. Dubai Marina, 2-bed apartment"
+                  />
+                </label>
+              )}
               {asksInterest(intent) && (
                 <label className="lm__field">
                   <span>Area of interest</span>
@@ -180,7 +260,7 @@ export default function LeadModal({ intent, property, onClose }) {
                 </label>
               )}
               <label className="lm__field">
-                <span>{intent === "contact" ? "Message" : intent === "listing" ? "Your question (optional)" : "Anything we should know? (optional)"}</span>
+                <span>{intent === "contact" ? "Message" : "Anything we should know? (optional)"}</span>
                 <textarea
                   rows={3}
                   maxLength={2000}
@@ -188,10 +268,10 @@ export default function LeadModal({ intent, property, onClose }) {
                   value={form.message}
                   onChange={set("message")}
                   placeholder={
-                    intent === "partner"
+                    intent === "partner" || isDeveloper
                       ? "Projects, markets, delivery timeline…"
-                      : intent === "listing"
-                        ? "Unit type, budget, when you'd like to buy…"
+                      : isValuation
+                        ? "Anything else about the property…"
                       : intent === "contact"
                         ? "How can we help?"
                         : "Investment size, timeline, markets…"

@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon.jsx";
 import { sendChat } from "../lib/chatApi.js";
-import ChatProperties from "./ChatProperties.jsx";
 import "./AdvisorChat.css";
-import { useLeadModal } from "./LeadModal.jsx";
+import { APP_WEB_URL } from "../lib/siteLinks.js";
 
 const CHIPS = ["Market Pulse: London", "Risk Assessment", "Portfolio Rebalance"];
 
-// The rich "Institutional Insights" card (with the Marina Sands property
-// listing) is the seeded first exchange, kept as demo content. Everything the
+// The rich "Institutional Insights" card is the seeded first exchange, kept
+// as demo content. It names no listings: the website shows none (Syed,
+// Oct 27); projects live in the app. Everything the
 // visitor sends after that goes through the shared backend's /chat endpoint —
 // the same Haiku assistant and live property search as the floating widget and
 // the mobile app. Seeded messages are display-only and never sent as history.
@@ -16,13 +16,12 @@ const INITIAL_MESSAGES = [
   {
     id: "seed-user",
     role: "user",
-    text: "AI Advisor, identify the best ROI projects in Dubai Marina currently available for institutional entry. Focus on waterfront developments with proven rental yields.",
+    text: "AI Advisor, how is Dubai Marina performing for institutional investors right now? Focus on waterfront developments and rental yields.",
   },
   { id: "seed-ai", role: "ai", card: true },
 ];
 
 export default function AdvisorChat() {
-  const openLead = useLeadModal();
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -98,44 +97,15 @@ export default function AdvisorChat() {
                     <p className="achat__card-text">
                       Based on current market dynamics and capital flow analysis, Dubai
                       Marina continues to show strong appreciation in the ultra-luxury
-                      segment. Institutional interest has pivoted toward "The Marina
-                      Sands" and "Cove Residences" due to their unique architectural
-                      positioning and high occupancy rates (94%+).
+                      segment. Institutional interest has pivoted toward waterfront
+                      projects with high occupancy rates (94%+). Every project, with
+                      prices and payment plans, is in the REIFGO app.
                     </p>
 
-                    <article className="achat__prop">
-                      <div className="achat__prop-media">
-                        <img src="/marina-sands.png" alt="Marina Sands Residences towers" />
-                        <span className="achat__prop-badge">Prime ROI</span>
-                      </div>
-                      <div className="achat__prop-info">
-                        <div className="achat__prop-top">
-                          <h3 className="achat__prop-title">Marina Sands Residences</h3>
-                          <span className="achat__prop-loc">
-                            <Icon name="pin" size={12} />
-                            Dubai Marina, UAE
-                          </span>
-                        </div>
-                        <div className="achat__prop-stats">
-                          <div className="achat__stat">
-                            <span className="achat__stat-label">Projected Yield</span>
-                            <span className="achat__stat-value">8.4% Net</span>
-                          </div>
-                          <div className="achat__stat">
-                            <span className="achat__stat-label">Entry Point</span>
-                            <span className="achat__stat-value">$1.2M USD</span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          className="achat__prop-link"
-                          onClick={() => openLead("advisory_request")}
-                        >
-                          View Data Deck
-                          <Icon name="chevronRight" size={12} />
-                        </button>
-                      </div>
-                    </article>
+                    <a className="achat__prop-link" href={`${APP_WEB_URL}/listings`} target="_blank" rel="noopener noreferrer">
+                      See projects in the REIFGO app
+                      <Icon name="chevronRight" size={12} />
+                    </a>
 
                     <blockquote className="achat__quote">
                       "Institutional data suggests a secondary market surge in the next
@@ -154,7 +124,7 @@ export default function AdvisorChat() {
                     <span>Advisor AI</span>
                   </div>
                   <p className="achat__card-text">{m.text}</p>
-                  {m.properties?.length ? <ChatProperties properties={m.properties} /> : null}
+                  
                 </div>
               </div>
             );

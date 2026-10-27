@@ -1,3 +1,4 @@
+import { APP_WEB_URL } from "../lib/siteLinks.js";
 // Shared helpers for the lead-management screens.
 
 // The lifecycle a lead moves through, in order. closed_won / closed_lost are
@@ -34,10 +35,10 @@ export function leadCategory(lead) {
   return "general";
 }
 
-// The public listing in the app's web build, for the Linked property panel.
-// The listing as investors see it, on this website (Syed, Sept 24), so a Sales
-// Agent can open or share it without the app. Only live listings load there.
-export const APP_PROPERTY_URL = (id) => `${window.location.origin}/property/${id}`;
+// The listing as investors see it, in the app's web version, so a Sales Agent
+// can open or share it without installing the app. The website itself shows
+// no listings (Syed, Oct 27). Only live listings load there.
+export const APP_PROPERTY_URL = (id) => `${APP_WEB_URL}/property/${encodeURIComponent(id)}`;
 
 // No reply after 24h goes to the Sales Managers, after 48h to REIFGO admins
 // (it went to the developer before developers stopped having accounts, Oct 6).

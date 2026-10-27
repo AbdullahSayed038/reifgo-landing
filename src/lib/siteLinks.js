@@ -26,6 +26,6 @@ export const FOOTER_TARGETS = {
   Cookies: { to: "/cookies" },
 };
 
-// The app's web build: "Open in the REIFGO app" on a listing page links to
-// `${APP_WEB_URL}/property/<id>`.
+// The app's web build. Listings only live in the app (Syed, Oct 27), so any
+// link to a listing goes to `${APP_WEB_URL}/property/<id>`.
 export const APP_WEB_URL = "https://reifgo.expo.app";

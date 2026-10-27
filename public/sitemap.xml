@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Update the domain when the site moves to REIFGO's own address. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://reifgo-landing.vercel.app/</loc><priority>1.0</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/services</loc><priority>0.8</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/insights</loc><priority>0.8</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/forum</loc><priority>0.8</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/advisor</loc><priority>0.5</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/privacy</loc><priority>0.2</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/terms</loc><priority>0.2</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/disclaimers</loc><priority>0.2</priority></url>
+  <url><loc>https://reifgo-landing.vercel.app/cookies</loc><priority>0.2</priority></url>
+</urlset>

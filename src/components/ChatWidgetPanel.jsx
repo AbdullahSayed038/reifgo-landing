@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon.jsx";
 import { sendChat } from "../lib/chatApi.js";
-import ChatProperties from "./ChatProperties.jsx";
 
 const GREETING = {
   role: "assistant",
@@ -91,7 +90,7 @@ export default function ChatWidgetPanel({ open, onClose }) {
         {messages.map((m, i) => (
           <div key={i} className={`cw__msg cw__msg--${m.role}`}>
             {m.content}
-            {m.properties?.length ? <ChatProperties properties={m.properties} /> : null}
+            
           </div>
         ))}
 

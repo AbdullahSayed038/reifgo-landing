@@ -9,7 +9,9 @@ import ForumPage from "./pages/ForumPage.jsx";
 import ChatWidget from "./components/ChatWidget.jsx";
 import { LeadModalProvider } from "./components/LeadModal.jsx";
 import LegalPage from "./pages/LegalPage.jsx";
-import PropertyPage from "./pages/PropertyPage.jsx";
+import AppListingRedirect from "./pages/AppListingRedirect.jsx";
+import { setRouteMeta } from "./lib/seo.js";
+import { trackPageView } from "./lib/analytics.js";
 
 // CMS dashboard — code-split so visitors never download admin JS/CSS.
 const AdminApp = lazy(() => import("./admin/AdminApp.jsx"));
@@ -36,6 +38,13 @@ export default function App() {
   const [phase, setPhase] = useState("in");
 
   const pathname = shown.pathname;
+
+  // Title, description and share card for the page on screen, then one
+  // Analytics page view (off until VITE_GA_ID is set).
+  useEffect(() => {
+    setRouteMeta(pathname);
+    trackPageView(pathname);
+  }, [pathname]);
   // The CMS is a working tool, not a marketing page: switching tabs there
   // should stay instant rather than costing a fade each time.
   const skipAnimation =
@@ -77,7 +86,9 @@ export default function App() {
           <Route path="/insights" element={<Insights />} />
           <Route path="/insights/:slug" element={<InsightArticle />} />
           <Route path="/forum" element={<ForumPage />} />
-          <Route path="/property/:id" element={<PropertyPage />} />
+          {/* No listings on the website (Syed, Oct 27): the app is where
+              investing happens. Old shared links open the listing in the app. */}
+          <Route path="/property/:id" element={<AppListingRedirect />} />
           <Route path="/privacy" element={<LegalPage doc="privacy" />} />
           <Route path="/terms" element={<LegalPage doc="terms" />} />
           <Route path="/disclaimers" element={<LegalPage doc="disclaimers" />} />
