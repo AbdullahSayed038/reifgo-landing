@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { sendWebsiteLead } from "../lib/contentApi.js";
 import { trackEvent } from "../lib/analytics.js";
+import { budgetOptions, getGeo, getRates } from "../lib/geo.js";
 import "./LeadModal.css";
 
 const INTERESTS = ["Residential", "Commercial", "Mixed-use", "General investment"];
@@ -62,8 +63,8 @@ const COPY = {
   },
 };
 
-// Event registration asks for these (Syed: name, country, budget, interest).
-const BUDGETS = ["Under AED 1M", "AED 1M - 5M", "AED 5M - 20M", "Over AED 20M"];
+// Event registration asks for name, country, budget and interest (Syed). The
+// budget ranges show in the visitor's currency (lib/geo.js).
 
 const LeadModalContext = createContext(() => {});
 
@@ -111,6 +112,24 @@ export default function LeadModal({ intent, event, onClose }) {
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
   const copy = COPY[intent] ?? COPY.contact;
+  const [budgets, setBudgets] = useState(() => budgetOptions(null, null));
+
+  // Where they are, from their IP (Oct 27): fills in the country and shows
+  // budgets in their currency. Never overrides what they've typed.
+  useEffect(() => {
+    let alive = true;
+    getGeo().then(async (geo) => {
+      if (!alive || !geo) return;
+      if (geo.country_name) setForm((f) => (f.country ? f : { ...f, country: geo.country_name }));
+      if (geo.currency && geo.currency !== "AED") {
+        const rates = await getRates();
+        if (alive) setBudgets(budgetOptions(geo.currency, rates));
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -221,7 +240,7 @@ export default function LeadModal({ intent, event, onClose }) {
                       <span>Budget</span>
                       <select required value={form.budget} onChange={set("budget")}>
                         <option value="" disabled>Choose…</option>
-                        {BUDGETS.map((b) => (
+                        {budgets.map((b) => (
                           <option key={b} value={b}>{b}</option>
                         ))}
                       </select>
