@@ -29,7 +29,7 @@ const DOC_STATUS = {
 
 const PROFILE_KEYS = [
   "full_name", "email", "phone", "gender", "nationality", "country", "city", "date_of_birth",
-  "street", "building", "unit", "po_box", "area_of_interest", "investment_goal", "risk_tolerance",
+  "street", "building", "unit", "po_box", "area_of_interest", "budget", "investment_goal", "risk_tolerance",
 ];
 
 function toForm(u) {
@@ -259,8 +259,8 @@ export default function InvestorDetail() {
                 value={form.area_of_interest}
                 onChange={set("area_of_interest")}
                 placeholder="UAE, UK"
-                span={2}
               />
+              <FormField label="Budget" value={form.budget} onChange={set("budget")} placeholder="AED 1M - 5M" />
             </fieldset>
 
             {!readOnly && (

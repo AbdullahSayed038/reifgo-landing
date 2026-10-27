@@ -59,6 +59,18 @@ export function DeveloperListings({ developerId }) {
           { key: "min_entry_price", label: "From", render: (r) => fmtMoney(r.min_entry_price, r.currency) },
           { key: "status", label: "Status", width: 120, render: (r) => <StatusBadge value={r.status} /> },
           {
+            key: "views",
+            label: "Views (30 days)",
+            width: 110,
+            sortValue: (r) => r.views_30d ?? 0,
+            render: (r) => (
+              <span className="adm-cell-stack" title="Times investors opened this listing in the app">
+                <strong>{r.views_30d ?? 0}</strong>
+                <span>{r.views_total ?? 0} all time</span>
+              </span>
+            ),
+          },
+          {
             key: "approval",
             label: "Approval",
             width: 150,

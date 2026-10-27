@@ -7,6 +7,7 @@ export const FIELD_LABEL = {
   country: "Country",
   city: "City",
   district: "Area",
+  map_pin: "Map pin",
   location: "Location",
   asset_class: "Asset class",
   payment_plan: "Payment plan",
@@ -53,6 +54,12 @@ export function validateProperty(form, { needsDeveloper }) {
   if (blank(form.name)) fields.name = "Give the listing a name";
   if (needsDeveloper && blank(form.developer_id)) fields.developer_id = "Pick the developer";
   if (blank(form.country)) fields.country = "Choose the country";
+  if (!blank(form.map_pin)) {
+    const m = String(form.map_pin).trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+    if (!m || Math.abs(Number(m[1])) > 90 || Math.abs(Number(m[2])) > 180) {
+      fields.map_pin = "Paste it as two numbers, e.g. 25.0805, 55.1403";
+    }
+  }
 
   const nonNegative = (key, label) => {
     if (blank(form[key])) return;
@@ -79,11 +86,17 @@ export function validateProperty(form, { needsDeveloper }) {
   });
 
   form.unit_types.forEach((u, i) => {
-    const touched = ["name", "min_area", "max_area", "from_price", "floor_plan_url"].some((k) => !blank(u[k]));
+    const touched = ["name", "bedrooms", "min_area", "max_area", "from_price", "available_units", "floor_plan_url"].some((k) => !blank(u[k]));
     if (!touched) return;
     if (blank(u.name)) rowError("unit_types", i, "name", "Name this unit type");
     for (const k of ["min_area", "max_area", "from_price"]) {
       if (!blank(u[k]) && (!isNum(u[k]) || Number(u[k]) < 0)) rowError("unit_types", i, k, "Must be a number");
+    }
+    // Whole numbers: bedrooms (0 = studio, up to 20) and units left.
+    for (const [k, max] of [["bedrooms", 20], ["available_units", 100000]]) {
+      if (blank(u[k])) continue;
+      const n = Number(u[k]);
+      if (!Number.isInteger(n) || n < 0 || n > max) rowError("unit_types", i, k, "Use a whole number");
     }
     if (isNum(u.min_area) && isNum(u.max_area) && Number(u.min_area) > Number(u.max_area)) {
       rowError("unit_types", i, "max_area", "Must be at least the min");

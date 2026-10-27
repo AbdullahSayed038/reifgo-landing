@@ -22,6 +22,8 @@ const EMPTY = {
   country: "",
   city: "",
   district: "",
+  // "25.0805, 55.1403": pasted from Google Maps (Oct 27).
+  map_pin: "",
   // Older listings only have the free-text line; shown until a country is set.
   location: "",
   asset_class: "",
@@ -54,6 +56,15 @@ const EMPTY = {
 const PROPERTY_TYPES = ["Apartment", "Villa", "Townhouse", "Commercial", "Mixed-Use"];
 
 const num = (v) => (v === "" || v == null ? undefined : Number(v));
+
+/** "25.0805, 55.1403" → coordinates; blank clears them. Checked by validateProperty. */
+export function pinToCoords(pin) {
+  const t = (pin ?? "").trim();
+  if (!t) return { latitude: null, longitude: null };
+  const m = t.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if (!m) return {};
+  return { latitude: Number(m[1]), longitude: Number(m[2]) };
+}
 const fmtBytes = (b) => (b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
 const str = (v) => (v === "" || v == null ? undefined : v);
 
@@ -132,6 +143,7 @@ export default function PropertyForm() {
             country: p.country ?? "",
             city: p.city ?? "",
             district: p.district ?? "",
+            map_pin: p.latitude != null && p.longitude != null ? `${p.latitude}, ${p.longitude}` : "",
             location: p.location ?? "",
             asset_class: p.asset_class ?? "",
             payment_plan: p.payment_plan ?? "",
@@ -168,6 +180,8 @@ export default function PropertyForm() {
               min_area: u.min_area ?? "",
               max_area: u.max_area ?? "",
               from_price: u.from_price ?? "",
+              bedrooms: u.bedrooms ?? "",
+              available_units: u.available_units ?? "",
               floor_plan_url: u.floor_plan_url ?? "",
             })),
             amenities: (p.amenities ?? []).map((a) => ({
@@ -309,6 +323,7 @@ export default function PropertyForm() {
       country: form.country,
       city: form.city.trim(),
       district: form.district.trim(),
+      ...pinToCoords(form.map_pin),
       asset_class: str(form.asset_class),
       payment_plan: str(form.payment_plan?.trim()),
       property_type: str(form.property_type),
@@ -347,6 +362,8 @@ export default function PropertyForm() {
           min_area: num(u.min_area),
           max_area: num(u.max_area),
           from_price: num(u.from_price),
+          bedrooms: num(u.bedrooms),
+          available_units: num(u.available_units),
           floor_plan_url: str(u.floor_plan_url?.trim()),
           display_order: i,
         })),
@@ -587,6 +604,15 @@ export default function PropertyForm() {
             />
             <FormField label="City" value={form.city} onChange={set("city")} placeholder={uae || !form.country ? "Dubai" : "City"} />
             <FormField label="Area" value={form.district} onChange={set("district")} placeholder={uae || !form.country ? "Dubai Marina" : "Neighbourhood or district"} />
+            <FormField
+              label="Map pin"
+              name="map_pin"
+              error={fieldError("map_pin")}
+              value={form.map_pin}
+              onChange={set("map_pin")}
+              placeholder="25.0805, 55.1403"
+              hint="In Google Maps, right-click the building and click the numbers at the top to copy them. The app's Open in Maps uses this."
+            />
             <FormField label="Asset class" value={form.asset_class} onChange={set("asset_class")} placeholder="Multi-family" />
             <FormField
               label="Property type"
@@ -844,12 +870,14 @@ export default function PropertyForm() {
           onChange={set("unit_types")}
           name="unit_types"
           errors={rowErrors("unit_types")}
-          blank={{ name: "", min_area: "", max_area: "", from_price: "", floor_plan_url: "" }}
+          blank={{ name: "", bedrooms: "", min_area: "", max_area: "", from_price: "", available_units: "", floor_plan_url: "" }}
           columns={[
             { key: "name", label: "Name", placeholder: "2BHK", flex: 1 },
+            { key: "bedrooms", label: "Bedrooms", type: "number", placeholder: "0 = studio", flex: 1 },
             { key: "min_area", label: "Min sqft", type: "number", placeholder: "850", flex: 1 },
             { key: "max_area", label: "Max sqft", type: "number", placeholder: "920", flex: 1 },
             { key: "from_price", label: `From price${currency ? ` (${currency})` : ""}`, type: "number", placeholder: "550000", flex: 1 },
+            { key: "available_units", label: "Units left", type: "number", placeholder: "Blank = not tracked", flex: 1 },
             { key: "floor_plan_url", label: "Floor plan URL", placeholder: "https://…", flex: 2, minWidth: 200 },
           ]}
         />
